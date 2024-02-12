@@ -85,7 +85,7 @@ func (server *Server) editProduct(ctx *gin.Context) {
 
 	var rawMap map[string]interface{}
 	if err := json.Unmarshal(rawData, &rawMap); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 	unitPrice, _ := rawMap["unit_price"].(float64)
@@ -144,3 +144,43 @@ func (server *Server) getProduct(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, product)
 	return
 }
+
+type getUserProductsRequest struct {
+	ID int64 `uri:"id" binding:"required"`
+}
+
+func (server *Server) getUserProducts(ctx *gin.Context) {
+	var uri getUserProductsRequest
+
+	if err := ctx.ShouldBindUri(&uri); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.GetUser(ctx, uri.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := []map[string]interface{}{}
+
+	if user.Stock != nil {
+		if unerr := json.Unmarshal(user.Stock, &rsp); unerr != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
+	return
+}
+
+// [
+// 	{"productID":1,"productName":"Test Product 1","productQuantity":75},
+// 	{"productID":2,"productName":"Test Product 2","productQuantity":75}
+// ]

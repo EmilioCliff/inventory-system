@@ -85,13 +85,35 @@ func (q *Queries) GetUser(ctx context.Context, userID int64) (User, error) {
 	return i, err
 }
 
-const getUserByUsername = `-- name: GetUserByUsername :one
+const getUserByEmail = `-- name: GetUserByEmail :one
+SELECT user_id, username, password, email, phone_number, address, stock, role, created_at FROM users
+WHERE email = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, email)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.Username,
+		&i.Password,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.Address,
+		&i.Stock,
+		&i.Role,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getUserByUsename = `-- name: GetUserByUsename :one
 SELECT user_id, username, password, email, phone_number, address, stock, role, created_at FROM users
 WHERE username = $1 LIMIT 1
 `
 
-func (q *Queries) GetUserByUsername(ctx context.Context, username string) (User, error) {
-	row := q.db.QueryRow(ctx, getUserByUsername, username)
+func (q *Queries) GetUserByUsename(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByUsename, username)
 	var i User
 	err := row.Scan(
 		&i.UserID,
@@ -194,6 +216,35 @@ func (q *Queries) UpdateUserCredentials(ctx context.Context, arg UpdateUserCrede
 		arg.PhoneNumber,
 		arg.Username,
 	)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.Username,
+		&i.Password,
+		&i.Email,
+		&i.PhoneNumber,
+		&i.Address,
+		&i.Stock,
+		&i.Role,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateUserPasswordFisrtLogin = `-- name: UpdateUserPasswordFisrtLogin :one
+UPDATE users
+  set password = $2
+WHERE user_id = $1
+RETURNING user_id, username, password, email, phone_number, address, stock, role, created_at
+`
+
+type UpdateUserPasswordFisrtLoginParams struct {
+	UserID   int64  `json:"user_id"`
+	Password string `json:"password"`
+}
+
+func (q *Queries) UpdateUserPasswordFisrtLogin(ctx context.Context, arg UpdateUserPasswordFisrtLoginParams) (User, error) {
+	row := q.db.QueryRow(ctx, updateUserPasswordFisrtLogin, arg.UserID, arg.Password)
 	var i User
 	err := row.Scan(
 		&i.UserID,

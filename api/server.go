@@ -35,6 +35,7 @@ func (server *Server) setRoutes() {
 	router := gin.Default()
 
 	auth := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	auth.GET("users/products/:id", server.getUserProducts)
 	auth.GET("/products/", server.listProducts)
 	auth.GET("/products/:id", server.getProduct)
 	auth.POST("/products/admin/add", server.createProduct)
@@ -46,6 +47,8 @@ func (server *Server) setRoutes() {
 	auth.PUT("/users/:id/edit", server.editUser)
 	auth.POST("/users/admin/add", server.createUser)
 	auth.DELETE("/users/admin/:id", server.deleteUser)
+	auth.POST("/reset", server.resetPassword)
+	auth.POST("/resetit", server.resetIt)
 	auth.GET("/users/admin", server.listUsers)
 	auth.PUT("/users/admin/manage/:id", server.manageUser)
 	auth.POST("/users/admin/manage/add/:id", server.addClientStock)

@@ -1,0 +1,139 @@
+{% extends 'dashboard.html' %}
+{% block content%}
+<div class="top__info_data" style="align-items: center;">
+    <a href="#" class="back-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+        </svg>
+    </a>
+    <p class="overview-title">{{ real.username}}</p>
+</div>
+<div class="my__card-middle row" style="display: flex; flex-grow: 1; justify-content: space-between;">
+    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center;" class="col">
+        <h2> {{ user.address}} </h2>
+        <div style="display: flex; align-items: center;">
+            <img src="../static/images/cliff.jpeg" alt="Profile" class="profile-photo">
+            <div>
+                <p>{{ real.username }}</p>
+                <p>{{ real.email }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <img src="../static/images/cliff.jpeg" alt="Image" style="width: 100px; height: 100%; border-radius: 15%;">
+    </div>
+</div>
+<div style="display: flex; justify-content: space-evenly;align-items: center;">
+    <a href="#" id="editButton" class="btn btn-outline-success">Edit</a>
+    <div id="overlay" class="overlay">
+  <div id="popupForm" class="form-container">
+    <button id="closeButton" class="close-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+          </svg>
+    </button>
+    <form action="#" method="POST">
+      <h2>Edit Profile</h2>
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" name="phone" required>
+      </div>
+      <div class="form-group">
+        <label for="address">Address:</label>
+        <input type="text" id="address" name="address" required>
+      </div>
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      <button type="submit" class="edit-btn">Edit</button>
+    </form>
+</div>
+  </div>
+
+    <a href="#" class="btn btn-outline-success delete-button">Delete</a>
+    <div id="overlay_delete" class="overlay">
+    <div class="delete-form-container">
+        <div class="delete-form">
+            <button class="delete-close-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                </svg>
+            </button>
+            <h2>Delete User</h2>
+            <p>Are you sure you want to delete the user?</p>
+            <form action="#" method="post">
+                <div class="form-group">
+                    <label for="delete-username">Enter username to confirm:</label>
+                    <input type="text" id="delete-username" name="delete-username" required autocomplete="off">
+                </div>
+                <button type="submit">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+    <a href="#" id="invoiceBtn" class="btn btn-outline-success">Invoice</a>
+    <a href="#" id="receiptBtn" class="btn btn-outline-success">Receipts</a>
+</div>
+{% if data == 'user' %}
+{% for data in user.stock %}
+    <div class="data">
+        <div class="new_data">
+            <!-- <div>
+                <img src="../static/images/cliff.jpeg" alt="Profile" class="profile-photo">
+            </div> -->
+            <div>
+                <p style="font-size: 18px; font-weight: 500;"> {{ data.product_name }}</p>
+                <p style="font-size: 12px;"> Quantity: {{ data.product_quantity }}</p>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% elif data == 'invoice' %}
+{% for data in user %}
+    <div class="data">
+        <div class="new_data">
+            <!-- <div>
+                <img src="../static/images/cliff.jpeg" alt="Profile" class="profile-photo">
+            </div> -->
+            <div>
+                <p style="font-size: 18px; font-weight: 500;"> {{ data.invoice_number }}</p>
+                <!-- <p style="font-size: 12px;"> Quantity: {{ data.product_quantity }}</p> -->
+            </div>
+        </div>
+        <a href="#" class="btn btn-outline-success">Download</a>
+    </div>
+{% endfor %}
+{% else %}
+{% for data in user %}
+    <div class="data">
+        <div class="new_data">
+            <!-- <div>
+                <img src="../static/images/cliff.jpeg" alt="Profile" class="profile-photo">
+            </div> -->
+            <div>
+                <p style="font-size: 18px; font-weight: 500;"> {{ data.receipt_number }}</p>
+                <!-- <p style="font-size: 12px;"> Quantity: {{ data.product_quantity }}</p> -->
+            </div>
+        </div>
+        <a href="#" class="btn btn-outline-success">Download</a>
+    </div>
+{% endfor %}
+{% endif %}
+<div class="bottom-bar">
+    <div class="home-button" style="align-items: center;" onclick="scrollToTop()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-house-door" viewBox="0 0 16 16">
+            <path d="M8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4.5a.5.5 0 0 0 .5-.5v-4h2v4a.5.5 0 0 0 .5.5H14a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293zM2.5 14V7.707l5.5-5.5 5.5 5.5V14H10v-4a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5v4z"/>
+        </svg>
+        Home
+    </div>
+    <div>
+        <img src="profile-icon.png" alt="Profile" class="icon">
+        <img src="search-icon.png" alt="Search" class="icon">
+    </div>
+</div>
+{% endblock %}

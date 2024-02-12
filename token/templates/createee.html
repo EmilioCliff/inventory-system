@@ -1,0 +1,7 @@
+{% from "bootstrap5/form.html" import render_form %}
+{% extends 'dashboard.html' %}
+{% block content %}
+<form action="{{ url_for('createee') }}" method="post">
+    {{ render_form(form) }}
+</form>
+{% endblock %}

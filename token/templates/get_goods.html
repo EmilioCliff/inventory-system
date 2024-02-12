@@ -1,0 +1,92 @@
+{% extends 'get.html' %}
+{% block todo %}
+<div style="display: flex; justify-content: space-evenly;align-items: center;">
+<a href="#" id="editButton" class="btn btn-outline-success">Edit</a>
+    <div id="overlay" class="overlay">
+  <div id="popupForm" class="form-container">
+    <button id="closeButton" class="close-button">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+          </svg>
+    </button>
+    <form action="#" method="POST">
+      <h2>Edit Profile</h2>
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" required>
+      </div>
+      <div class="form-group">
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" name="phone" required>
+      </div>
+      <div class="form-group">
+        <label for="address">Address:</label>
+        <input type="text" id="address" name="address" required>
+      </div>
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+      </div>
+      <button type="submit" class="edit-btn">Edit</button>
+    </form>
+</div>
+  </div>
+
+    <a href="#" class="btn btn-outline-success delete-button">Delete</a>
+    <div id="overlay_delete" class="overlay">
+    <div class="delete-form-container">
+        <div class="delete-form">
+            <button class="delete-close-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                  </svg>
+            </button>
+            <h2>Delete User</h2>
+            <p>Are you sure you want to delete the user?</p>
+            <form action="#" method="post">
+                <div class="form-group">
+                    <label for="delete-username">Enter username to confirm:</label>
+                    <input type="text" id="delete-username" name="delete-username" required autocomplete="off">
+                </div>
+                <button type="submit">Delete</button>
+            </form>
+        </div>
+    </div>
+</div>
+    <a href="#" class="btn btn-outline-success">Invoice</a>
+    <a href="#" class="btn btn-outline-success">Receipts</a>
+</div>
+{% endblock %}
+{% block data %}
+{% if data == 'invoice' %}
+{% for data in user %}
+    <div class="data">
+        <div class="new_data">
+            <!-- <div>
+                <img src="../static/images/cliff.jpeg" alt="Profile" class="profile-photo">
+            </div> -->
+            <div>
+                <p style="font-size: 18px; font-weight: 500;"> {{ data.invoice_number }}</p>
+                <!-- <p style="font-size: 12px;"> Quantity: {{ data.product_quantity }}</p> -->
+            </div>
+        </div>
+        <a href="#" class="btn btn-outline-success">Download</a>
+    </div>
+{% endfor %}
+{% else %}
+{% for data in user %}
+    <div class="data">
+        <div class="new_data">
+            <!-- <div>
+                <img src="../static/images/cliff.jpeg" alt="Profile" class="profile-photo">
+            </div> -->
+            <div>
+                <p style="font-size: 18px; font-weight: 500;"> {{ data.receipt_number }}</p>
+                <!-- <p style="font-size: 12px;"> Quantity: {{ data.product_quantity }}</p> -->
+            </div>
+        </div>
+        <a href="#" class="btn btn-outline-success">Download</a>
+    </div>
+{% endfor %}
+{% endif%}
+{% endblock %}

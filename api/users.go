@@ -2,25 +2,37 @@ package api
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
 	"net/http"
+	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/EmilioCliff/inventory-system/db/utils"
 	"github.com/gin-gonic/gin"
+	// "google.golang.org/appengine/log"
 )
 
-func newUserResponse(user db.User) userResponse {
+func newUserResponse(user db.User) (userResponse, error) {
+	var stock []map[string]interface{}
+	if user.Stock != nil {
+		if unerr := json.Unmarshal(user.Stock, &stock); unerr != nil {
+			return userResponse{}, unerr
+		}
+	}
 	return userResponse{
+		UserID:      user.UserID,
 		Username:    user.Username,
 		Email:       user.Email,
 		PhoneNumber: user.PhoneNumber,
 		Address:     user.Address,
-	}
+		Stock:       stock,
+	}, nil
 }
 
 type CreateUserRequest struct {
-	Username    string `json:"username" binding:"required,alphanum"`
-	Password    string `json:"password" binding:"required,min=6"`
+	Username    string `json:"username" binding:"required"`
+	Password    string `json:"password" binding:"required"`
 	Email       string `json:"email" binding:"required,email"`
 	PhoneNumber string `json:"phone_number" binding:"required"`
 	Address     string `json:"address" binding:"required"`
@@ -28,10 +40,12 @@ type CreateUserRequest struct {
 }
 
 type userResponse struct {
-	Username    string `json:"username" binding:"required"`
-	Email       string `json:"email" binding:"required,email"`
-	PhoneNumber string `json:"phone_number" binding:"required"`
-	Address     string `json:"address" binding:"required"`
+	UserID      int64                    `json:"id" binding:"required"`
+	Username    string                   `json:"username" binding:"required"`
+	Email       string                   `json:"email" binding:"required,email"`
+	PhoneNumber string                   `json:"phone_number" binding:"required"`
+	Address     string                   `json:"address" binding:"required"`
+	Stock       []map[string]interface{} `json:"stock"`
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
@@ -42,20 +56,34 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	hashPassword, err := utils.GeneratePasswordHash(req.Password)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+	var arg db.CreateUserParams
+	lenDB, _ := server.store.ListUser(ctx)
+	if len(lenDB) == 0 {
+		hashPassword, err := utils.GeneratePasswordHash(req.Password)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+		arg = db.CreateUserParams{
+			Username:    req.Username,
+			Password:    hashPassword,
+			Email:       req.Email,
+			PhoneNumber: req.PhoneNumber,
+			Role:        "admin",
+			Address:     req.Address,
+			Stock:       nil,
+		}
 
-	arg := db.CreateUserParams{
-		Username:    req.Username,
-		Password:    hashPassword,
-		Email:       req.Email,
-		PhoneNumber: req.PhoneNumber,
-		Role:        req.Role,
-		Address:     req.Address,
-		Stock:       nil,
+	} else {
+		arg = db.CreateUserParams{
+			Username:    req.Username,
+			Password:    "beforeUpdate",
+			Email:       req.Email,
+			PhoneNumber: req.PhoneNumber,
+			Role:        req.Role,
+			Address:     req.Address,
+			Stock:       nil,
+		}
 	}
 
 	user, err := server.store.CreateUser(ctx, arg)
@@ -64,14 +92,14 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	resp := newUserResponse(user)
+	resp, _ := newUserResponse(user)
 
 	ctx.JSON(http.StatusOK, resp)
 	return
 }
 
 type userLoginRequest struct {
-	Username string `json:"username" binding:"required"`
+	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -87,7 +115,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.store.GetUserByUsername(ctx, req.Username)
+	user, err := server.store.GetUserByEmail(ctx, req.Email)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -97,13 +125,35 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	err = utils.CheckPassword(req.Password, user.Password)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
+	var rsp userResponse
+	if user.Password == "beforeUpdate" {
 
-	rsp := newUserResponse(user)
+		hashPassword, hashErr := utils.GeneratePasswordHash(req.Password)
+		if hashErr != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		updatedUser, err := server.store.UpdateUserPasswordFisrtLogin(ctx, db.UpdateUserPasswordFisrtLoginParams{
+			UserID:   user.UserID,
+			Password: hashPassword,
+		})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		rsp, _ = newUserResponse(updatedUser)
+	} else {
+
+		err = utils.CheckPassword(req.Password, user.Password)
+		if err != nil {
+			ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+			return
+		}
+
+		rsp, _ = newUserResponse(user)
+	}
 	// accesToken, err := server.tokenMaker.CreateToken(req.Username, server.config.TOKEN_DURATION)
 	// if err != nil {
 	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -118,7 +168,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 }
 
 type GetUSerRequest struct {
-	ID int32 `uri:"id" binding:"required"`
+	ID int64 `uri:"id" binding:"required"`
 }
 
 func (server *Server) getUser(ctx *gin.Context) {
@@ -129,7 +179,7 @@ func (server *Server) getUser(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.store.GetUser(ctx, int64(req.ID))
+	user, err := server.store.GetUser(ctx, req.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -139,7 +189,7 @@ func (server *Server) getUser(ctx *gin.Context) {
 		return
 	}
 
-	resp := newUserResponse(user)
+	resp, _ := newUserResponse(user)
 
 	ctx.JSON(http.StatusOK, resp)
 }
@@ -177,7 +227,12 @@ func (server *Server) listUsers(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, list_user)
+	var updateUser []userResponse
+	for _, user := range list_user {
+		us, _ := newUserResponse(user)
+		updateUser = append(updateUser, us)
+	}
+	ctx.JSON(http.StatusOK, updateUser)
 	return
 }
 
@@ -186,8 +241,9 @@ type UserToEditUri struct {
 }
 
 type UserToEditRequest struct {
-	Password string `json:"password" binding:"required,min=6"`
-	Role     string `json:"role" binding:"required,oneof=admin client"`
+	OldPassword string `json:"old_password" binding:"required,min=6"`
+	NewPassword string `json:"new_password" binding:"required,min=6"`
+	Role        string `json:"role" binding:"required,oneof=admin client"`
 }
 
 func (server *Server) editUser(ctx *gin.Context) {
@@ -203,9 +259,25 @@ func (server *Server) editUser(ctx *gin.Context) {
 		return
 	}
 
-	hashPassword, err := utils.GeneratePasswordHash(req.Password)
+	user, err := server.store.GetUser(ctx, uri.ID)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = utils.CheckPassword(req.OldPassword, user.Password)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	hashPassword, hasherr := utils.GeneratePasswordHash(req.NewPassword)
+	if hasherr != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(hasherr))
 		return
 	}
 
@@ -303,7 +375,7 @@ func (server *Server) addAdminStock(ctx *gin.Context) {
 		return
 	}
 
-	product, err := server.store.GetProductForUpdate(ctx, uri.ID)
+	product, err := server.store.GetProduct(ctx, uri.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -328,6 +400,7 @@ func (server *Server) addAdminStock(ctx *gin.Context) {
 		ProducToAdd: product,
 		Amount:      req.Quantity,
 	})
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -491,4 +564,98 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, updatedData)
 	return
+}
+
+type resetPasswordRequest struct {
+	Email string `json:"email" binding:"required"`
+}
+
+func (server *Server) resetPassword(ctx *gin.Context) {
+	var req resetPasswordRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	user, err := server.store.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	accessToken, err := server.tokenMaker.CreateToken(user.Username, (10 * time.Minute))
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	_ = fmt.Sprintf("https://example.com/reset?token=%v", accessToken)
+	// send email to the user with the accesstoken for renewing password + url
+	ctx.JSON(http.StatusOK, gin.H{"success": "accesstoken granted and email send"})
+	return
+}
+
+type resetItQueryRequest struct {
+	Token string `form:"token" binding:"required"`
+}
+
+type resetItJSONRequest struct {
+	Password string `json:"password" binding:"required"`
+}
+
+func (server *Server) resetIt(ctx *gin.Context) {
+	var req resetItQueryRequest
+	var pass resetItJSONRequest
+
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	if err := ctx.ShouldBindJSON(&pass); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	payload, err := server.tokenMaker.VerifyToken(req.Token)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+	}
+
+	hashPassword, hasherr := utils.GeneratePasswordHash(pass.Password)
+	if hasherr != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(hasherr))
+		return
+	}
+
+	user, err := server.store.GetUserByUsename(ctx, payload.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	user.Password = hashPassword
+	_, err = server.store.UpdateUserCredentials(ctx, db.UpdateUserCredentialsParams{
+		UserID:      user.UserID,
+		Email:       user.Email,
+		Password:    hashPassword,
+		Address:     user.Address,
+		PhoneNumber: user.PhoneNumber,
+		Username:    user.Username,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"successful": "User password changed successful"})
 }

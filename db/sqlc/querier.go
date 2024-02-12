@@ -20,7 +20,8 @@ type Querier interface {
 	GetProductForUpdate(ctx context.Context, productID int64) (Product, error)
 	GetReceipt(ctx context.Context, receiptNumber string) (Receipt, error)
 	GetUser(ctx context.Context, userID int64) (User, error)
-	GetUserByUsername(ctx context.Context, username string) (User, error)
+	GetUserByEmail(ctx context.Context, email string) (User, error)
+	GetUserByUsename(ctx context.Context, username string) (User, error)
 	GetUserForUpdate(ctx context.Context, userID int64) (User, error)
 	GetUserInvoicesByID(ctx context.Context, userInvoiceID int32) ([]Invoice, error)
 	GetUserInvoicesByUsername(ctx context.Context, userInvoiceUsername string) ([]Invoice, error)
@@ -32,6 +33,7 @@ type Querier interface {
 	ListUser(ctx context.Context) ([]User, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdateUserCredentials(ctx context.Context, arg UpdateUserCredentialsParams) (User, error)
+	UpdateUserPasswordFisrtLogin(ctx context.Context, arg UpdateUserPasswordFisrtLoginParams) (User, error)
 	UpdateUserStock(ctx context.Context, arg UpdateUserStockParams) (User, error)
 }
 

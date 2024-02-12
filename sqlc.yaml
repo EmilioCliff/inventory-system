@@ -14,6 +14,8 @@ sql:
         overrides:
           - db_type: "timestamptz"
             go_type: "time.Time"
+          - db_type: "text"
+            go_type: "string"
           # - column: "public.users.stock"
           #   go_type: "json.RawMessage"
           #     import: "db/sqlc"
