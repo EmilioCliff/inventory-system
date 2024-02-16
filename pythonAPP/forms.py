@@ -20,7 +20,7 @@ class CreateProductForm(FlaskForm):
     productName = StringField('ProductName', validators=[DataRequired()])
     unitPrice = IntegerField('UnitPrice', validators=[DataRequired()])
     packsize = StringField('Packsize', validators=[DataRequired()])
-    submit = SubmitField('Login')
+    submit = SubmitField('Create')
 
 class ChangePasswordForm(FlaskForm):
     oldPassword = StringField('OldPassword', validators=[DataRequired()])

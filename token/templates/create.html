@@ -27,3 +27,6 @@
     </div>
 </div>
 {% endblock %}
+{% if (invoice|length) == 0 %}
+<p>No Invoices Yet</p>
+{% else %}

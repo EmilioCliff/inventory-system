@@ -121,7 +121,7 @@ type AddClientStockParams struct {
 	FromAdmin   User      `json:"fromuser"`
 	ToClient    User      `json:"touser"`
 	ProducToAdd []Product `json:"productoadd"`
-	Amount      []int8    `json:"amount"`
+	Amount      []int64   `json:"amount"`
 }
 
 type AddClientStockResult struct {
@@ -158,7 +158,9 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 
 		invoiceData := []map[string]interface{}{
 			{
-				"userdata": "userdata is placed here",
+				"user_contact": client.PhoneNumber,
+				"user_address": client.Address,
+				"user_email":   client.Email,
 			},
 		}
 
@@ -169,11 +171,11 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 					idInt := int64(id)
 					if idInt == addProduct.ProductID {
 						quantityFloat := adminProduct["productQuantity"].(float64)
-						quantityInt := int8(quantityFloat)
-						if quantityInt-arg.Amount[index] < 0 {
+						quantityInt := quantityFloat
+						if quantityInt-float64(arg.Amount[index]) < 0 {
 							return fmt.Errorf("Not enough in inventory %v - %v to sell %v", adminProduct["productName"], adminProduct["productQuantity"], arg.Amount[index])
 						}
-						adminProduct["productQuantity"] = quantityInt - arg.Amount[index]
+						adminProduct["productQuantity"] = quantityInt - float64(arg.Amount[index])
 					}
 				}
 			}
@@ -185,8 +187,8 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 					idInt := int64(id)
 					if idInt == addProduct.ProductID {
 						if quantity, ok := clientProduct["productQuantity"].(float64); ok {
-							quantityInt := int8(quantity)
-							clientProduct["productQuantity"] = quantityInt + arg.Amount[index]
+							quantityInt := quantity
+							clientProduct["productQuantity"] = quantityInt + float64(arg.Amount[index])
 							found = true
 							break
 						}
@@ -249,8 +251,10 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 			InvoiceData:         jsonInvoiceData,
 			UserInvoiceUsername: client.Username,
 		})
+		_ = SetVariables(result.InvoiceGenerated, invoiceData)
 		return err
 	})
+
 	return result, err
 }
 

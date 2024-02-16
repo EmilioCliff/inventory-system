@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
@@ -17,22 +16,24 @@ func newInvoiceResponse(invoice db.Invoice) (invoiceResponse, error) {
 			return invoiceResponse{}, unerr
 		}
 	}
-
+	mytime := invoice.CreatedAt.Format("02-January-2006")
 	return invoiceResponse{
+		InvoiceID:           invoice.InvoiceID,
 		InvoiceNumber:       invoice.InvoiceNumber,
 		UserInvoiceID:       int64(invoice.UserInvoiceID),
 		UserInvoiceUsername: invoice.UserInvoiceUsername,
 		InvoiceData:         invoiceData,
-		InvoiceCreateTime:   invoice.CreatedAt,
+		InvoiceCreateTime:   mytime,
 	}, nil
 }
 
 type invoiceResponse struct {
+	InvoiceID           int64                    `json:"invoice_id"`
 	InvoiceNumber       string                   `json:"invoice_number"`
 	UserInvoiceID       int64                    `json:"user_invoice_id"`
 	UserInvoiceUsername string                   `json:"user_invoice_username"`
 	InvoiceData         []map[string]interface{} `json:"invoice_data"`
-	InvoiceCreateTime   time.Time                `json:"invoice_create_time"`
+	InvoiceCreateTime   string                   `json:"invoice_create_time"`
 }
 
 func (server *Server) listInvoices(ctx *gin.Context) {

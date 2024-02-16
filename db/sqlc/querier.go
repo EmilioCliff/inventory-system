@@ -31,6 +31,8 @@ type Querier interface {
 	ListProduct(ctx context.Context) ([]Product, error)
 	ListReceipts(ctx context.Context) ([]Receipt, error)
 	ListUser(ctx context.Context) ([]User, error)
+	SearchILikeProducts(ctx context.Context, productName string) ([]Product, error)
+	SearchILikeUsers(ctx context.Context, username string) ([]string, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
 	UpdateUserCredentials(ctx context.Context, arg UpdateUserCredentialsParams) (User, error)
 	UpdateUserPasswordFisrtLogin(ctx context.Context, arg UpdateUserPasswordFisrtLoginParams) (User, error)

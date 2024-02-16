@@ -42,7 +42,7 @@ func (server *Server) setRoutes() {
 	auth.DELETE("/products/admin/delete/:id", server.deleteProduct)
 	auth.PUT("/products/admin/edit/:id", server.editProduct)
 
-	auth.GET("/users/login", server.loginUser)
+	router.GET("/users/login", server.loginUser)
 	auth.GET("/users/:id", server.getUser)
 	auth.PUT("/users/:id/edit", server.editUser)
 	auth.POST("/users/admin/add", server.createUser)
@@ -56,6 +56,8 @@ func (server *Server) setRoutes() {
 	auth.POST("/users/products/sell/:id", server.reduceClientStock)
 	auth.GET("/users/invoices/:id", server.getUserInvoices)
 	auth.GET("/users/receipts/:id", server.getUserReceipts)
+	auth.GET("/search/users", server.searchUsers)
+	auth.GET("/search/products", server.searchProduct)
 
 	auth.GET("/invoices/admin", server.listInvoices)
 	auth.GET("/invoices/:id", server.getInvoice)

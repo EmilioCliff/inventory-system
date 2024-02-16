@@ -31,3 +31,7 @@ RETURNING *;
 -- name: DeleteProduct :exec
 DELETE FROM products
 WHERE product_id = $1;
+
+-- name: SearchILikeProducts :many
+SELECT * FROM products
+WHERE product_name ILIKE $1;

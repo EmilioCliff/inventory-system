@@ -52,3 +52,8 @@ UPDATE users
   set password = $2
 WHERE user_id = $1
 RETURNING *;
+
+-- name: SearchILikeUsers :many
+SELECT username
+FROM users
+WHERE username ILIKE $1;

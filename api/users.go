@@ -75,9 +75,10 @@ func (server *Server) createUser(ctx *gin.Context) {
 		}
 
 	} else {
+		pass, _ := utils.GeneratePasswordHash("beforeUpdate")
 		arg = db.CreateUserParams{
 			Username:    req.Username,
-			Password:    "beforeUpdate",
+			Password:    pass,
 			Email:       req.Email,
 			PhoneNumber: req.PhoneNumber,
 			Role:        req.Role,
@@ -125,8 +126,8 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	var rsp userResponse
-	if user.Password == "beforeUpdate" {
+	var ppl userResponse
+	if err := utils.CheckPassword("beforeUpdate", user.Password); err == nil {
 
 		hashPassword, hashErr := utils.GeneratePasswordHash(req.Password)
 		if hashErr != nil {
@@ -143,7 +144,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 			return
 		}
 
-		rsp, _ = newUserResponse(updatedUser)
+		ppl, _ = newUserResponse(updatedUser)
 	} else {
 
 		err = utils.CheckPassword(req.Password, user.Password)
@@ -152,18 +153,19 @@ func (server *Server) loginUser(ctx *gin.Context) {
 			return
 		}
 
-		rsp, _ = newUserResponse(user)
+		ppl, _ = newUserResponse(user)
 	}
-	// accesToken, err := server.tokenMaker.CreateToken(req.Username, server.config.TOKEN_DURATION)
-	// if err != nil {
-	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-	// 	return
-	// }
 
-	// rsp := userLoginResponse{
-	// 	AccessToken: accesToken,
-	// 	User:        newUserResponse(user),
-	// }
+	accesToken, err := server.tokenMaker.CreateToken(ppl.Username, server.config.PYTHON_APP_TOKEN_DURATION)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := userLoginResponse{
+		AccessToken: accesToken,
+		User:        ppl,
+	}
 	ctx.JSON(http.StatusOK, rsp)
 }
 
@@ -408,6 +410,33 @@ func (server *Server) addAdminStock(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, updatedAdmin)
 	return
+}
+
+type searchUser struct {
+	SearchWord string `json:"search_word" binding:"required"`
+}
+
+func (server *Server) searchUsers(ctx *gin.Context) {
+	var req searchUser
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	rst, err := server.store.SearchILikeUsers(ctx, req.SearchWord)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
+	// var updateUser []userResponse
+	// for _, user := range rst {
+	// 	us, _ := newUserResponse(user)
+	// 	updateUser = append(updateUser, us)
+	// }
+	ctx.JSON(http.StatusOK, rst)
+	return
+
 }
 
 type addClientStockURIRequest struct {

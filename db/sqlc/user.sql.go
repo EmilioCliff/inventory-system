@@ -187,6 +187,32 @@ func (q *Queries) ListUser(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
+const searchILikeUsers = `-- name: SearchILikeUsers :many
+SELECT username
+FROM users
+WHERE username ILIKE $1
+`
+
+func (q *Queries) SearchILikeUsers(ctx context.Context, username string) ([]string, error) {
+	rows, err := q.db.Query(ctx, searchILikeUsers, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, err
+		}
+		items = append(items, username)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateUserCredentials = `-- name: UpdateUserCredentials :one
 UPDATE users
   set password = $3,

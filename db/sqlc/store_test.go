@@ -128,18 +128,18 @@ func TestAddClientStockTx(t *testing.T) {
 		},
 	}
 
-	amounts := []int8{1, 1}
+	amounts := []int64{2, 4}
 
 	adminStockData := []map[string]interface{}{
 		{
 			"productID":       1,
 			"productName":     "Test Product 1",
-			"productQuantity": 20,
+			"productQuantity": 200,
 		},
 		{
 			"productID":       2,
 			"productName":     "Test Product 2",
-			"productQuantity": 30,
+			"productQuantity": 300,
 		},
 	}
 
@@ -179,6 +179,7 @@ func TestAddClientStockTx(t *testing.T) {
 	}()
 
 	for i := 0; i < n; i++ {
+		fmt.Println(i)
 		err := <-errCh
 		result := <-resCh
 

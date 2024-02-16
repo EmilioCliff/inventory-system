@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
@@ -18,21 +17,24 @@ func newReceiptResponse(receipt db.Receipt) (receiptResponse, error) {
 		}
 	}
 
+	mytime := receipt.CreatedAt.Format("02-January-2006")
 	return receiptResponse{
+		ReceiptID:           receipt.ReceiptID,
 		ReceiptNumber:       receipt.ReceiptNumber,
 		UserreceiptID:       int64(receipt.UserReceiptID),
 		UserreceiptUsername: receipt.UserReceiptUsername,
 		ReceiptData:         receiptData,
-		ReceiptCreateTime:   receipt.CreatedAt,
+		ReceiptCreateTime:   mytime,
 	}, nil
 }
 
 type receiptResponse struct {
+	ReceiptID           int64                    `json:"receipt_id"`
 	ReceiptNumber       string                   `json:"receipt_number"`
 	UserreceiptID       int64                    `json:"user_receipt_id"`
 	UserreceiptUsername string                   `json:"user_receipt_username"`
 	ReceiptData         []map[string]interface{} `json:"receipt_data"`
-	ReceiptCreateTime   time.Time                `json:"receipt_create_time"`
+	ReceiptCreateTime   string                   `json:"receipt_create_time"`
 }
 
 func (server *Server) listReceipts(ctx *gin.Context) {

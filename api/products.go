@@ -180,6 +180,28 @@ func (server *Server) getUserProducts(ctx *gin.Context) {
 	return
 }
 
+type searchProduct struct {
+	SearchWord string `json:"search_word" binding:"required"`
+}
+
+func (server *Server) searchProduct(ctx *gin.Context) {
+	var req searchProduct
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	rst, err := server.store.SearchILikeProducts(ctx, req.SearchWord)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
+	ctx.JSON(http.StatusOK, rst)
+	return
+
+}
+
 // [
 // 	{"productID":1,"productName":"Test Product 1","productQuantity":75},
 // 	{"productID":2,"productName":"Test Product 2","productQuantity":75}

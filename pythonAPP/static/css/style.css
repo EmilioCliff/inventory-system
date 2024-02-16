@@ -22,6 +22,63 @@ html, body {
     justify-content: space-between;
 }
 
+.list--container {
+    text-decoration: none; 
+    color: black;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    background-color: #fff;
+    align-items: center;
+    border-radius: 12%;
+    /* padding: 5px; */
+    margin-bottom: 3;
+}
+
+/* -- Overlay --  */
+.close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #333;
+  }
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
+    display: none; /* Initially hidden */
+    z-index: 999;
+  }
+  .form-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    display: none; /* Initially hidden */
+    z-index: 1000;
+    width: 80%; 
+    max-width: 600px; 
+  }
+  .form-container h2 {
+    text-align: center;
+  }
+
+  .popup-form {
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+
  /* -- profile --  */
  .profile-photo {
     width: 50px;
@@ -50,11 +107,16 @@ p {
 .bottom-bar {
     position: fixed;
     bottom: 0;
-    left: 0;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    /* left: 0; */
+    width: 80%;
+    /* display: flex;
+    justify-content: space-between; */
+    /* align-items: center; */
     background-color: #DCF2F1;
     z-index: 999;
+}
+
+.bottom-bar a {
+    text-decoration: none;
+    color: black;
 }

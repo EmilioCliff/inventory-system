@@ -116,6 +116,37 @@ func (q *Queries) ListProduct(ctx context.Context) ([]Product, error) {
 	return items, nil
 }
 
+const searchILikeProducts = `-- name: SearchILikeProducts :many
+SELECT product_id, product_name, unit_price, packsize, created_at FROM products
+WHERE product_name ILIKE $1
+`
+
+func (q *Queries) SearchILikeProducts(ctx context.Context, productName string) ([]Product, error) {
+	rows, err := q.db.Query(ctx, searchILikeProducts, productName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Product{}
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ProductID,
+			&i.ProductName,
+			&i.UnitPrice,
+			&i.Packsize,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateProduct = `-- name: UpdateProduct :one
 UPDATE products
   set unit_price = $2,
