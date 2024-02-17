@@ -445,7 +445,7 @@ type addClientStockURIRequest struct {
 
 type addClientStockJSONRequest struct {
 	ProductsID []int64 `json:"products_id" binding:"required"`
-	Quantities []int8  `json:"quantities" binding:"required"`
+	Quantities []int64 `json:"quantities" binding:"required"`
 }
 
 func (server *Server) addClientStock(ctx *gin.Context) {

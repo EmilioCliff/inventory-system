@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Client Stock</title>
+</head>
+<body>
+    <h2>Add Client Stock</h2>
+    <form id="productForm" method="POST" action="{{ url_for('test') }}">
+        <div id="productList">
+            <!-- Initial Product Selection Dropdown -->
+            <select class="product" name="products_id">
+                <option value="1">Product 1</option>
+                <option value="2">Product 2</option>
+                <!-- Add more product options as needed -->
+            </select>
+
+            <!-- Initial Quantity Input -->
+            <input type="number" class="quantity" name="quantities" placeholder="Quantity" required>
+
+            <!-- Button to Add More Products -->
+            <button type="button" onclick="addProduct()">Add Product</button>
+        </div>
+
+        <!-- Submit Button to Send Data to the Server -->
+        <button type="submit">Submit</button>
+    </form>
+
+    <!-- JavaScript Function to Add Product Fields Dynamically -->
+    <script>
+        function addProduct() {
+            // Create new product selection and quantity input elements
+            var newProduct = document.createElement('select');
+            newProduct.className = 'product';
+            newProduct.name = 'products_id';
+            newProduct.innerHTML = document.querySelector('.product').innerHTML;
+
+            var newQuantity = document.createElement('input');
+            newQuantity.type = 'number';
+            newQuantity.className = 'quantity';
+            newQuantity.name = 'quantities';
+            newQuantity.placeholder = 'Quantity';
+            newQuantity.required = true;
+
+            // Append line break for better formatting (optional)
+            var lineBreak = document.createElement('br');
+
+            // Append the new fields to the existing product list
+            document.getElementById('productList').appendChild(lineBreak);
+            document.getElementById('productList').appendChild(newProduct);
+            document.getElementById('productList').appendChild(newQuantity);
+        }
+    </script>
+</body>
+</html>

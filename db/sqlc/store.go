@@ -4,9 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
+	"sync"
+	"time"
 
 	"github.com/EmilioCliff/inventory-system/db/utils"
 	"github.com/jackc/pgx/v5/pgxpool"
+	// "google.golang.org/appengine/log"
 )
 
 // type SQLStore struct {
@@ -244,14 +248,37 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 		if err != nil {
 			return err
 		}
+		timestamp := time.Now().Format("20060102150405")
+		createdTime := time.Now().Format("2006-01-02")
 
-		result.InvoiceGenerated, err = q.CreateInvoice(ctx, CreateInvoiceParams{
-			InvoiceNumber:       utils.RandomInvoiceReceiptNumber(),
-			UserInvoiceID:       int32(client.UserID),
-			InvoiceData:         jsonInvoiceData,
-			UserInvoiceUsername: client.Username,
-		})
-		_ = SetVariables(result.InvoiceGenerated, invoiceData)
+		invoiceC := map[string]string{
+			"invoice_number":   timestamp,
+			"created_at":       createdTime,
+			"invoice_username": client.Username,
+		}
+
+		pdfBytes, err := utils.SetInvoiceVariables(invoiceC, invoiceData)
+		if err != nil {
+			log.Printf("Error creating receipt %v", err)
+			return err
+		}
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			result.InvoiceGenerated, err = q.CreateInvoice(ctx, CreateInvoiceParams{
+				InvoiceNumber:       timestamp + utils.RandomString(4),
+				UserInvoiceID:       int32(client.UserID),
+				InvoiceData:         jsonInvoiceData,
+				UserInvoiceUsername: client.Username,
+				InvoicePdf:          pdfBytes,
+			})
+		}()
+
+		wg.Wait()
+
 		return err
 	})
 
@@ -376,7 +403,9 @@ func (store *Store) ReduceClientStockTx(ctx context.Context, arg ReduceClientSto
 		// Generate client's receipt
 		receiptData := []map[string]interface{}{
 			{
-				"userdata": "userdata is placed here",
+				"user_contact": client.PhoneNumber,
+				"user_address": client.Address,
+				"user_email":   client.Email,
 			},
 		}
 
@@ -388,11 +417,11 @@ func (store *Store) ReduceClientStockTx(ctx context.Context, arg ReduceClientSto
 					if idInt == addProduct.ProductID {
 						// Convert product quantity to int8 before subtraction
 						quantityFloat := clientProduct["productQuantity"].(float64)
-						quantityInt := int8(quantityFloat)
-						if quantityInt-arg.Amount[index] < 0 {
+						quantityInt := quantityFloat
+						if quantityInt-float64(arg.Amount[index]) < 0 {
 							return fmt.Errorf("Not enough in inventory %v - %v to sell %v", clientProduct["productName"], clientProduct["productQuantity"], arg.Amount[index])
 						}
-						clientProduct["productQuantity"] = quantityInt - arg.Amount[index]
+						clientProduct["productQuantity"] = quantityInt - float64(arg.Amount[index])
 					}
 				}
 			}
@@ -424,12 +453,35 @@ func (store *Store) ReduceClientStockTx(ctx context.Context, arg ReduceClientSto
 			return err
 		}
 
-		result.ReceiptGenerated, err = q.CreateReceipt(ctx, CreateReceiptParams{
-			ReceiptNumber:       utils.RandomInvoiceReceiptNumber(),
-			UserReceiptID:       int32(client.UserID),
-			ReceiptData:         jsonReceiptData,
-			UserReceiptUsername: client.Username,
-		})
+		timestamp := time.Now().Format("20060102150405")
+		createdTime := time.Now().Format("2006-01-02")
+		receiptC := map[string]string{
+			"receipt_number":   timestamp,
+			"created_at":       createdTime,
+			"receipt_username": client.Username,
+		}
+
+		pdfBytes, err := utils.SetReceiptVariables(receiptC, receiptData)
+		if err != nil {
+			log.Printf("Error creating receipt pdf %v", err)
+			return err
+		}
+
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			result.ReceiptGenerated, err = q.CreateReceipt(ctx, CreateReceiptParams{
+				ReceiptNumber:       timestamp + utils.RandomString(5),
+				UserReceiptID:       int32(client.UserID),
+				ReceiptData:         jsonReceiptData,
+				UserReceiptUsername: client.Username,
+				ReceiptPdf:          pdfBytes,
+			})
+		}()
+
+		wg.Wait()
+
 		return err
 	})
 	return result, err

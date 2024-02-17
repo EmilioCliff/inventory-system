@@ -24,6 +24,7 @@ func newInvoiceResponse(invoice db.Invoice) (invoiceResponse, error) {
 		UserInvoiceUsername: invoice.UserInvoiceUsername,
 		InvoiceData:         invoiceData,
 		InvoiceCreateTime:   mytime,
+		InvoicePdf:          invoice.InvoicePdf,
 	}, nil
 }
 
@@ -34,6 +35,7 @@ type invoiceResponse struct {
 	UserInvoiceUsername string                   `json:"user_invoice_username"`
 	InvoiceData         []map[string]interface{} `json:"invoice_data"`
 	InvoiceCreateTime   string                   `json:"invoice_create_time"`
+	InvoicePdf          []byte                   `json:"invoice_pdf"`
 }
 
 func (server *Server) listInvoices(ctx *gin.Context) {

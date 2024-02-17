@@ -25,6 +25,7 @@ func newReceiptResponse(receipt db.Receipt) (receiptResponse, error) {
 		UserreceiptUsername: receipt.UserReceiptUsername,
 		ReceiptData:         receiptData,
 		ReceiptCreateTime:   mytime,
+		ReceiptPdf:          receipt.ReceiptPdf,
 	}, nil
 }
 
@@ -35,6 +36,7 @@ type receiptResponse struct {
 	UserreceiptUsername string                   `json:"user_receipt_username"`
 	ReceiptData         []map[string]interface{} `json:"receipt_data"`
 	ReceiptCreateTime   string                   `json:"receipt_create_time"`
+	ReceiptPdf          []byte                   `json:"receipt_pdf"`
 }
 
 func (server *Server) listReceipts(ctx *gin.Context) {

@@ -11,11 +11,11 @@ import (
 
 const createInvoice = `-- name: CreateInvoice :one
 INSERT INTO invoices (
-    invoice_number, user_invoice_id, invoice_data, user_invoice_username
+    invoice_number, user_invoice_id, invoice_data, user_invoice_username, invoice_pdf
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
-RETURNING invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, created_at
+RETURNING invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at
 `
 
 type CreateInvoiceParams struct {
@@ -23,6 +23,7 @@ type CreateInvoiceParams struct {
 	UserInvoiceID       int32  `json:"user_invoice_id"`
 	InvoiceData         []byte `json:"invoice_data"`
 	UserInvoiceUsername string `json:"user_invoice_username"`
+	InvoicePdf          []byte `json:"invoice_pdf"`
 }
 
 func (q *Queries) CreateInvoice(ctx context.Context, arg CreateInvoiceParams) (Invoice, error) {
@@ -31,6 +32,7 @@ func (q *Queries) CreateInvoice(ctx context.Context, arg CreateInvoiceParams) (I
 		arg.UserInvoiceID,
 		arg.InvoiceData,
 		arg.UserInvoiceUsername,
+		arg.InvoicePdf,
 	)
 	var i Invoice
 	err := row.Scan(
@@ -39,13 +41,14 @@ func (q *Queries) CreateInvoice(ctx context.Context, arg CreateInvoiceParams) (I
 		&i.UserInvoiceID,
 		&i.UserInvoiceUsername,
 		&i.InvoiceData,
+		&i.InvoicePdf,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getInvoice = `-- name: GetInvoice :one
-SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, created_at FROM invoices
+SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
 WHERE invoice_number = $1 
 LIMIT 1
 `
@@ -59,13 +62,14 @@ func (q *Queries) GetInvoice(ctx context.Context, invoiceNumber string) (Invoice
 		&i.UserInvoiceID,
 		&i.UserInvoiceUsername,
 		&i.InvoiceData,
+		&i.InvoicePdf,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUserInvoicesByID = `-- name: GetUserInvoicesByID :many
-SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, created_at FROM invoices
+SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
 WHERE user_invoice_id = $1
 `
 
@@ -84,6 +88,7 @@ func (q *Queries) GetUserInvoicesByID(ctx context.Context, userInvoiceID int32) 
 			&i.UserInvoiceID,
 			&i.UserInvoiceUsername,
 			&i.InvoiceData,
+			&i.InvoicePdf,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -97,7 +102,7 @@ func (q *Queries) GetUserInvoicesByID(ctx context.Context, userInvoiceID int32) 
 }
 
 const getUserInvoicesByUsername = `-- name: GetUserInvoicesByUsername :many
-SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, created_at FROM invoices
+SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
 WHERE user_invoice_username = $1
 `
 
@@ -116,6 +121,7 @@ func (q *Queries) GetUserInvoicesByUsername(ctx context.Context, userInvoiceUser
 			&i.UserInvoiceID,
 			&i.UserInvoiceUsername,
 			&i.InvoiceData,
+			&i.InvoicePdf,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -129,7 +135,7 @@ func (q *Queries) GetUserInvoicesByUsername(ctx context.Context, userInvoiceUser
 }
 
 const listInvoices = `-- name: ListInvoices :many
-SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, created_at FROM invoices
+SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
 ORDER BY invoice_id
 `
 
@@ -148,6 +154,7 @@ func (q *Queries) ListInvoices(ctx context.Context) ([]Invoice, error) {
 			&i.UserInvoiceID,
 			&i.UserInvoiceUsername,
 			&i.InvoiceData,
+			&i.InvoicePdf,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err

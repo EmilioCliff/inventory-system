@@ -30,6 +30,7 @@ CREATE TABLE "invoices" (
   "user_invoice_id" integer NOT NULL,
   "user_invoice_username" varchar NOT NULL,
   "invoice_data" jsonb NOT NULL,
+  "invoice_pdf" bytea NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT fk_user_invoice_id FOREIGN KEY ("user_invoice_id") REFERENCES "users" ("user_id") ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT fk_user_invoice_username FOREIGN KEY ("user_invoice_username") REFERENCES "users" ("username") ON DELETE CASCADE ON UPDATE CASCADE
@@ -42,6 +43,7 @@ CREATE TABLE "receipts" (
   "user_receipt_id" integer NOT NULL,
   "user_receipt_username" varchar NOT NULL,
   "receipt_data" json NOT NULL,
+  "receipt_pdf" bytea NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT fk_user_receipt_id FOREIGN KEY ("user_receipt_id") REFERENCES "users" ("user_id") ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT fk_user_receipt_username FOREIGN KEY ("user_receipt_username") REFERENCES "users" ("username") ON DELETE CASCADE ON UPDATE CASCADE

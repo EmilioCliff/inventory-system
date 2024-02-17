@@ -14,6 +14,7 @@ type Invoice struct {
 	UserInvoiceID       int32     `json:"user_invoice_id"`
 	UserInvoiceUsername string    `json:"user_invoice_username"`
 	InvoiceData         []byte    `json:"invoice_data"`
+	InvoicePdf          []byte    `json:"invoice_pdf"`
 	CreatedAt           time.Time `json:"created_at"`
 }
 
@@ -31,6 +32,7 @@ type Receipt struct {
 	UserReceiptID       int32     `json:"user_receipt_id"`
 	UserReceiptUsername string    `json:"user_receipt_username"`
 	ReceiptData         []byte    `json:"receipt_data"`
+	ReceiptPdf          []byte    `json:"receipt_pdf"`
 	CreatedAt           time.Time `json:"created_at"`
 }
 

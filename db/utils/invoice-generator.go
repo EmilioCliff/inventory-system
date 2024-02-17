@@ -1,62 +1,41 @@
-package db
+package utils
 
 import (
+	"bytes"
 	"fmt"
 	"math"
 
-	// "os"
-	// "path/filepath"
 	"strconv"
 
-	// db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/go-pdf/fpdf"
 )
-
-// invoice_number and invoice_createdat
-
-// invoice-data
-// [
-// 	{"user_data": "user db.User"},
-// 	{"productID": 1, "totalBill": 100, "productName": "Test Product 1", "productQuantity": 1},
-// 	{"productID": 2, "totalBill": 200, "productName": "Test Product 2", "productQuantity": 1}
-// ]
-
-// first unmarshall the invoice_data
 
 const defaultFromName = "My Company Inc"
 const defaultFromAddress = "My Company Address"
 const defaultFromContact = "Company Contact"
-
-// const defaultToName = "Target Company Inc"
-// const defaultToAddress = "Unit 999, Lingkaran Syed Putra, Mid Valley City, 59200 Kuala Lumpur, Wilayah Persekutuan Kuala Lumpur"
-// const defaultToContact = "03-1234 5678"
+const companyNo = "01234567890"
+const fromName = "Emilio Cliff"
+const fromAddress = "00100 - Nairobi"
+const fromEmail = "company@gmail.com"
+const fromContact = "1234567890"
 
 // Input flags
-var invoiceNo string
-var invoiceDate string
-var companyNo = "01234567890"
-var fromName = "Emilio Cliff"
-var fromAddress = "00100 - Nairobi"
-var fromEmail = "company@gmail.com"
-var fromContact = "1234567890"
-var toName string
-var toAddress string
-var toContact string
-var toEmail string
+// var invoiceNo string
+// var invoiceDate string
+// var toName string
+// var toAddress string
+// var toContact string
+// var toEmail string
 
-func SetVariables(invoice Invoice, data []map[string]interface{}) error {
-	invoiceNo = fmt.Sprintf("INV - %v", invoice.InvoiceNumber)
-	invoiceDate = invoice.CreatedAt.Format("2006-01-02")
-	toName = invoice.UserInvoiceUsername
-
-	// var data []map[string]interface{}
-	// if err := json.Unmarshal(invoice.InvoiceData, &data); err != nil {
-	// 	log.Fatal("Error Unmarshaling InvoceData")
-	// }
-
-	toAddress = data[0]["user_address"].(string)
-	toContact = data[0]["user_contact"].(string)
-	toEmail = data[0]["user_email"].(string)
+func SetInvoiceVariables(invoiceData map[string]string, data []map[string]interface{}) ([]byte, error) {
+	userDetails := map[string]string{
+		"invoiceNo":   fmt.Sprintf("INV - %v", invoiceData["invoice_number"]),
+		"invoiceDate": invoiceData["created_at"],
+		"toName":      invoiceData["invoice_username"],
+		"toAddress":   data[0]["user_address"].(string),
+		"toContact":   data[0]["user_contact"].(string),
+		"toEmail":     data[0]["user_email"].(string),
+	}
 
 	var products [][]string
 	for _, entry := range data {
@@ -71,11 +50,14 @@ func SetVariables(invoice Invoice, data []map[string]interface{}) error {
 		}
 	}
 	fmt.Println(products)
-	err := generateInvoice(products)
-	return err
+	pdfBytes, err := generateInvoice(products, userDetails)
+	if err != nil {
+		return nil, err
+	}
+	return pdfBytes, err
 }
 
-func generateInvoice(data [][]string) error {
+func generateInvoice(data [][]string, user map[string]string) ([]byte, error) {
 	marginX := 10.0
 	marginY := 20.0
 	gapY := 2.0
@@ -103,7 +85,7 @@ func generateInvoice(data [][]string) error {
 	// Build invoice word on right
 	pdf.SetFont("Arial", "B", 32)
 	_, lineHeight = pdf.GetFontSize()
-	pdf.SetXY(130, currentY-lineHeight)
+	pdf.SetXY(130, currentY)
 	pdf.Cell(100, 40, "INVOICE")
 
 	newY := leftY
@@ -142,22 +124,22 @@ func generateInvoice(data [][]string) error {
 	pdf.Cell(safeAreaW/2, lineHeight, "Invoice To:")
 	pdf.Line(marginX, pdf.GetY()+lineHeight, marginX+safeAreaW/2, pdf.GetY()+lineHeight)
 	pdf.Ln(lineBreak)
-	pdf.Cell(safeAreaW/2, lineHeight, toName)
+	pdf.Cell(safeAreaW/2, lineHeight, user["toName"])
 
 	pdf.SetFontStyle("")
 	pdf.Ln(lineBreak)
 
-	pdf.Cell(safeAreaW/2, lineHeight, toAddress)
+	pdf.Cell(safeAreaW/2, lineHeight, user["toAddress"])
 	pdf.Ln(lineBreak)
 
 	pdf.Cell(safeAreaW/2, lineHeight, "Kenya")
 	pdf.Ln(lineBreak)
 
-	pdf.Cell(safeAreaW/2, lineHeight, toEmail)
+	pdf.Cell(safeAreaW/2, lineHeight, user["toEmail"])
 	pdf.Ln(lineBreak)
 
 	pdf.SetFontStyle("I")
-	pdf.Cell(safeAreaW/2, lineHeight, fmt.Sprintf("Tel: %s", toContact))
+	pdf.Cell(safeAreaW/2, lineHeight, fmt.Sprintf("Tel: %s", user["toContact"]))
 
 	endOfInvoiceDetailY := pdf.GetY() + lineHeight
 	pdf.SetFontStyle("")
@@ -166,11 +148,11 @@ func generateInvoice(data [][]string) error {
 	invoiceDetailW := float64(30)
 	pdf.SetXY(safeAreaW/2+30, newY)
 	pdf.Cell(invoiceDetailW, lineHeight, "Invoice No.:")
-	pdf.Cell(invoiceDetailW, lineHeight, invoiceNo)
+	pdf.Cell(invoiceDetailW, lineHeight, user["invoiceNo"])
 	pdf.Ln(lineBreak)
 	pdf.SetX(safeAreaW/2 + 30)
 	pdf.Cell(invoiceDetailW, lineHeight, "Invoice Date:")
-	pdf.Cell(invoiceDetailW, lineHeight, invoiceDate)
+	pdf.Cell(invoiceDetailW, lineHeight, user["invoiceDate"])
 	pdf.Ln(lineBreak)
 
 	// Draw the table
@@ -237,5 +219,12 @@ func generateInvoice(data [][]string) error {
 	pdf.Ln(lineBreak)
 	pdf.Cell(safeAreaW, lineHeight, "Your satisfaction is our priority. If you have any concerns, please let us know.")
 
-	return pdf.OutputFileAndClose("invoice.pdf")
+	var buffer bytes.Buffer
+	if err := pdf.Output(&buffer); err != nil {
+		return nil, err
+	}
+
+	pdf.Close()
+
+	return buffer.Bytes(), nil
 }

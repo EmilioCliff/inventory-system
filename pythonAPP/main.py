@@ -1,9 +1,11 @@
-from flask import Flask, abort, render_template, redirect, url_for, flash, request, session
+from flask import Flask, abort, render_template, redirect, url_for, flash, request, session, send_file
 from flask_bootstrap import Bootstrap5
 from forms import CreateUserForm, CreateProductForm, EditProductForm, ChangePasswordForm, ResetItForm, ResetPasswordForm, AddAdminStockQuantity, LoginForm, ManageUserForm
 # import smtplib
 # import os
 import requests
+import base64
+from io import BytesIO
 
 HEADERS={
     "Authorization": "Bearer "
@@ -30,6 +32,15 @@ BASE_URL="http://0.0.0.0:8080"
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "32e234353t4rffbfbfgxx"
 Bootstrap5(app)
+
+@app.route("/test", methods=['POST', 'GET'])
+def test(): 
+    if request.method == "POST":
+        products_id = request.form.getlist('products_id')
+        quantities = request.form.getlist('quantities')
+        print(products_id, quantities)
+        return redirect(url_for("test"))
+    return render_template("dynamic-data.html")
 
 @app.route('/create_user"', methods=['GET', 'POST'])
 def create_user():
@@ -201,7 +212,7 @@ def login():
             "password": request.form['pass']
         }
         userLoginUrl = f"{BASE_URL}/users/login"
-        rsp = requests.get(url=userLoginUrl, json=userLoginRequest, headers={"Authorization": f"Bearer {session['token']}"})
+        rsp = requests.get(url=userLoginUrl, json=userLoginRequest)
         user_response = rsp.json()
         session['token'] = user_response['access_token']
         session['user_id'] = user_response['user']['id']
@@ -401,6 +412,23 @@ def reduce_client_stock(id):
         else:
             return render_template('failed.html', error_code=rsp.status_code)
     return render_template("reduce_client_stock.html")
+
+@app.route("/download/invoice", methods=['POST', 'GET'])
+def invoiceDownload():
+    url = f"{BASE_URL}/download/invoice/773"
+    response = requests.get(url=url)
+    data = response.json()
+    pdf_bytes = base64.b64decode(data['invoice_pdf'])
+
+    if response.status_code == 200:
+        # temp_pdf_path = '/home/emilio/inventory-system/invoice-files/temp.pdf'
+        # with open(temp_pdf_path, 'wb') as temp_pdf:
+        #     temp_pdf.write(pdf_bytes)
+        
+        return send_file(BytesIO(pdf_bytes), as_attachment=True, mimetype='application/pdf', download_name="INV-773")
+    else:
+        return f"Failed to download PDF. Status code: {response.status_code}"
+
 
 if __name__ == "__main__":
     app.run(debug=True)

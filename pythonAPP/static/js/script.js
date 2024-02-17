@@ -79,12 +79,16 @@ addButtons.forEach(button => {
   });
 });
 
-closeButton.addEventListener('click', function () {
-  console.log("Close button clicked");
-  closeModal();
-});
+if (closeButton) {
+  closeButton.addEventListener('click', function () {
+    console.log("Close button clicked");
+    closeModal();
+  });
+}
 
-  addCloseBtn.addEventListener('click', closeModal);
+// if (addCloseBtn) {
+//   addCloseBtn.addEventListener('click', closeModal);
+// }
   // if (addBtn) {
   //   addBtn.addEventListener('click', function() {
   //     add_overlay.style.display = 'block';

@@ -17,8 +17,8 @@ ORDER BY invoice_id;
 
 -- name: CreateInvoice :one
 INSERT INTO invoices (
-    invoice_number, user_invoice_id, invoice_data, user_invoice_username
+    invoice_number, user_invoice_id, invoice_data, user_invoice_username, invoice_pdf
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING *;

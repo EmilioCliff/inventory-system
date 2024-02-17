@@ -35,6 +35,27 @@ func (server *Server) createProduct(ctx *gin.Context) {
 		return
 	}
 
+	admin, err := server.store.GetUserForUpdate(ctx, 1)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	_, err = server.store.AddAdminStockTx(ctx, db.AddAdminStockParams{
+		Admin:       admin,
+		ProducToAdd: product,
+		Amount:      0,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, product)
 	return
 }

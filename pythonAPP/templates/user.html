@@ -34,9 +34,9 @@
     </div>
 </div>
 <div class="d-inline-flex justify-content-around">
-    {% if user.id != 1 %}
-    <a href="{{ url_for('get_user_invoices', id=20) }}" class="btn btn-outline-primary">Invoice</a>
-    <a href="{{ url_for('get_user_receipts', id=20) }}" class="btn btn-outline-primary">Receipt</a>
+    <a href="{{ url_for('get_user', id=user.id) }}" class="btn btn-outline-primary">Products</a>
+    <a href="{{ url_for('get_user_invoices', id=user.id) }}" class="btn btn-outline-primary">Invoices</a>
+    <a href="{{ url_for('get_user_receipts', id=user.id) }}" class="btn btn-outline-primary">Receipts</a>
     <!-- change to 1 -->
     {% if user_id == 1 %}
     <a href="#" class="btn btn-outline-primary" id="editButton">Edit</a>
@@ -92,7 +92,6 @@
         </div>
     </div>
     {% endif %}
-    {% endif %}
 </div>
 <nav class="navbar my-2" style="background-color: #DCF2F1;">
     <div class="container-fluid" style="background-color: #DCF2F1;">
@@ -117,7 +116,7 @@
                 <p style="font-size: 18px; font-weight: 500;"> {{ data.productName }}</p>
                 <p style="font-size: 12px;"> Quantity: {{ data.productQuantity }}</p>
         </div>
-        {% if user_id == 1 and user.id == 1%}
+        {% if user_id == 1 and user.id == 1 %}
         <a href="#" class="btn btn-primary btn-add-stock" data-product-name="{{ data.productName }}" data-product-id="{{ data.productID }}">Add Stock</a>
         <div id="overlay_add" class="overlay">
             <div id="add-form-container" class="form-container">
@@ -140,7 +139,7 @@
                 </div>
             </div>
         </div>
-        {% elif user_id == user.id %}
+        {% elif user_id != 1 %}
         <a href="#" class="btn btn-primary">Request Stock</a>
         {% else %}
         {% endif %}
@@ -148,31 +147,23 @@
 {% endfor %}
 {% endif %}
 {% elif ct == 'invoice' %}
-{% if user.stock is none %}
+{% if invoice is none %}
 <p>No Invoices Yet</p>
 {% else %}
 {% for data in invoice %}
-    <div class="d-flex btn-warning align-items-center justify-content-between list--container">
-        <p style="font-size: 18px; font-weight: 500;"> {{ data.invoice_number }}</p>
+    <div class="d-flex justify-content-between list--container mb-3 p-3">
+        <p style="font-size: 18px; font-weight: 500;">Invoice Number: INV - {{ data.invoice_number }}</p>
         <a href="#" class="btn btn-outline-success">Download</a>
     </div>
 {% endfor %}
 {% endif %}
 {% else %}
-{% if user.stock is none %}
+{% if receipt is none %}
 <p>No Receipts Yet</p>
 {% else %}
 {% for data in receipt %}
-    <div class="data">
-        <div class="new_data">
-            <!-- <div>
-                <img src="../static/images/cliff.jpeg" alt="Profile" class="profile-photo">
-            </div> -->
-            <div>
-                <p style="font-size: 18px; font-weight: 500;"> {{ data.receipt_number }}</p>
-                <!-- <p style="font-size: 12px;"> Quantity: {{ data.product_quantity }}</p> -->
-            </div>
-        </div>
+    <div class="d-flex justify-content-between list--container mb-3 p-3">
+        <p style="font-size: 18px; font-weight: 500;">Receipt Number: RCPT - {{ data.receipt_number }}</p>
         <a href="#" class="btn btn-outline-success">Download</a>
     </div>
 {% endfor %}
