@@ -15,6 +15,8 @@ jobs:
           POSTGRES_PASSWORD: secret
           POSTGRES_USER: root
           POSTGRES_DB: inventory-system
+        ports:
+          - 5432:5432
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -36,6 +38,9 @@ jobs:
         curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
         sudo mv migrate /usr/bin/
         which migrate
+
+    - name: Run migration
+      run: make migrateup
 
     - name: Test
       run: make test
