@@ -1,14 +1,25 @@
 name: inventory-test
 
-on:
-  push:
-    branches: [ master ]
+on: [ push ]
 
 jobs:
 
   test:
     name: Test
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: secret
+          POSTGRES_USER: root
+          POSTGRES_DB: inventory-system
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
     - name: Set up Go 1.x
@@ -19,6 +30,12 @@ jobs:
 
     - name: Check out code
       uses: actions/checkout@v3
+
+    - name: Install migrate
+      run: |
+        curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz | tar xvz
+        sudo mv migrate.linux-amd64 /usr/bin
+        which migrate
 
     - name: Test
       run: make test
