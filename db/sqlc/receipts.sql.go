@@ -68,6 +68,27 @@ func (q *Queries) GetReceipt(ctx context.Context, receiptNumber string) (Receipt
 	return i, err
 }
 
+const getReceiptByID = `-- name: GetReceiptByID :one
+SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
+WHERE receipt_id = $1 
+LIMIT 1
+`
+
+func (q *Queries) GetReceiptByID(ctx context.Context, receiptID int64) (Receipt, error) {
+	row := q.db.QueryRow(ctx, getReceiptByID, receiptID)
+	var i Receipt
+	err := row.Scan(
+		&i.ReceiptID,
+		&i.ReceiptNumber,
+		&i.UserReceiptID,
+		&i.UserReceiptUsername,
+		&i.ReceiptData,
+		&i.ReceiptPdf,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getUserReceiptsByID = `-- name: GetUserReceiptsByID :many
 SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
 WHERE user_receipt_id = $1

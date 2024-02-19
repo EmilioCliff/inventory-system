@@ -1,20 +1,82 @@
 document.addEventListener('DOMContentLoaded', function() {
   const createUserBtn = document.getElementById('createUserBtn');
   const newProductBtn = document.getElementById('newProduct');
+  const editProductBtns = document.querySelectorAll('.editProduct');
+  const addClientStockBtn = document.getElementById('addClientStockBtn');
+  const reduceButton = document.getElementById('reduceClientStock');
 
   const overlay_create = document.getElementById('overlay_create');
   const overlay_product = document.getElementById('overlay_product');
+  const overlay_productedits = document.querySelectorAll('.overlay');
+  const overlay_addClientStock = document.getElementById('addClientStockOverlay');
+  const overlay_recudeClientStock = document.getElementById('reduceClientStockOverlay');
 
   const popupFormCreate = document.getElementById('popupFormCreate');
   const popupFormProduct = document.getElementById('popupFormProduct');
+  const popupFormProductedit = document.querySelectorAll('.form-container')
+  const popupFormAddClientStock = document.getElementById('popupformAddClientStock');
+  const popupFormReduceClientStock = document.getElementById('popupformreduceClientStock');
 
   const deleteButton = document.querySelector('.delete-button');
   const overlay_delete = document.getElementById('overlay_delete');
   const deleteFormContainer = document.querySelector('.delete-form-container');
+  const productCloseButtonsedit = document.querySelectorAll('#productCloseButtonedit');
+  // const closeAddClientStockBtn = document.getElementsByName('newCloseBtnnn')
+  const reduceClientStockCloseBtn = document.getElementById('close-buttonReduce');
 
   const editButton = document.getElementById('editButton');
   const overlay_edit = document.getElementById('overlayedit');
   const editFormContainer = document.getElementById('popupFormEdit');
+
+  if (reduceButton) {
+    reduceButton.addEventListener('click', function() {
+      overlay_recudeClientStock.style.display = 'block';
+      popupFormReduceClientStock.style.display = 'block';
+    })
+  }
+
+  if (reduceClientStockCloseBtn) {
+    overlay_recudeClientStock.style.display = 'none';
+    popupFormReduceClientStock.style.display = 'none';
+  }
+
+  if (addClientStockBtn) {
+    addClientStockBtn.addEventListener('click', function() {
+      overlay_addClientStock.style.display = 'block';
+      popupFormAddClientStock.style.display = 'block';
+    })
+  }
+
+//   if (closeAddClientStockBtn) {
+//     closeAddClientStockBtn.addEventListener('click', function() {
+//     overlay_addClientStock.style.display = 'none';
+//     popupFormAddClientStock.style.display = 'none';
+//     console.log('Close button clicked');
+// })
+// }
+
+
+  editProductBtns.forEach((editProductBtn, index) => {
+    editProductBtn.addEventListener('click', function() {
+        overlay_productedits[index+1].style.display = 'block';
+        popupFormProductedit[index+1].style.display = 'block';
+    });
+});
+
+productCloseButtonsedit.forEach((productCloseButtonedit, index) => {
+  productCloseButtonedit.addEventListener('click', function() {
+      overlay_productedits[index+1].style.display = 'none';
+      // popupFormProductedits[index+1].style.display = 'none';
+  });
+});
+
+// productCloseButtonsedit.forEach((productCloseButtonedit, index) => {
+//   productCloseButtonedit.addEventListener('click', function() {
+      // overlay_productedits[index+1].style.display = 'none';
+      // popupFormProductedit[index+1].style.display = 'none';
+//       // ... your other logic ...
+//   });
+// });
 
   if (editButton) {
     editButton.addEventListener('click', function() {

@@ -68,6 +68,27 @@ func (q *Queries) GetInvoice(ctx context.Context, invoiceNumber string) (Invoice
 	return i, err
 }
 
+const getInvoiceByID = `-- name: GetInvoiceByID :one
+SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
+WHERE invoice_id = $1 
+LIMIT 1
+`
+
+func (q *Queries) GetInvoiceByID(ctx context.Context, invoiceID int64) (Invoice, error) {
+	row := q.db.QueryRow(ctx, getInvoiceByID, invoiceID)
+	var i Invoice
+	err := row.Scan(
+		&i.InvoiceID,
+		&i.InvoiceNumber,
+		&i.UserInvoiceID,
+		&i.UserInvoiceUsername,
+		&i.InvoiceData,
+		&i.InvoicePdf,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
 const getUserInvoicesByID = `-- name: GetUserInvoicesByID :many
 SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
 WHERE user_invoice_id = $1

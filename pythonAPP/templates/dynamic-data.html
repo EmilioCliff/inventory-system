@@ -29,16 +29,16 @@
 
     <!-- JavaScript Function to Add Product Fields Dynamically -->
     <script>
-        function addProduct() {
+        function reduceProduct() {
             // Create new product selection and quantity input elements
-            var newProduct = document.createElement('select');
-            newProduct.className = 'product';
-            newProduct.name = 'products_id';
-            newProduct.innerHTML = document.querySelector('.product').innerHTML;
+            var newStock = document.createElement('select');
+            newStock.name = 'product_id';
+            newStock.className = 'product me-5';
+            newStock.innerHTML = document.querySelector('.product').innerHTML;
 
             var newQuantity = document.createElement('input');
             newQuantity.type = 'number';
-            newQuantity.className = 'quantity';
+            newQuantity.className = 'quantity me-5';
             newQuantity.name = 'quantities';
             newQuantity.placeholder = 'Quantity';
             newQuantity.required = true;
@@ -47,9 +47,9 @@
             var lineBreak = document.createElement('br');
 
             // Append the new fields to the existing product list
-            document.getElementById('productList').appendChild(lineBreak);
-            document.getElementById('productList').appendChild(newProduct);
-            document.getElementById('productList').appendChild(newQuantity);
+            document.getElementById('stockList').appendChild(lineBreak);
+            document.getElementById('stockList').appendChild(newStock);
+            document.getElementById('stockList').appendChild(newQuantity);
         }
     </script>
 </body>

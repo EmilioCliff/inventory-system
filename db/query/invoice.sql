@@ -3,6 +3,11 @@ SELECT * FROM invoices
 WHERE invoice_number = $1 
 LIMIT 1;
 
+-- name: GetInvoiceByID :one
+SELECT * FROM invoices
+WHERE invoice_id = $1 
+LIMIT 1;
+
 -- name: GetUserInvoicesByID :many
 SELECT * FROM invoices
 WHERE user_invoice_id = $1;

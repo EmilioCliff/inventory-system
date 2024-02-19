@@ -3,6 +3,11 @@ SELECT * FROM receipts
 WHERE receipt_number = $1 
 LIMIT 1;
 
+-- name: GetReceiptByID :one
+SELECT * FROM receipts
+WHERE receipt_id = $1 
+LIMIT 1;
+
 -- name: GetUserReceiptsByID :many
 SELECT * FROM receipts
 WHERE user_receipt_id = $1;

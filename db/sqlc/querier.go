@@ -16,9 +16,11 @@ type Querier interface {
 	DeleteProduct(ctx context.Context, productID int64) error
 	DeleteUser(ctx context.Context, userID int64) error
 	GetInvoice(ctx context.Context, invoiceNumber string) (Invoice, error)
+	GetInvoiceByID(ctx context.Context, invoiceID int64) (Invoice, error)
 	GetProduct(ctx context.Context, productID int64) (Product, error)
 	GetProductForUpdate(ctx context.Context, productID int64) (Product, error)
 	GetReceipt(ctx context.Context, receiptNumber string) (Receipt, error)
+	GetReceiptByID(ctx context.Context, receiptID int64) (Receipt, error)
 	GetUser(ctx context.Context, userID int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByUsename(ctx context.Context, username string) (User, error)

@@ -495,17 +495,6 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 		}
 
 		newProducts = append(newProducts, addProduct)
-		// productID := product["productId"].(float64)
-		// productIDInt := int64(productID)
-
-		// unitPrice := product["productQuantity"].(float64)
-		// unitPriceInt := int32(unitPrice)
-
-		// newProducts = append(newProducts, db.Product{
-		// 	ProductID:   productIDInt,
-		// 	ProductName: product["productName"].(string),
-		// 	UnitPrice:   unitPriceInt,
-		// })
 	}
 	updatedData, err := server.store.AddClientStockTx(ctx, db.AddClientStockParams{
 		FromAdmin:   admin,
@@ -568,17 +557,6 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		}
 
 		newProducts = append(newProducts, removeProduct)
-		// productID := product["productId"].(float64)
-		// productIDInt := int64(productID)
-
-		// unitPrice := product["productQuantity"].(float64)
-		// unitPriceInt := int32(unitPrice)
-
-		// newProducts = append(newProducts, db.Product{
-		// 	ProductID:   productIDInt,
-		// 	ProductName: product["productName"].(string),
-		// 	UnitPrice:   unitPriceInt,
-		// })
 	}
 
 	updatedData, err := server.store.ReduceClientStockTx(ctx, db.ReduceClientStockParams{

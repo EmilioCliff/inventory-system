@@ -1,5 +1,22 @@
 {% extends 'index.html' %}
 {% block content %}
+{% with messages = get_flashed_messages() %}
+{% for message in messages %}
+<div class="alert alert-success alert-dismissible fade show flash-messages" role="alert">
+  <div class="d-flex align-items-center"> <!-- Make the icon and text flex items -->
+      <div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+        </svg>
+      </div>
+      <div class="ms-2"> <!-- Add margin to separate the icon from the text -->
+          {{ message }}
+      </div>
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endwith %}
 <div class="d-inline-flex justify-content-start align-items-center">
     <a href="{{ url_for('dashboard') }}">
         <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
@@ -23,7 +40,11 @@
   </nav>
   {% endif %}
 <div class="d-inline-flex justify-content-between">
+    {% if data_sent is none %}
+    <p class="mr-auto">{{ ct|title}} (0)</p>
+    {% else %}
     <p class="mr-auto">{{ ct|title}} ({{ data_sent|length}})</p>
+    {% endif %}
     {% if user_id == 1 %}
     {% if ct == 'users' %}
     <a href="#" id="createUserBtn">Add New
@@ -101,8 +122,11 @@
     {% endif %}
 </div>
 <div>
-    {% for data in data_sent if not data.id == user_id %}
     {% if ct == 'users' %}
+    {% if data_sent is none %}
+    <p>No Users Yet</p>
+    {% else %}
+    {% for data in data_sent if not data.id == user_id %}
     <a href="{{ url_for('get_user', id=data.id) }}" class="d-flex justify-content-between list--container p-3 mb-3">
         <div class="d-inline-flex justify-content-between">
             <div>
@@ -115,8 +139,14 @@
         </div>
         <p style="overflow: hidden; white-space: nowrap;">{{ data.address }}</p>
     </a>
+    {% endfor %}
+    {% endif %}
     {% elif ct == 'products' %}
-    <a href="{{ url_for('get_product', id=data.product_id) }}" class="d-flex justify-content-around mb-3 p-3" style="text-decoration: none; color: black;box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);background-color: #fff;align-items: center;border-radius: 12%;">
+    {% if data_sent is none %}
+    <p>No Products Yet</p>
+    {% else %}
+    {% for data in data_sent %}
+    <a href="#" class="d-flex justify-content-around mb-3 p-3 editProduct" data-productid="{{ data.product_id }}" style="text-decoration: none; color: black;box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);background-color: #fff;align-items: center;border-radius: 12%;">
         <div class="new_data">
             <div>
                 <p style="font-size: 18px; font-weight: 500;color: black;">{{ data.product_name }}</p>
@@ -125,7 +155,43 @@
         </div>
         <p>{{ data.unit_price }} Ksh</p>
     </a>
+    {% if user_id == 1 %}
+    <div id="overlay_productedit" class="overlay">
+        <div id="popupFormProductedit" class="form-container">
+            <button id="productCloseButtonedit" class="close-button" data-productid="{{ data.product_id }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                  </svg>
+            </button>
+            <h2 style="text-decoration: underline;">Edit Product</h2>
+            <form id="contactForm" name="sentMessage" action="{{ url_for('edit_product', id=data.product_id) }}" method="post" autocomplete="off">
+                <div class="form-group form-floating">
+                    <input class="form-control" id="product_name" name="product_name" type="text" value="{{ data.product_name }}" placeholder="Example Product" required/>
+                    <label for="product_name">Product Name</label>
+                </div>
+                <div class="form-group form-floating">
+                    <input class="form-control" id="unit_price" name="unit_price" type="number" name="quantity" min="1" value="{{ data.unit_price }}" placeholder="300" required/>
+                    <label for="unit_price">Unit Price</label>
+                </div>
+                <div class="form-group form-floating">
+                    <input class="form-control" id="packsize" name="packsize" type="text" value="{{ data.packsize }}" placeholder="50 Testkit" required/>
+                    <label for="packsize">Packsize</label>
+                </div>
+                <br/>
+                <button class="btn btn-success text-uppercase" id="submitButton" type="submit">
+                  Edit Product
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
     {% elif ct == 'receipts' %}
+    {% if data_sent is none %}
+    <p>No Receipts Yet</p>
+    {% else %}
+    {% for data in data_sent %}
     <a href="{{ url_for('get_receipt', id=data.receipt_number) }}" class="d-flex justify-content-between list--container mb-3 p-3">
         <div class="new_data">
             <div>
@@ -135,8 +201,14 @@
         </div>
         <p style="overflow: hidden; white-space: nowrap;">{{ data.receipt_create_time }}</p>
     </a>
+    {% endfor %}
+    {% endif %}
     {% else %}
-    <a href="{{ url_for('get_invoice', id=data.invoice_number) }}" class="d-flex justify-content-between list--container mb-3 p-3">
+    {% if data_sent is none %}
+    <p>No Invoice Yet</p>
+    {% else %}
+    {% for data in data_sent %}
+    <a href="{{  url_for('get_invoice', id=data.invoice_number) }}" class="d-flex justify-content-between list--container mb-3 p-3">
         <div class="new_data">
             <div>
                 <p style="font-size: 18px; font-weight: 500;color: black;">{{ data.user_invoice_username }}</p>
@@ -145,8 +217,9 @@
         </div>
         <p style="overflow: hidden; white-space: nowrap;">{{ data.invoice_create_time }}</p>
     </a>
-    {% endif %}
     {% endfor %}
+    {% endif %}
+    {% endif %}
 </div>
 <footer>
     <div class="row">
