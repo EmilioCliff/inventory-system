@@ -1,0 +1,29 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:alpine3.19
+    environment:
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_USER=root
+      - POSTGRES_DB=inventorydb
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -d inventorydb -U root"]
+      interval: 5s
+      timeout: 10s
+      retries: 5
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_SOURCE=postgresql://root:secret@postgres:5432/inventorydb?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+        restart: true
+      # - postgres
+    # entrypoint: ["/app/wait-for.sh", "postgres:5432/", "--", "/app/start.sh"]
+    # command: [ "/app/main" ]
+      # ["CMD-SHELL", "pg_isready -d db-name -U db-user"]
