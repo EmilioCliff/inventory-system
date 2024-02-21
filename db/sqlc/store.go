@@ -259,7 +259,7 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 
 		pdfBytes, err := utils.SetInvoiceVariables(invoiceC, invoiceData)
 		if err != nil {
-			log.Printf("Error creating receipt %v", err)
+			log.Printf("Error creating invoice %v", err)
 			return err
 		}
 
