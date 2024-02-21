@@ -78,7 +78,7 @@ func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 	pdf.Cell(40, 10, "PAYMENT RECEIPT")
 	pdf.Ln(lineHeight)
 	pdf.Ln(lineHeight)
-	pdf.ImageOptions("/home/emilio/inventory-system/db/utils/logi.png", safeW/2, pdf.GetY()+lineHeight*3, 30, 20, true, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
+	pdf.ImageOptions("/home/runner/work/inventory-system/inventory-system/logi.png", safeW/2, pdf.GetY()+lineHeight*3, 30, 20, true, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
 
 	pdf.SetFont("Arial", "", 12)
 	_, lineHeight = pdf.GetFontSize()
