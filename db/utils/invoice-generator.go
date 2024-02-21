@@ -72,6 +72,7 @@ func generateInvoice(data [][]string, user map[string]string) ([]byte, error) {
 	_, lineHeight := pdf.GetFontSize()
 	currentY := pdf.GetY() + lineHeight + gapY + 16
 	pdf.SetXY(marginX, currentY)
+
 	pdf.Cell(40, 10, defaultFromName)
 
 	if companyNo != "" {
