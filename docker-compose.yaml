@@ -1,5 +1,7 @@
 version: "3.8"
+
 services:
+
   postgres:
     image: postgres:alpine3.19
     environment:
@@ -11,6 +13,7 @@ services:
       interval: 5s
       timeout: 10s
       retries: 5
+
   api:
     build:
       context: .
@@ -23,7 +26,3 @@ services:
       postgres:
         condition: service_healthy
         restart: true
-      # - postgres
-    # entrypoint: ["/app/wait-for.sh", "postgres:5432/", "--", "/app/start.sh"]
-    # command: [ "/app/main" ]
-      # ["CMD-SHELL", "pg_isready -d db-name -U db-user"]

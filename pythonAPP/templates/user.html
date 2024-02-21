@@ -1,0 +1,314 @@
+{% extends 'index.html' %}
+{% block content %}
+{% with messages = get_flashed_messages() %}
+{% for message in messages %}
+<div class="alert alert-success alert-dismissible fade show flash-messages" role="alert">
+  <div class="d-flex align-items-center"> <!-- Make the icon and text flex items -->
+      <div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+        </svg>
+      </div>
+      <div class="ms-2"> <!-- Add margin to separate the icon from the text -->
+          {{ message }}
+      </div>
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endwith %}
+<div class="d-inline-flex align-items-center justify-content-start">
+    <!-- change to 1 -->
+    {% if user_id == 1 %}
+    <a href="{{ url_for('list_users') }}">
+    {% else %}
+    <a href="{{ url_for('dashboard') }}">
+    {% endif %}
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+        </svg>
+    </a>
+    <p style="flex-grow: 1; align-items: center; text-align: center;font-size: large; font-weight: 500;color: black;">{{ user.username|title}}</p>
+</div>
+<div class="d-flex list--container">
+    <div class="d-inline-flex justify-content-start p-3">
+        <div style="display: flex; flex-direction: column; align-items: center;">
+            <p style="font-size: 18px; font-weight: 500;color: black;">{{ user.username}}</p>
+            <div class="d-inline-flex">
+                <div>
+                    <img src="../static/images/cliff.jpeg" alt="Profile" class="profile-photo">
+                </div>
+                <div style="display: flex;flex-direction: column;">
+                    <p>{{ user.email }}</p>
+                    <p>{{ user.address }}</p>
+                    <p>{{ user.phone_number }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div>
+        <img src="../static/images/piano.jpg" alt="piano" style="width: 100%; height: 100%; border-radius: 10%;">
+    </div>
+</div>
+<div class="d-inline-flex justify-content-around" style="flex-wrap: wrap; gap: 10px;">
+    {% if user.id != 1 and user_id != 1%}
+    <a href="#" class="btn btn-outline-primary" id="reduceClientStock">Sold Products
+        <div class="overlay" id="reduceClientStockOverlay">
+            <div class="form-container" id="popupformreduceClientStock">
+                <button id="close-buttonReduce" class="close-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </button>
+                <form id="productForm" method="POST" action="{{ url_for('reduce_client_stock', id=user.id) }}" autocomplete="off">
+                    <div id="stockList" class="form-group form-floating mt-4">
+                        <select class="product me-5" name="products_id">
+                            {% for stock in user.stock %}
+                            <option value="{{ stock.productID }}">{{ stock.productName }}:{{ stock.productQuantity }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="number" class="quantity me-5" name="quantities" placeholder="Quantity" required style="width: 100px;">
+                        <label for="quantities">Product Quantity</label>
+                        <button type="button" class="btn btn-sm btn-primary" onclick="reduceProduct()">Add</button>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </a>
+    {% endif %}
+    <a href="{{ url_for('get_user', id=user.id) }}" class="btn btn-outline-primary">Products</a>
+    {% if user.id == 1 %}
+    {% else %}
+    <a href="{{ url_for('get_user_invoices', id=user.id) }}" class="btn btn-outline-primary">Invoices</a>
+    <a href="{{ url_for('get_user_receipts', id=user.id) }}" class="btn btn-outline-primary">Receipts</a>
+    {% endif %}
+    <!-- change to 1 -->
+    {% if user_id == 1 %}
+    <a href="#" class="btn btn-outline-primary" id="addClientStockBtn">Add User Stock
+        <div class="overlay" id="addClientStockOverlay">
+            <div class="form-container" id="popupformAddClientStock">
+                <button name="close-button" class="close-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </button>
+                <form id="productForm" method="POST" action="{{ url_for('add_client_stock', id=user.id) }}" autocomplete="off">
+                    <div id="productList" class="form-group form-floating mt-4">
+                        <select class="product me-5" name="products_id">
+                            {% for product in products %}
+                            <option value="{{ product.product_id }}">{{ product.product_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="number" class="quantity me-5" name="quantities" placeholder="Quantity" required style="width: 100px;">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="addProduct()">Add</button>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+        </a>
+    {% if user.id != 1 %}
+    <a href="#" class="btn btn-outline-primary" id="editButton">Edit User Profile</a>
+    {% else %}
+    <a href="#" class="btn btn-outline-primary" id="editButton">Edit Profile</a>
+    {% endif %}
+    <div id="overlayedit" class="overlay">
+        <div id="popupFormEdit" class="form-container">
+          <button id="closeeditButton" class="close-button">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                </svg>
+          </button>
+          <form action="{{ url_for('manage_user', id=user.id) }}" method="POST">
+            <h2>Edit Profile</h2>
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input class="form-control" type="text" id="username" name="username" value="{{ user.username }}" required>
+            </div>
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input class="form-control" type="email" id="email" name="email" value="{{ user.email }}" required>
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input class="form-control" type="tel" id="phone" name="phone" value="{{ user.phone_number }}" required>
+            </div>
+            <div class="form-group">
+              <label for="address">Address</label>
+              <input class="form-control" type="text" id="address" name="address" value="{{ user.address }}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Edit</button>
+          </form>
+      </div>
+        </div>
+        {% if user.id == 1 %}
+        {% else %}
+    <a href="#" class="btn btn-outline-primary delete-button">Delete</a>
+    <div id="overlay_delete" class="overlay">
+        <div class="delete-form-container form-container">
+            <div class="delete-form">
+                <button id="closingBtn" class="close-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                      </svg>
+                </button>
+                <h2>Delete User</h2>
+                <p>Are you sure you want to delete the user?</p>
+                <p>Input: {{ user.username|lower }}</p>
+                <form action="{{ url_for('delete_user', id=user.id) }}" method="post">
+                    <div class="form-group">
+                        <label for="delete-username">Enter username to confirm:</label>
+                        <input class="form-control" type="text" id="delete-username" name="delete-username" required autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+<nav class="navbar my-2" style="background-color: #DCF2F1;">
+    <div class="container-fluid" style="background-color: #DCF2F1;">
+        <form class="d-flex flex-grow-1" role="search" action="{{ url_for('list_users') }}" method="post">
+            <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
+            <div id="searchResults"></div>
+        </form>
+    </div>
+</nav>
+<div>
+{% if ct == 'user' %}
+{% if user.stock is none %}
+<p>No Products Yet</p>
+{% else %}
+{% for data in user.stock %}
+    {% if (data.productQuantity) < 4 %}
+    <div class="d-flex justify-content-between list--container mb-3 p-3" style="background-color: #F7D060;">
+    {% else %}
+    <div class="d-flex justify-content-between list--container mb-3 p-3">
+    {% endif %}
+        <div style="flex-direction: column;">
+                <p style="font-size: 18px; font-weight: 500;"> {{ data.productName }}</p>
+                <p style="font-size: 12px;"> Quantity: {{ data.productQuantity }}</p>
+        </div>
+        {% if user_id == 1 and user.id == 1 %}
+        <a href="#" class="btn btn-primary btn-add-stock" data-product-name="{{ data.productName }}" data-product-id="{{ data.productID }}">Add Stock</a>
+        <div id="overlay_add" class="overlay">
+            <div id="add-form-container" class="form-container">
+                <div class="delete-form">
+                    <button id="addingBtn" class="close-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                          </svg>
+                    </button>
+                    <!-- <h2>Add {{ data.productName }} Stock</h2> -->
+                    <form action="{{ url_for('add_admin_stock') }}" method="post">
+                        <div class="form-group">
+                            <span id="productName"></span>
+                            <input type="hidden" id="productID" name="productID" value="{{ data.productID }}">
+                            <label for="quantity">Enter Quantity To Add</label>
+                            <input class="form-control" type="number" id="quantity" name="quantity" required autocomplete="off">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% elif user_id != 1 %}
+        <a href="#" class="btn btn-primary">Request Stock</a>
+        {% else %}
+        {% endif %}
+    </div>
+{% endfor %}
+{% endif %}
+{% elif ct == 'invoice' %}
+{% if invoice is none %}
+<p>No Invoices Yet</p>
+{% else %}
+{% for data in invoice %}
+    <div class="d-flex justify-content-between list--container mb-3 p-3">
+        <p style="font-size: 18px; font-weight: 500;">Invoice Number: INV - {{ data.invoice_number }}</p>
+        <a href="{{ url_for('invoiceDownload', id_param=data.invoice_number) }}" class="btn btn-outline-success">Download</a>
+    </div>
+{% endfor %}
+{% endif %}
+{% else %}
+{% if receipt is none %}
+<p>No Receipts Yet</p>
+{% else %}
+{% for data in receipt %}
+    <div class="d-flex justify-content-between list--container mb-3 p-3">
+        <p style="font-size: 18px; font-weight: 500;">Receipt Number: RCPT - {{ data.receipt_number }}</p>
+        <a href="{{ url_for('receiptDownload', id_param=data.receipt_number) }}" class="btn btn-outline-success">Download</a>
+    </div>
+{% endfor %}
+{% endif %}
+{% endif %}
+</div>
+<script>
+    function addProduct() {
+        // Create new product selection and quantity input elements
+        var newProduct = document.createElement('select');
+        newProduct.className = 'product me-5';
+        newProduct.name = 'products_id';
+        newProduct.innerHTML = document.querySelector('.product').innerHTML;
+
+        var newQuantity = document.createElement('input');
+        newQuantity.style.width = '100px';
+        newQuantity.type = 'number';
+        newQuantity.className = 'quantity me-5';
+        newQuantity.name = 'quantities';
+        newQuantity.placeholder = 'Quantity';
+        newQuantity.required = true;
+
+        // Append line break for better formatting (optional)
+        var lineBreak = document.createElement('br');
+
+        // Append the new fields to the existing product list
+        document.getElementById('productList').appendChild(lineBreak);
+        document.getElementById('productList').appendChild(newProduct);
+        document.getElementById('productList').appendChild(newQuantity);
+    }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const closeAddClientStockBtn = document.getElementById('close-button');
+      const overlay_addClientStock = document.getElementById('addClientStockOverlay');
+      const popupFormAddClientStock = document.getElementById('popupformAddClientStock');
+
+      if (closeAddClientStockBtn) {
+        closeAddClientStockBtn.addEventListener('click', function() {
+          console.log('Close button clicked');
+          overlay_addClientStock.style.display = 'none';
+          popupFormAddClientStock.style.display = 'none';
+        });
+      }
+    });
+</script>
+<script>
+    function reduceProduct() {
+        // Create new product selection and quantity input elements
+        var newStock = document.createElement('select');
+        newStock.name = 'products_id';
+        newStock.className = 'product me-5';
+        newStock.innerHTML = document.querySelector('.product').innerHTML;
+
+        var newQuantity = document.createElement('input');
+        newQuantity.style.width = '100px';
+        newQuantity.type = 'number';
+        newQuantity.className = 'quantity me-5';
+        newQuantity.name = 'quantities';
+        newQuantity.placeholder = 'Quantity';
+        newQuantity.required = true;
+
+        // Append line break for better formatting (optional)
+        var lineBreak = document.createElement('br');
+
+        // Append the new fields to the existing product list
+        document.getElementById('stockList').appendChild(lineBreak);
+        document.getElementById('stockList').appendChild(newStock);
+        document.getElementById('stockList').appendChild(newQuantity);
+    }
+</script>
+{% endblock %}
