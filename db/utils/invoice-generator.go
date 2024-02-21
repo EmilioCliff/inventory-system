@@ -49,7 +49,7 @@ func SetInvoiceVariables(invoiceData map[string]string, data []map[string]interf
 			products = append(products, product)
 		}
 	}
-	fmt.Println(products)
+	// fmt.Println(products)
 	pdfBytes, err := generateInvoice(products, userDetails)
 	if err != nil {
 		return nil, err

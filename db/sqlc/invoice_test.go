@@ -20,6 +20,7 @@ func createInvoiceTest() (CreateInvoiceParams, Invoice, error) {
 		InvoiceNumber:       utils.RandomInvoiceReceiptNumber(),
 		UserInvoiceID:       int32(user.UserID),
 		UserInvoiceUsername: user.Username,
+		InvoicePdf:          []byte(utils.RandomString(6)),
 	}
 
 	invoiceData := []map[string]interface{}{

@@ -38,7 +38,7 @@ func SetReceiptVariables(receipt map[string]string, data []map[string]interface{
 			products = append(products, product)
 		}
 	}
-	fmt.Println(products)
+	// fmt.Println(products)
 	pdfBytes, err := generateReceipt(products, userDetails)
 	if err != nil {
 		return nil, err

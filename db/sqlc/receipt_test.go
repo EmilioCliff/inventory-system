@@ -20,6 +20,7 @@ func createReceiptTest() (CreateReceiptParams, Receipt, error) {
 		ReceiptNumber:       utils.RandomInvoiceReceiptNumber(),
 		UserReceiptID:       int32(user.UserID),
 		UserReceiptUsername: user.Username,
+		ReceiptPdf:          []byte(utils.RandomString(6)),
 	}
 
 	receiptData := []map[string]interface{}{

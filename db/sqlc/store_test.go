@@ -179,7 +179,7 @@ func TestAddClientStockTx(t *testing.T) {
 	}()
 
 	for i := 0; i < n; i++ {
-		fmt.Println(i)
+		// fmt.Println(i)
 		err := <-errCh
 		result := <-resCh
 
