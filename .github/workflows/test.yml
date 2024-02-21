@@ -42,11 +42,10 @@ jobs:
     - name: Run migration
       run: make migrateup
 
-    - name: Print Repository Information
+    - name: Print Working Directory
       run: |
-        echo "Repository: $GITHUB_REPOSITORY"
-        echo "Owner: $(echo $GITHUB_REPOSITORY | cut -d '/' -f 1)"
-        echo "Repository Name: $(echo $GITHUB_REPOSITORY | cut -d '/' -f 2)"
-        
+        echo "Current Working Directory: $PWD"
+        echo "GitHub Workspace: $GITHUB_WORKSPACE"
+
     - name: Test
       run: make test
