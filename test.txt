@@ -1,30 +1,46 @@
-# jobs:
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+    - uses: docker://ghcr.io/kciter/aws-ecr-action:latest
+      with:
+        access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        account_id: ${{ secrets.AWS_ACCOUNT_ID }}
+        repo: inventorysystem
+        region: us-west-2
+        tags: latest,${{ github.sha }}
+        path: ./Dockerfile
+
+jobs:
   
-#   build:
-#     name: Build Image
-#     runs-on: ubuntu-latest
+  build:
+    name: Build Image
+    runs-on: ubuntu-latest
 
-    # steps:
-    # - name: Check out code
-    #   uses: actions/checkout@v3
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
 
 
-#     - name: Configure AWS Credentials
-#       uses: aws-actions/configure-aws-credentials@v1
-#       with:
-#         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#         aws-region: us-west-2  
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-west-2  
 
-#     - name: Login to Amazon ECR
-#       id: login-ecr
-#       uses: aws-actions/amazon-ecr-login@v1
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
 
-#     - name: Build, tag, and push image to Amazon ECR
-#       env:
-#         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-#         ECR_REPOSITORY: inventorysystem
-#         IMAGE_TAG: ${{ github.sha }}
-#       run: |
-#         docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-#         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+    - name: Build, tag, and push image to Amazon ECR
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        ECR_REPOSITORY: inventorysystem
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
