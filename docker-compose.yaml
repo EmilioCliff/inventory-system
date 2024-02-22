@@ -16,7 +16,7 @@ services:
 
   api:
     build:
-      context: .
+      context: ./go-api
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
@@ -26,3 +26,12 @@ services:
       postgres:
         condition: service_healthy
         restart: true
+
+  flask:
+    build:
+      context: ./python-flask
+      dockerfile: Dockerfile
+    ports:
+      - "3030:3030"
+    depends_on:
+      - api

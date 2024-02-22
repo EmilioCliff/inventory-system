@@ -33,6 +33,10 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = "32e234353t4rffbfbfgxx"
 Bootstrap5(app)
 
+@app.route("/")
+def testing():
+    return "I'm Here man"
+
 @app.route("/test", methods=['POST', 'GET'])
 def test(): 
     if request.method == "POST":
@@ -294,7 +298,7 @@ def get_receipt(id):
     else:
         return render_template('failed.html', error_code=rsp.status_code)
 
-@app.route('/')
+@app.route('/das')
 def dashboard():
     getUserUri = f"{BASE_URL}/users/{session['user_id']}"
     rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})

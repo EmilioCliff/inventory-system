@@ -42,10 +42,10 @@ jobs:
     - name: Run migration
       run: make migrateup
 
-    - name: Print Working Directory
-      run: |
-        echo "Current Working Directory: $PWD"
-        echo "GitHub Workspace: $GITHUB_WORKSPACE"
+    # - name: Print Working Directory
+    #   run: |
+    #     echo "Current Working Directory: $PWD"
+    #     echo "GitHub Workspace: $GITHUB_WORKSPACE"
 
     - name: Test
       run: make test

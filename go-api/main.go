@@ -14,7 +14,7 @@ import (
 func main() {
 	config, err := utils.ReadConfig(".")
 	if err != nil {
-		log.Fatal("Could not log config: ", err)
+		log.Fatal("Could not log config file: ", err)
 	}
 	conn, err := pgxpool.New(context.Background(), config.DB_SOURCE)
 	if err != nil {

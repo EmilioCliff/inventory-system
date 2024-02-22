@@ -2,10 +2,10 @@ postgres:
 	docker run --name postgres3 -e POSTGRES_PASSWORD=secret -e POSTGRES_USER=root -p 5432:5432 -d postgres:alpine3.19
 
 migrateup:
-	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose up
+	migrate -path go-api/db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose up
 
 migratedown:
-	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose down
+	migrate -path go-api/db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose down
 
 createdb:
 	docker exec -it postgres3 createdb --username=root --owner=root inventorydb
@@ -17,9 +17,22 @@ sqlc:
 	sqlc generate
 
 test:
-	go test -v -cover ./...
+	cd go-api && go test -v -cover ./...
 
 server:
-	go run main.go
+	cd go-api && go run main.go
 
-.PHONY: postgres createdb dropdb migratedown migrateup sqlc test server
+python-image:
+	cd python-flask && docker build -t python-flask:latest .
+
+python:
+	docker run --name pythonapp -d -p 3000:3000 python-flask:latest 
+
+go-image:
+	cd go-api && docker build -t go-api:latest .
+
+go:
+	docker run --name goapi -d -p 8080:8080 go-api:latest 
+
+
+.PHONY: postgres createdb dropdb migratedown migrateup sqlc test server python-image python go-image go
