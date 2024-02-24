@@ -11,7 +11,8 @@ HEADERS={
     "Authorization": "Bearer "
 }
 
-BASE_URL="http://0.0.0.0:8080"
+# BASE_URL="http://0.0.0.0:8080"
+BASE_URL = "http://inventory-system-api-1:8080"
 
 
 # def send_response(user_name, user_email, user_phone_number, user_message):

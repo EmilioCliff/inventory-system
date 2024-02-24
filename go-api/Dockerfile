@@ -12,6 +12,7 @@ WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
 COPY db/migration ./migration
+COPY db/sqlc/logi.png .
 COPY start.sh .
 COPY app.env .
 

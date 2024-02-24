@@ -4,5 +4,6 @@ WORKDIR /app
 COPY . .
 RUN pip install gunicorn
 RUN pip install -r requirements.txt
-EXPOSE 3000
+
+EXPOSE 3030
 CMD ["gunicorn", "-b", "0.0.0.0:3030", "app:app"]

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/go-pdf/fpdf"
@@ -78,7 +80,16 @@ func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 	pdf.Cell(40, 10, "PAYMENT RECEIPT")
 	pdf.Ln(lineHeight)
 	pdf.Ln(lineHeight)
-	pdf.ImageOptions("/home/runner/work/inventory-system/inventory-system/logi.png", safeW/2, pdf.GetY()+lineHeight*3, 30, 20, true, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
+
+	currentDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error getting current working directory:", err)
+		return nil, err
+	}
+
+	imagePath := filepath.Join(currentDir, "logi.png")
+
+	pdf.ImageOptions(imagePath, safeW/2, pdf.GetY()+lineHeight*3, 30, 20, true, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
 
 	pdf.SetFont("Arial", "", 12)
 	_, lineHeight = pdf.GetFontSize()

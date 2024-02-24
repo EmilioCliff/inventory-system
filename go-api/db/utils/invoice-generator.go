@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"math"
+	"os"
+	"path/filepath"
 
 	"strconv"
 
@@ -67,7 +69,15 @@ func generateInvoice(data [][]string, user map[string]string) ([]byte, error) {
 	pageW, _ := pdf.GetPageSize()
 	safeAreaW := pageW - 2*marginX
 
-	pdf.ImageOptions("/home/runner/work/inventory-system/inventory-system/logi.png", 0, 0, 50, 40, false, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
+	currentDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error getting current working directory:", err)
+		return nil, err
+	}
+
+	imagePath := filepath.Join(currentDir, "logi.png")
+
+	pdf.ImageOptions(imagePath, 0, 0, 50, 40, false, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
 	pdf.SetFont("Arial", "B", 16)
 	_, lineHeight := pdf.GetFontSize()
 	currentY := pdf.GetY() + lineHeight + gapY + 16
