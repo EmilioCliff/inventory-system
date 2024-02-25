@@ -27,6 +27,7 @@ func main() {
 		log.Fatal("Couldnt create new server: ", err)
 	}
 
+	// store.
 	accessToken, err := server.GeneratePythonToken("pythonApp")
 	fmt.Println(accessToken)
 
