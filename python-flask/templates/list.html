@@ -192,7 +192,7 @@
     <p>No Receipts Yet</p>
     {% else %}
     {% for data in data_sent %}
-    <a href="{{ url_for('get_receipt', id=data.receipt_number) }}" class="d-flex justify-content-between list--container mb-3 p-3">
+    <a href="{{ url_for('get_receipt', id=data.receipt_id) }}" class="d-flex justify-content-between list--container mb-3 p-3">
         <div class="new_data">
             <div>
                 <p style="font-size: 18px; font-weight: 500;color: black;"> here {{ data.user_receipt_username }}</p>
@@ -208,7 +208,7 @@
     <p>No Invoice Yet</p>
     {% else %}
     {% for data in data_sent %}
-    <a href="{{  url_for('get_invoice', id=data.invoice_number) }}" class="d-flex justify-content-between list--container mb-3 p-3">
+    <a href="{{  url_for('get_invoice', id=data.invoice_id) }}" class="d-flex justify-content-between list--container mb-3 p-3">
         <div class="new_data">
             <div>
                 <p style="font-size: 18px; font-weight: 500;color: black;">{{ data.user_invoice_username }}</p>
