@@ -1,3 +1,4 @@
 postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable
 postgresql://postgres:D*fd6EDcc5bdA6AG1c4FF6DafFeG33b*@postgres.railway.internal:5432/railway
 postgresql://postgres:D*fd6EDcc5bdA6AG1c4FF6DafFeG33b*@viaduct.proxy.rlwy.net:26578/railway
+CMD ["gunicorn", "-b", "0.0.0.0:3030", "app:app"]

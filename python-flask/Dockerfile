@@ -6,4 +6,4 @@ RUN pip install gunicorn
 RUN pip install -r requirements.txt
 
 EXPOSE 3030
-CMD ["gunicorn", "-b", "0.0.0.0:3030", "app:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:3030", "--timeout", "60", "--workers", "4", "app:app"]
