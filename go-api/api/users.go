@@ -614,7 +614,7 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	// send email to the user with the accesstoken for renewing password + url
+
 	ctx.JSON(http.StatusOK, gin.H{"success": "accesstoken granted and email send"})
 	return
 }

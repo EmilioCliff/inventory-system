@@ -211,7 +211,7 @@ def login():
         rsp = requests.get(url=userLoginUrl, json=userLoginRequest)
         user_response = rsp.json()
         if rsp.status_code == 200:
-            # session['token'] = user_response['access_token']
+            session['token'] = user_response['access_token']
             session['user_id'] = user_response['user']['id']
             session['username'] = user_response['user']['username']
             return redirect(url_for('dashboard'))
