@@ -130,7 +130,7 @@
     <a href="{{ url_for('get_user', id=data.id) }}" class="d-flex justify-content-between list--container p-3 mb-3">
         <div class="d-inline-flex justify-content-between">
             <div>
-                <img src="../static/images/cliff.jpeg" alt="Profile" class="profile-photo">
+                <img src="../static/images/random_image.png" alt="Profile" class="profile-photo">
             </div>
             <div>
                 <p style="font-size: 18px; font-weight: 500;color: black;">{{ data.username }}</p>
@@ -195,8 +195,8 @@
     <a href="{{ url_for('get_receipt', id=data.receipt_id) }}" class="d-flex justify-content-between list--container mb-3 p-3">
         <div class="new_data">
             <div>
-                <p style="font-size: 18px; font-weight: 500;color: black;"> here {{ data.user_receipt_username }}</p>
-                <p style="font-size: 12px;"> RN - {{ data.receipt_number }} </p>
+                <p style="font-size: 18px; font-weight: 500;color: black;">{{ data.user_receipt_username }}</p>
+                <p style="font-size: 12px;"> RCPT - {{ data.receipt_number }} </p>
             </div>
         </div>
         <p style="overflow: hidden; white-space: nowrap;">{{ data.receipt_create_time }}</p>
@@ -212,7 +212,7 @@
         <div class="new_data">
             <div>
                 <p style="font-size: 18px; font-weight: 500;color: black;">{{ data.user_invoice_username }}</p>
-                <p style="font-size: 12px;">IN - {{ data.invoice_number }}</p>
+                <p style="font-size: 12px;">INV - {{ data.invoice_number }}</p>
             </div>
         </div>
         <p style="overflow: hidden; white-space: nowrap;">{{ data.invoice_create_time }}</p>
@@ -221,7 +221,7 @@
     {% endif %}
     {% endif %}
 </div>
-<footer>
+<!-- <footer>
     <div class="row">
         <div class="bottom-bar d-inline-flex justify-content-between">
             <a href="{{ url_for('dashboard') }}" class="home-button mr-auto">
@@ -246,5 +246,5 @@
             </div>
         </div>
         </div>
-</footer>
+</footer> -->
 {% endblock %}

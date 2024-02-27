@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const overlay_delete = document.getElementById('overlay_delete');
   const deleteFormContainer = document.querySelector('.delete-form-container');
   const productCloseButtonsedit = document.querySelectorAll('#productCloseButtonedit');
-  // const closeAddClientStockBtn = document.getElementsByName('newCloseBtnnn')
+  const closeAddClientStockBtn = document.getElementById('close-btnnnn')
   const reduceClientStockCloseBtn = document.getElementById('close-buttonReduce');
 
   const editButton = document.getElementById('editButton');
@@ -34,10 +34,25 @@ document.addEventListener('DOMContentLoaded', function() {
       popupFormReduceClientStock.style.display = 'block';
     })
   }
-
+  
   if (reduceClientStockCloseBtn) {
-    overlay_recudeClientStock.style.display = 'none';
-    popupFormReduceClientStock.style.display = 'none';
+    reduceClientStockCloseBtn.addEventListener('click', function(event){
+      event.preventDefault();
+      overlay_recudeClientStock.style.visibility = 'hidden';
+      overlay_recudeClientStock.style.opacity = '0';
+      popupFormReduceClientStock.style.visibility = 'hidden';
+      popupFormReduceClientStock.style.opacity = '0';
+    })
+  }
+  
+  if (closeAddClientStockBtn) {
+    closeAddClientStockBtn.addEventListener('click', function(event){
+      event.preventDefault();
+      overlay_addClientStock.style.visibility = 'hidden';
+      overlay_addClientStock.style.opacity = '0';
+      popupFormAddClientStock.style.visibility = 'hidden';
+      popupFormAddClientStock.style.opacity = '0';
+    })
   }
 
   if (addClientStockBtn) {
@@ -46,14 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
       popupFormAddClientStock.style.display = 'block';
     })
   }
-
-//   if (closeAddClientStockBtn) {
-//     closeAddClientStockBtn.addEventListener('click', function() {
-//     overlay_addClientStock.style.display = 'none';
-//     popupFormAddClientStock.style.display = 'none';
-//     console.log('Close button clicked');
-// })
-// }
 
 
   editProductBtns.forEach((editProductBtn, index) => {
@@ -69,14 +76,6 @@ productCloseButtonsedit.forEach((productCloseButtonedit, index) => {
       // popupFormProductedits[index+1].style.display = 'none';
   });
 });
-
-// productCloseButtonsedit.forEach((productCloseButtonedit, index) => {
-//   productCloseButtonedit.addEventListener('click', function() {
-      // overlay_productedits[index+1].style.display = 'none';
-      // popupFormProductedit[index+1].style.display = 'none';
-//       // ... your other logic ...
-//   });
-// });
 
   if (editButton) {
     editButton.addEventListener('click', function() {
@@ -148,24 +147,6 @@ if (closeButton) {
   });
 }
 
-// if (addCloseBtn) {
-//   addCloseBtn.addEventListener('click', closeModal);
-// }
-  // if (addBtn) {
-  //   addBtn.addEventListener('click', function() {
-  //     add_overlay.style.display = 'block';
-  //     addFormContainer.style.display = 'block';
-  //   })
-  // }
-
-
-  // if (addCloseBtn) {
-  //   addCloseBtn.addEventListener('click', function() {
-  //     add_overlay.style.display = 'none';
-  //     addFormContainer.style.display = 'none';
-  //   })
-  // }
-
   if (createUserBtn) {
       createUserBtn.addEventListener('click', function() {
           overlay_create.style.display = 'block';
@@ -228,40 +209,3 @@ if (closeButton) {
   });
 });
 });
-
-
-// const createUserBtn = document.getElementById('createUserBtn');
-// const overlay_create = document.getElementById('overlay_create');
-// const popupFormCreate = document.getElementById('popupFormCreate');
-
-// createUserBtn.addEventListener('click', function() {
-//   overlay_create.style.display = 'block';
-//   popupFormCreate.style.display = 'block';
-//   // createUserBtn.classList.add('active');
-// });
-
-// const createCloseButton = document.getElementById('createCloseButton');
-
-// createCloseButton.addEventListener('click', function() {
-//   overlay_create.style.display = 'none';
-//   popupFormCreate.style.display = 'none';
-//   // createUserBtn.classList.remove('active');
-// });
-
-// const createProductBtn = document.getElementsByName('newProduct');
-// const overlay_product = document.getElementById('overlay_product');
-// const popupFormProduct = document.getElementById('popupFormProduct');
-
-// createProductBtn.addEventListener('click', function() {
-//   overlay_product.style.display = 'block';
-//   popupFormProduct.style.display = 'block';
-//   // createProductBtn.classList.add('active');
-// });
-
-// const productCloseButton = document.getElementById('productCloseButton');
-
-// productCloseButton.addEventListener('click', function() {
-//   overlay_product.style.display = 'none';
-//   popupFormProduct.style.display = 'none';
-//   // createProductBtn.classList.remove('active');
-// });

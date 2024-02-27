@@ -10,15 +10,17 @@ LIMIT 1;
 
 -- name: GetUserInvoicesByID :many
 SELECT * FROM invoices
-WHERE user_invoice_id = $1;
+WHERE user_invoice_id = $1
+ORDER BY created_at DESC;
 
 -- name: GetUserInvoicesByUsername :many
 SELECT * FROM invoices
-WHERE user_invoice_username = $1;
+WHERE user_invoice_username = $1
+ORDER BY created_at DESC;
 
 -- name: ListInvoices :many
 SELECT * FROM invoices
-ORDER BY invoice_id;
+ORDER BY created_at DESC;
 
 -- name: CreateInvoice :one
 INSERT INTO invoices (

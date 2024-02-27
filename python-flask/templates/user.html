@@ -19,7 +19,9 @@
 {% endwith %}
 <div class="d-inline-flex align-items-center justify-content-start">
     <!-- change to 1 -->
-    {% if user_id == 1 %}
+    {% if user_id <= 2 and user.id <= 2 %}
+    <a href="{{ url_for('dashboard') }}">
+    {% elif user_id <= 2 %}
     <a href="{{ url_for('list_users') }}">
     {% else %}
     <a href="{{ url_for('dashboard') }}">
@@ -33,12 +35,12 @@
 <div class="d-flex list--container">
     <div class="d-inline-flex justify-content-start p-3">
         <div style="display: flex; flex-direction: column; align-items: center;">
-            <p style="font-size: 18px; font-weight: 500;color: black;">{{ user.username}}</p>
-            <div class="d-inline-flex">
+            <div class="d-inline-flex align-items-center">
                 <div>
-                    <img src="../static/images/cliff.jpeg" alt="Profile" class="profile-photo">
+                    <img src="../static/images/random_image.png" alt="Profile" class="profile-photo">
                 </div>
-                <div style="display: flex;flex-direction: column;">
+                <div class="ms-3" style="display: flex;flex-direction: column;">
+                    <p style="font-size: 18px; font-weight: 500;color: black;">{{ user.username}}</p>
                     <p>{{ user.email }}</p>
                     <p>{{ user.address }}</p>
                     <p>{{ user.phone_number }}</p>
@@ -46,12 +48,12 @@
             </div>
         </div>
     </div>
-    <div>
+    <!-- <div>
         <img src="../static/images/piano.jpg" alt="piano" style="width: 100%; height: 100%; border-radius: 10%;">
-    </div>
+    </div> -->
 </div>
 <div class="d-inline-flex justify-content-around" style="flex-wrap: wrap; gap: 10px;">
-    {% if user.id != 1 and user_id != 1%}
+    {% if user.id > 2 and user_id > 2 %}
     <a href="#" class="btn btn-outline-primary" id="reduceClientStock">Sold Products
         <div class="overlay" id="reduceClientStockOverlay">
             <div class="form-container" id="popupformreduceClientStock">
@@ -77,18 +79,19 @@
         </div>
     </a>
     {% endif %}
-    <a href="{{ url_for('get_user', id=user.id) }}" class="btn btn-outline-primary">Products</a>
+    <a href="{{ url_for('get_user', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user' %}active{% endif %}">Products</a>
     {% if user.id == 1 %}
     {% else %}
-    <a href="{{ url_for('get_user_invoices', id=user.id) }}" class="btn btn-outline-primary">Invoices</a>
-    <a href="{{ url_for('get_user_receipts', id=user.id) }}" class="btn btn-outline-primary">Receipts</a>
+    <a href="{{ url_for('get_user_invoices', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user_invoices' %}active{% endif %}">Invoices</a>
+    <a href="{{ url_for('get_user_receipts', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user_receipts' %}active{% endif %}">Receipts</a>
     {% endif %}
     <!-- change to 1 -->
     {% if user_id == 1 %}
+    {% if user.id != 1 %}
     <a href="#" class="btn btn-outline-primary" id="addClientStockBtn">Add User Stock
         <div class="overlay" id="addClientStockOverlay">
             <div class="form-container" id="popupformAddClientStock">
-                <button name="close-button" class="close-button">
+                <button name="close-button" id="close-btnnnn" class="close-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                     </svg>
@@ -108,6 +111,7 @@
             </div>
         </div>
         </a>
+        {% endif %}
     {% if user.id != 1 %}
     <a href="#" class="btn btn-outline-primary" id="editButton">Edit User Profile</a>
     {% else %}
@@ -171,9 +175,10 @@
 </div>
 <nav class="navbar my-2" style="background-color: #DCF2F1;">
     <div class="container-fluid" style="background-color: #DCF2F1;">
-        <form class="d-flex flex-grow-1" role="search" action="{{ url_for('list_users') }}" method="post">
+        <form class="d-flex flex-grow-1" role="search" action="{{ url_for('search_products') }}" method="post">
             <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
             <div id="searchResults"></div>
+            <button class="btn btn-outline-primary" type="submit">Search</button>
         </form>
     </div>
 </nav>
@@ -216,7 +221,7 @@
             </div>
         </div>
         {% elif user_id != 1 %}
-        <a href="#" class="btn btn-primary">Request Stock</a>
+        <a href="{{ url_for('request_stock') }}" class="btn btn-sm btn-primary">Request Stock</a>
         {% else %}
         {% endif %}
     </div>
@@ -229,7 +234,7 @@
 {% for data in invoice %}
     <div class="d-flex justify-content-between list--container mb-3 p-3">
         <p style="font-size: 18px; font-weight: 500;">Invoice Number: INV - {{ data.invoice_number }}</p>
-        <a href="{{ url_for('invoiceDownload', id_param=data.invoice_number) }}" class="btn btn-outline-success">Download</a>
+        <a href="{{ url_for('invoiceDownload', id_param=data.invoice_number) }}" class="btn btn-sm btn-outline-success">Download</a>
     </div>
 {% endfor %}
 {% endif %}
@@ -240,7 +245,7 @@
 {% for data in receipt %}
     <div class="d-flex justify-content-between list--container mb-3 p-3">
         <p style="font-size: 18px; font-weight: 500;">Receipt Number: RCPT - {{ data.receipt_number }}</p>
-        <a href="{{ url_for('receiptDownload', id_param=data.receipt_number) }}" class="btn btn-outline-success">Download</a>
+        <a href="{{ url_for('receiptDownload', id_param=data.receipt_number) }}" class="btn btn-sm btn-outline-success">Download</a>
     </div>
 {% endfor %}
 {% endif %}
@@ -270,21 +275,6 @@
         document.getElementById('productList').appendChild(newProduct);
         document.getElementById('productList').appendChild(newQuantity);
     }
-</script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const closeAddClientStockBtn = document.getElementById('close-button');
-      const overlay_addClientStock = document.getElementById('addClientStockOverlay');
-      const popupFormAddClientStock = document.getElementById('popupformAddClientStock');
-
-      if (closeAddClientStockBtn) {
-        closeAddClientStockBtn.addEventListener('click', function() {
-          console.log('Close button clicked');
-          overlay_addClientStock.style.display = 'none';
-          popupFormAddClientStock.style.display = 'none';
-        });
-      }
-    });
 </script>
 <script>
     function reduceProduct() {

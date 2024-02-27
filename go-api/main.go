@@ -21,13 +21,14 @@ func main() {
 		log.Fatal("Couldnt connect to db: ", err)
 	}
 
+	emailSender := utils.NewGmailSender(config.EMAIL_SENDER_NAME, config.EMAIL_SENDER_ADDRESS, config.EMAIL_SENDER_PASSWORD)
+
 	store := db.NewStore(conn)
-	server, err := api.NewServer(config, store)
+	server, err := api.NewServer(config, store, *emailSender)
 	if err != nil {
 		log.Fatal("Couldnt create new server: ", err)
 	}
 
-	// store.
 	accessToken, err := server.GeneratePythonToken("pythonApp")
 	fmt.Println(accessToken)
 

@@ -601,7 +601,19 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		return
 	}
 
-	_ = fmt.Sprintf("https://example.com/reset?token=%v", accessToken)
+	resetPasswordLink := fmt.Sprintf("http://127.0.0.1:5000/resetit?token=%v", accessToken)
+	emailBody := fmt.Sprintf(`
+	<h1>Hello %s</h1>
+	<p>We received a request to reset your password. Click the link below to reset it:</p>
+	<a href="%s" style="display:inline-block; padding:10px 20px; background-color:#007BFF; color:#fff; text-decoration:none; border-radius:5px;">Reset Password</a>
+	<h5>The link is valid for 10 Minutes</h5>
+`, user.Username, resetPasswordLink)
+
+	err = server.emailSender.SendMail("Reset Password", emailBody, []string{user.Email}, nil, nil, nil)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 	// send email to the user with the accesstoken for renewing password + url
 	ctx.JSON(http.StatusOK, gin.H{"success": "accesstoken granted and email send"})
 	return

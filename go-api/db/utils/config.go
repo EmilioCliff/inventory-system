@@ -13,6 +13,9 @@ type Config struct {
 	TOKEN_DURATION            time.Duration `mapstructure:"TOKEN_DURATION"`
 	TOKEN_SYMMETRY_KEY        string        `mapstructure:"TOKEN_SYMMETRY_KEY"`
 	PYTHON_APP_TOKEN_DURATION time.Duration `mapstructure:"PYTHON_APP_TOKEN_DURATION"`
+	EMAIL_SENDER_NAME         string        `mapstructure:"EMAIL_SENDER_NAME"`
+	EMAIL_SENDER_ADDRESS      string        `mapstructure:"EMAIL_SENDER_ADDRESS"`
+	EMAIL_SENDER_PASSWORD     string        `mapstructure:"EMAIL_SENDER_PASSWORD"`
 }
 
 func ReadConfig(path string) (config Config, err error) {

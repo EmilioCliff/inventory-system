@@ -10,21 +10,23 @@ import (
 )
 
 type Server struct {
-	config     utils.Config
-	store      *db.Store
-	router     *gin.Engine
-	tokenMaker token.Maker
+	config      utils.Config
+	store       *db.Store
+	router      *gin.Engine
+	tokenMaker  token.Maker
+	emailSender utils.GmailSender
 }
 
-func NewServer(config utils.Config, store *db.Store) (*Server, error) {
+func NewServer(config utils.Config, store *db.Store, emailSender utils.GmailSender) (*Server, error) {
 	tokenMaker, err := token.NewPaseto(config.TOKEN_SYMMETRY_KEY)
 	if err != nil {
 		return nil, fmt.Errorf("Couldnt open tokenmaker %w", err)
 	}
 	server := &Server{
-		tokenMaker: tokenMaker,
-		store:      store,
-		config:     config,
+		tokenMaker:  tokenMaker,
+		store:       store,
+		config:      config,
+		emailSender: emailSender,
 	}
 
 	server.setRoutes()
@@ -43,12 +45,12 @@ func (server *Server) setRoutes() {
 	auth.PUT("/products/admin/edit/:id", server.editProduct)
 
 	router.GET("/users/login", server.loginUser)
+	router.POST("/reset", server.resetPassword)
+	router.POST("/resetit", server.resetIt)
 	auth.GET("/users/:id", server.getUser)
 	auth.PUT("/users/:id/edit", server.editUser)
 	auth.POST("/users/admin/add", server.createUser)
 	auth.DELETE("/users/admin/:id", server.deleteUser)
-	auth.POST("/reset", server.resetPassword)
-	auth.POST("/resetit", server.resetIt)
 	auth.GET("/users/admin", server.listUsers)
 	auth.PUT("/users/admin/manage/:id", server.manageUser)
 	auth.POST("/users/admin/manage/add/:id", server.addClientStock)

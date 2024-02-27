@@ -10,15 +10,17 @@ LIMIT 1;
 
 -- name: GetUserReceiptsByID :many
 SELECT * FROM receipts
-WHERE user_receipt_id = $1;
+WHERE user_receipt_id = $1
+ORDER BY created_at DESC;
 
 -- name: GetUserReceiptsByUsername :many
 SELECT * FROM receipts
-WHERE user_receipt_username = $1;
+WHERE user_receipt_username = $1
+ORDER BY created_at DESC;
 
 -- name: ListReceipts :many
 SELECT * FROM receipts
-ORDER BY receipt_id;
+ORDER BY created_at DESC;
 
 -- name: CreateReceipt :one
 INSERT INTO receipts(

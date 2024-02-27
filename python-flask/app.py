@@ -6,47 +6,21 @@ from forms import CreateUserForm, CreateProductForm, EditProductForm, ChangePass
 import requests
 import base64
 from io import BytesIO
+from requests.exceptions import ConnectionError
+from werkzeug.exceptions import InternalServerError
 
 HEADERS={
     "Authorization": "Bearer "
 }
 
-# BASE_URL="http://0.0.0.0:8080"
-# BASE_URL = "http://inventory-system-api-1:8080"
-BASE_URL = "http://hip-letters.railway.internal:8080" 
-# BASE_URL = "https://hip-letters-production.up.railway.app:8080"
-
-# def send_response(user_name, user_email, user_phone_number, user_message):
-#     domain = os.environ.get('DOMAIN')
-#     api_key = os.environ.get('APIKEY')
-#     mailgun_url = f"https://api.mailgun.net/v3/{domain}/messages"
-#     response = requests.post(
-#         mailgun_url, 
-#         auth=("api", api_key), 
-#         data={
-#             "from": f"cliff <mailgun@{domain}>", 
-#             "to": ["clifftest33@gmail.com"], 
-#             "subject": "User Feedback", 
-#             "text": f"{user_name} of phone number {user_phone_number} and email {user_email} reached out\n\n{user_message}"
-#             }
-#         )
+# BASE_URL="http://0.0.0.0:8080" # When Testing
+# BASE_URL = "http://inventory-system-api-1:8080" When using Docker Compose
+BASE_URL = "http://hip-letters.railway.internal:8080"  # Production
    
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "32e234353t4rffbfbfgxx"
+app.config['SESSION_PERMANENT'] = True
 Bootstrap5(app)
-
-@app.route("/")
-def testing():
-    return "I'm Here man"
-
-@app.route("/test", methods=['POST', 'GET'])
-def test(): 
-    if request.method == "POST":
-        products_id = request.form.getlist('products_id')
-        quantities = request.form.getlist('quantities')
-        print(products_id, quantities)
-        return redirect(url_for("test"))
-    return render_template("dynamic-data.html")
 
 @app.route('/create_user"', methods=['GET', 'POST'])
 def create_user():
@@ -68,7 +42,7 @@ def create_user():
             flash("Please login")
             return redirect(url_for('login'))
         else:
-            return render_template('failed.html', error_code=rsp.status_code)
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     return redirect(url_for("list_users.html"))
 
 @app.route('/create_product"', methods=['GET', 'POST'])
@@ -88,7 +62,7 @@ def create_product():
             flash("Please login")
             return redirect(url_for('login'))
         else:
-            return render_template('failed.html', error_code=rsp.status_code)
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     return redirect(url_for("list_products.html"))
 
 @app.route('/delete_product/<int:id>', methods=['POST'])
@@ -102,7 +76,7 @@ def delete_product(id):
         flash("Please login")
         return redirect(url_for('login'))
     else:
-        return render_template('failed.html', error_code=rsp.status_code) 
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
 
 @app.route('/delete_user/<int:id>', methods=['POST'])
 def delete_user(id):
@@ -112,7 +86,7 @@ def delete_user(id):
         user = rsp.json()
         print(user)
         if user['username'].lower() == request.form.get('delete-username').lower():
-            deleteUserUrl = f"http://0.0.0.0:8080/users/admin/{id}"
+            deleteUserUrl = f"{BASE_URL}/users/admin/{id}"
             rsp = requests.delete(url=deleteUserUrl, headers={"Authorization": f"Bearer {session['token']}"})
             if rsp.status_code == 200:
                 flash("User Deleted Successfully")
@@ -121,9 +95,10 @@ def delete_user(id):
                 flash("Please login")
                 return redirect(url_for('login'))
             else:
-                return render_template('failed.html', error_code=rsp.status_code) 
+                return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
         else:
-            return render_template('failed.html', error_code={"failed":"incorrect user name"})     
+            flash("Username didnt match")
+            return redirect(url_for('list_users'))
     
 @app.route('/edit_product/<int:id>', methods=['POST'])
 def edit_product(id):
@@ -143,7 +118,7 @@ def edit_product(id):
             flash("Please login")
             return redirect(url_for('login'))
         else:
-            return render_template('failed.html', error_code=rsp.status_code)          
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])         
     return render_template("edit_product.html")
 
 @app.route('/change_password/<int:id>', methods=['GET', 'POST'])
@@ -164,19 +139,11 @@ def change_password(id):
             flash("Please login")
             return redirect(url_for('login'))
         else:
-            return render_template('failed.html', error_code=rsp.status_code)          
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     return render_template("change_password.html", form=form)
 
 @app.route('/manage_user/<int:id>', methods=['GET', 'POST'])
 def manage_user(id):
-    # user = requests.get(url=f"{BASE_URL}/users/{id}", headers={"Authorization": f"Bearer {session['token']}"})
-    # data = user.json()
-    # form = ManageUserForm(
-    #     email=data['email'],
-    #     phoneNumber=data['phone_number'],
-    #     address=data['address'],
-    #     username=data['username']
-    # )
     if request.method == "POST":
         manageUserUrl = f"{BASE_URL}/users/admin/manage/{id}"
         changePasswordRequest = {
@@ -196,34 +163,42 @@ def manage_user(id):
             flash("Please login")
             return redirect(url_for('login'))
         else:
-            return render_template('failed.html', error_code=rsp.status_code)           
-    return render_template("manage_user.html")
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])          
+    return redirect(url_for("get_user.html", id))
 
 @app.route("/reset", methods=['GET', 'POST'])
 def reset():
-    form = ResetPasswordForm()
-    if form.validate_on_submit():
+    if request.method == "POST":
         resetPasswordUrl = f"{BASE_URL}/reset"
-        resetPasswordRequest = {"email": form.email.data}
-        rsp = requests.post(url=resetPasswordUrl, json=resetPasswordRequest, headers={"Authorization": f"Bearer {session['token']}"})
+        resetPasswordRequest = {"email": request.form.get('email')}
+        rsp = requests.post(url=resetPasswordUrl, json=resetPasswordRequest)
         if rsp.status_code == 200:
-            flash("Password CHanged")
+            flash("Reset email sent")
             return redirect(url_for('login'))
+        elif rsp.status_code == 500:
+            flash("No User Found With Email Provided")
+            return redirect(url_for('reset'))
         else:
-            return render_template('failed.html', error_code=rsp.status_code)     
-    return render_template("reset_password.html", form=form)
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])    
+    return render_template("forgot_password.html", reset=True)
 
 @app.route("/resetit", methods=['GET', 'POST'])
 def resetit():
-    form = ResetItForm()
-    if form.validate_on_submit():
+    token = request.args.get('token')
+    if request.method == "POST":
+        token = request.form.get('token')
+        password = request.form.get('pass')
+        confimPass = request.form.get('Confirmpass')
+        if password != confimPass:
+            flash("Password Don't Match")
+            return redirect('reset')
         resetItUrl = f"{BASE_URL}/resetit"
-        rsp = requests.post(url=resetItUrl, params={"token": request.args.get('token')}, json={"password": form.password.data}, headers={"Authorization": f"Bearer {session['token']}"})
+        rsp = requests.post(url=resetItUrl, params={"token": token}, json={"password": password})
         if rsp.status_code == 200:
-            return redirect(url_for('dashboard'))
+            return redirect(url_for('login'))
         else:
-            return render_template('failed.html', error_code=rsp.status_code)
-    return render_template("reset_it.html", form=form)
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
+    return render_template("forgot_password.html", token=token)
     
 @app.route('/login_user', methods=['GET', 'POST'])
 def login():
@@ -236,7 +211,7 @@ def login():
         rsp = requests.get(url=userLoginUrl, json=userLoginRequest)
         user_response = rsp.json()
         if rsp.status_code == 200:
-            session['token'] = user_response['access_token']
+            # session['token'] = user_response['access_token']
             session['user_id'] = user_response['user']['id']
             session['username'] = user_response['user']['username']
             return redirect(url_for('dashboard'))
@@ -253,6 +228,7 @@ def login():
 
 @app.route('/get_user/<int:id>')
 def get_user(id):
+    # print(session['user_id'])
     getUserUri = f"{BASE_URL}/users/{id}"
     product_reponse = requests.get(url=f"{BASE_URL}/products", headers={"Authorization": f"Bearer {session['token']}"}) 
     rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
@@ -262,7 +238,7 @@ def get_user(id):
         flash("Please login")
         return redirect(url_for('login'))
     else:
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
 
 @app.route('/get_product/<int:id>')
 def get_product(id):
@@ -274,19 +250,20 @@ def get_product(id):
         flash("Please login")
         return redirect(url_for('login'))
     else:
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
 
 @app.route('/get_invoice/<int:id>')
 def get_invoice(id):
     getInvoiceUri = f"{BASE_URL}/invoices/{id}"
     rsp = requests.get(url=getInvoiceUri, headers={"Authorization": f"Bearer {session['token']}"})
+    print(rsp.text)
     if rsp.status_code == 200:
         return render_template('get_invoice.html', user_data=rsp.json()) # unmarshal JSON and read data
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
     else:
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     
 @app.route('/get_receipt/<int:id>')
 def get_receipt(id):
@@ -298,9 +275,9 @@ def get_receipt(id):
         flash("Please login")
         return redirect(url_for('login'))
     else:
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
 
-@app.route('/das')
+@app.route('/')
 def dashboard():
     getUserUri = f"{BASE_URL}/users/{session['user_id']}"
     rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
@@ -312,11 +289,10 @@ def list_invoices():
     rsp = requests.get(url=listInvoicesUri, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
-    # print(f"the user resonse is {rsp.json()}")
     return render_template("list.html", data_sent=rsp.json(), ct="invoices", user_id=session['user_id'])
 
 @app.route('/list_receipts')
@@ -325,7 +301,7 @@ def list_receipts():
     rsp = requests.get(url=listReceiptUrl, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
@@ -337,7 +313,7 @@ def list_users():
     rsp = requests.get(url=listUsersUrl, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
@@ -351,7 +327,7 @@ def search_users():
     rsp = requests.get(url=listUsersUrl, json={"search_word": query}, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
@@ -365,7 +341,7 @@ def search_products():
     rsp = requests.get(url=listUsersUrl, json={"search_word": query}, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try aain server error")
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
@@ -377,7 +353,7 @@ def list_products():
     rsp = requests.get(url=listProductsUrl, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
@@ -395,7 +371,7 @@ def get_user_invoices(id):
         flash("Please login")
         return redirect(url_for('login'))
     else:
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     
 @app.route('/get_user_receipts/<int:id>')
 def get_user_receipts(id):
@@ -409,7 +385,7 @@ def get_user_receipts(id):
         flash("Please login")
         return redirect(url_for('login'))
     else:
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     
 @app.route('/get_user_products/<int:id>')
 def get_user_products(id):
@@ -421,7 +397,7 @@ def get_user_products(id):
         flash("Please login")
         return redirect(url_for('login'))
     else:
-        return render_template('failed.html', error_code=rsp.status_code)
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
 
 @app.route("/users/admin/manage/add", methods=['POST', 'GET'])
 def add_admin_stock():
@@ -438,7 +414,7 @@ def add_admin_stock():
             flash("Please login")
             return redirect(url_for('login'))
         else:
-            return render_template('failed.html', error_code=rsp.status_code)
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
 
 @app.route('/add_client_stock/<int:id>', methods=['POST', 'GET'])
 def add_client_stock(id):
@@ -489,7 +465,7 @@ def reduce_client_stock(id):
             flash("Please login")
             return redirect(url_for('login'))
         else:
-            return render_template('failed.html', error_code=rsp.status_code)
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     return render_template("reduce_client_stock.html")
 
 # "'user.html', user=rsp.json(), user_id=session['user_id'], ct='user', products=product_reponse.json()"
@@ -499,7 +475,7 @@ def invoiceDownload(id_param):
     url = f"{BASE_URL}/invoices/{id_param}"
     response = requests.get(url=url, headers={"Authorization": f"Bearer {session['token']}"})
     data = response.json()
-    print(data)
+
     pdf_bytes = base64.b64decode(data['invoice_pdf'])
 
     if response.status_code == 200:
@@ -509,7 +485,7 @@ def invoiceDownload(id_param):
         flash("Please login")
         return redirect(url_for('login'))
     else:
-        return f"Failed to download PDF. Status code: {response.status_code}"
+        return render_template('failed.html', error_code=response.status_code, error=response.json()['error'])
     
 @app.route("/download/receipt/<string:id_param>", methods=['POST', 'GET'])
 def receiptDownload(id_param):
@@ -525,7 +501,22 @@ def receiptDownload(id_param):
         flash("Please login")
         return redirect(url_for('login'))
     else:
-        return f"Failed to download PDF. Status code: {response.status_code}"
+        return render_template('failed.html', error_code=response.status_code, error=response.json()['error'])
+    
+@app.route("/request_stock", methods=["POST", "GET"])
+def request_stock():
+    return render_template("coming-soon.html")
+
+@app.errorhandler(ConnectionError)
+def handle_connection_error(error):
+    return render_template('failed.html', error_code=500, error=str(error), connection=True)
+
+@app.errorhandler(InternalServerError)
+def handle_server_error(error):
+    return render_template('failed.html', error_code=500, error=str(error), connection=True)
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
 
 if __name__ == "__main__":
