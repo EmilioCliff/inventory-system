@@ -53,7 +53,7 @@
     </div> -->
 </div>
 <div class="d-inline-flex justify-content-around" style="flex-wrap: wrap; gap: 10px;">
-    {% if ct not in ['receipts', 'invoices'] %}
+    <!-- {% if ct not in ['receipts', 'invoices'] %} -->
     {% if user.id > 2 and user_id > 2 %}
     <a href="#" class="btn btn-outline-primary" id="reduceClientStock">Sold Products
         <div class="overlay" id="reduceClientStockOverlay">
@@ -66,9 +66,13 @@
                 <form id="productForm" method="POST" action="{{ url_for('reduce_client_stock', id=user.id) }}" autocomplete="off">
                     <div id="stockList" class="form-group form-floating mt-4">
                         <select class="product me-5" name="products_id">
+                            {% if user.stock is none %}
+                            <option value="-100">No Products To Sell</option>
+                            {% else %}
                             {% for stock in user.stock %}
                             <option value="{{ stock.productID }}">{{ stock.productName }}:{{ stock.productQuantity }}</option>
                             {% endfor %}
+                            {% endif %}
                         </select>
                         <input type="number" class="quantity me-5" name="quantities" placeholder="Quantity" required style="width: 100px;">
                         <label for="quantities">Product Quantity</label>
@@ -80,7 +84,7 @@
         </div>
     </a>
     {% endif %}
-    {% endif %}
+    <!-- {% endif %} -->
     <a href="{{ url_for('get_user', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user' %}active{% endif %}">Products</a>
     {% if user.id == 1 %}
     {% else %}
