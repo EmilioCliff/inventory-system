@@ -4,18 +4,24 @@ document.addEventListener('DOMContentLoaded', function() {
   const editProductBtns = document.querySelectorAll('.editProduct');
   const addClientStockBtn = document.getElementById('addClientStockBtn');
   const reduceButton = document.getElementById('reduceClientStock');
+  const viewReceiptBtns = document.querySelectorAll('#viewReceipt');
+  const viewInvoiceBtns = document.querySelectorAll('#viewInvoice');
 
   const overlay_create = document.getElementById('overlay_create');
   const overlay_product = document.getElementById('overlay_product');
   const overlay_productedits = document.querySelectorAll('.overlay');
   const overlay_addClientStock = document.getElementById('addClientStockOverlay');
   const overlay_recudeClientStock = document.getElementById('reduceClientStockOverlay');
+  const overlay_viewReceipts = document.querySelectorAll('#overlay_receiptview');
+  const overlay_viewInvoices = document.querySelectorAll('#overlay_invoiceview');
 
   const popupFormCreate = document.getElementById('popupFormCreate');
   const popupFormProduct = document.getElementById('popupFormProduct');
   const popupFormProductedit = document.querySelectorAll('.form-container')
   const popupFormAddClientStock = document.getElementById('popupformAddClientStock');
   const popupFormReduceClientStock = document.getElementById('popupformreduceClientStock');
+  const popupFormReceiptView = document.querySelectorAll('#popupFormReceiptView');
+  const popupFormInvoiceView = document.querySelectorAll('#popupFormInvoiceView');
 
   const deleteButton = document.querySelector('.delete-button');
   const overlay_delete = document.getElementById('overlay_delete');
@@ -23,10 +29,40 @@ document.addEventListener('DOMContentLoaded', function() {
   const productCloseButtonsedit = document.querySelectorAll('#productCloseButtonedit');
   const closeAddClientStockBtn = document.getElementById('close-btnnnn')
   const reduceClientStockCloseBtn = document.getElementById('close-buttonReduce');
+  const receiptViewCloseBtns = document.querySelectorAll('#receiptViewCloseBtn');
+  const invoiceViewCloseBtns = document.querySelectorAll('#invoiceViewCloseBtn');
 
   const editButton = document.getElementById('editButton');
   const overlay_edit = document.getElementById('overlayedit');
   const editFormContainer = document.getElementById('popupFormEdit');
+
+  viewInvoiceBtns.forEach((viewInvoiceBtn, index) => {
+    viewInvoiceBtn.addEventListener('click', function() {
+        overlay_viewInvoices[index].style.display = 'block';
+        popupFormInvoiceView[index].style.display = 'block';
+    });
+});
+
+invoiceViewCloseBtns.forEach((invoiceViewCloseBtn, index) => {
+  invoiceViewCloseBtn.addEventListener('click', function() {
+    overlay_viewInvoices[index].style.display = 'none';
+    popupFormInvoiceView[index].style.display = 'none';
+  });
+});
+
+  viewReceiptBtns.forEach((viewReceiptBtn, index) => {
+    viewReceiptBtn.addEventListener('click', function() {
+        overlay_viewReceipts[index].style.display = 'block';
+        popupFormReceiptView[index].style.display = 'block';
+    });
+});
+
+receiptViewCloseBtns.forEach((receiptViewCloseBtn, index) => {
+  receiptViewCloseBtn.addEventListener('click', function() {
+    overlay_viewReceipts[index].style.display = 'none';
+    popupFormReceiptView[index].style.display = 'none';
+  });
+});
 
   if (reduceButton) {
     reduceButton.addEventListener('click', function() {

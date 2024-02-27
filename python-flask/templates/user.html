@@ -53,6 +53,7 @@
     </div> -->
 </div>
 <div class="d-inline-flex justify-content-around" style="flex-wrap: wrap; gap: 10px;">
+    {% if ct not in ['receipts', 'invoices'] %}
     {% if user.id > 2 and user_id > 2 %}
     <a href="#" class="btn btn-outline-primary" id="reduceClientStock">Sold Products
         <div class="overlay" id="reduceClientStockOverlay">
@@ -78,6 +79,7 @@
             </div>
         </div>
     </a>
+    {% endif %}
     {% endif %}
     <a href="{{ url_for('get_user', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user' %}active{% endif %}">Products</a>
     {% if user.id == 1 %}

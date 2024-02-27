@@ -10,6 +10,7 @@ type Config struct {
 	DB_DRIVER                 string        `mapstructure:"DB_DRIVER"`
 	DB_SOURCE                 string        `mapstructure:"DB_SOURCE"`
 	SERVER_ADDRESS            string        `mapstructure:"SERVER_ADDRESS"`
+	PUBLIC_URL                string        `mapstructure:"PUBLIC_URL"`
 	TOKEN_DURATION            time.Duration `mapstructure:"TOKEN_DURATION"`
 	TOKEN_SYMMETRY_KEY        string        `mapstructure:"TOKEN_SYMMETRY_KEY"`
 	PYTHON_APP_TOKEN_DURATION time.Duration `mapstructure:"PYTHON_APP_TOKEN_DURATION"`

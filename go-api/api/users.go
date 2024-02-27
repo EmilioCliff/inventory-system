@@ -601,7 +601,7 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		return
 	}
 
-	resetPasswordLink := fmt.Sprintf("http://127.0.0.1:5000/resetit?token=%v", accessToken)
+	resetPasswordLink := fmt.Sprintf("%v/resetit?token=%v", server.config.PUBLIC_URL, accessToken) // URL + TOKEN for passwordreset
 	emailBody := fmt.Sprintf(`
 	<h1>Hello %s</h1>
 	<p>We received a request to reset your password. Click the link below to reset it:</p>
