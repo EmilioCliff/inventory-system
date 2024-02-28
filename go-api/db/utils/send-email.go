@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"fmt"
 	"net/smtp"
 
@@ -30,7 +31,7 @@ func NewGmailSender(name, fromEmailAddress, fromEmailPassword string) *GmailSend
 	}
 }
 
-func (sender GmailSender) SendMail(subject, content string, to, cc, bcc, attachFiles []string) error {
+func (sender GmailSender) SendMail(subject, content string, to, cc, bcc []string, attachmentName string, attachmentData []byte) error {
 	e := email.NewEmail()
 	e.From = fmt.Sprintf("%s <%s>", sender.name, sender.fromEmailAddress)
 	e.Subject = subject
@@ -39,12 +40,8 @@ func (sender GmailSender) SendMail(subject, content string, to, cc, bcc, attachF
 	e.Bcc = bcc
 	e.Cc = cc
 
-	for _, fn := range attachFiles {
-		_, err := e.AttachFile(fn)
-		if err != nil {
-			return fmt.Errorf("Failed to attachfile: %s - %w", fn, err)
-		}
-	}
+	attachmentReader := bytes.NewReader(attachmentData)
+	e.Attach(attachmentReader, attachmentName, "application/pdf")
 
 	smtpAuth := smtp.PlainAuth("", sender.fromEmailAddress, sender.fromEmailPassword, smtpAuthAddress)
 	return e.Send(smtpServerAddress, smtpAuth)

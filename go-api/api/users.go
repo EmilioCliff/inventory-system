@@ -609,7 +609,7 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 	<h5>The link is valid for 10 Minutes</h5>
 `, user.Username, resetPasswordLink)
 
-	err = server.emailSender.SendMail("Reset Password", emailBody, []string{user.Email}, nil, nil, nil)
+	err = server.emailSender.SendMail("Reset Password", emailBody, []string{user.Email}, nil, nil, "", nil)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

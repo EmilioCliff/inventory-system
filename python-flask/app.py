@@ -480,7 +480,7 @@ def invoiceDownload(id_param):
 
     if response.status_code == 200:
         flash("Invoice Downloaded Successfully")
-        return send_file(BytesIO(pdf_bytes), as_attachment=True, mimetype='application/pdf', download_name=f"INV-{id}")
+        return send_file(BytesIO(pdf_bytes), as_attachment=True, mimetype='application/pdf', download_name=f"INV-{id_param}.pdf")
     elif response.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
@@ -496,7 +496,7 @@ def receiptDownload(id_param):
     if response.status_code == 200:
         pdf_bytes = base64.b64decode(data['receipt_pdf'])
         flash("Receipt Downloaded Successfully")
-        return send_file(BytesIO(pdf_bytes), as_attachment=True, mimetype='application/pdf', download_name=f"RCPT-{id}")
+        return send_file(BytesIO(pdf_bytes), as_attachment=True, mimetype='application/pdf', download_name=f"RCPT-{id_param}.pdf")
     elif response.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))

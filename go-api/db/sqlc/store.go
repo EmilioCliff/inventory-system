@@ -282,6 +282,23 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 		return err
 	})
 
+	go func() {
+		config, _ := utils.ReadConfig("../..")
+		if err != nil {
+			log.Fatal("Could not log config file: ", err)
+		}
+
+		emailSender := utils.NewGmailSender(config.EMAIL_SENDER_NAME, config.EMAIL_SENDER_ADDRESS, config.EMAIL_SENDER_PASSWORD)
+
+		emailBody := fmt.Sprintf(`
+		<h1>Hello %s</h1>
+		<p>We've issued products. Find the invoice attached below</p>
+		<h5>Thank You For Choosing Us.</h5>
+	`, result.ToUser.Username)
+
+		_ = emailSender.SendMail("Receipt Issued", emailBody, []string{"emiliocliff@gmail.com"}, nil, nil, "Invoice.pdf", []byte(result.InvoiceGenerated.InvoicePdf))
+	}()
+
 	return result, err
 }
 
@@ -484,5 +501,22 @@ func (store *Store) ReduceClientStockTx(ctx context.Context, arg ReduceClientSto
 
 		return err
 	})
+
+	go func() {
+		config, _ := utils.ReadConfig("../..")
+		if err != nil {
+			log.Fatal("Could not log config file: ", err)
+		}
+
+		emailSender := utils.NewGmailSender(config.EMAIL_SENDER_NAME, config.EMAIL_SENDER_ADDRESS, config.EMAIL_SENDER_PASSWORD)
+
+		emailBody := fmt.Sprintf(`
+		<h1>Hello %s</h1>
+		<p>We've received your payment. Find the receipt attached below</p>
+		<h5>Thank You For Choosing Us.</h5>
+	`, result.Client.Username)
+
+		_ = emailSender.SendMail("Receipt Issued", emailBody, []string{"emiliocliff@gmail.com"}, nil, nil, "Receipt.pdf", []byte(result.ReceiptGenerated.ReceiptPdf))
+	}()
 	return result, err
 }

@@ -212,13 +212,15 @@
             <ul>
                 {% for detail in data.receipt_data %}
                 {% if detail.user_contact %}
+                <p>{{ data.user_receipt_username }}</p>
                 <p>{{ data.receipt_number }}</p>
+                <p>{{ data.receipt_create_time }}</p>
                 {% else %}
                 <li>{{ detail.productName }} - {{ detail.productQuantity }} - {{ detail.totalBill }}</li>
                 {% endif %}
                 {% endfor %}
             </ul>
-            <a href="{{ url_for('receiptDownload', id_param=data.receipt_number) }}" class="btn btn-success text-uppercase" id="submitButton" style="text-decoration: none;" type="submit">
+            <a href="{{ url_for('receiptDownload', id_param=data.receipt_number) }}" target="_blank" class="btn btn-success text-uppercase" id="submitButton" style="text-decoration: none;" type="submit">
                 Download Receipt
             </a>
         </div>
