@@ -54,7 +54,7 @@
 </div>
 <div class="d-inline-flex justify-content-around" style="flex-wrap: wrap; gap: 10px;">
     <!-- {% if ct not in ['receipts', 'invoices'] %} -->
-    {% if user.id != 1 and user_id != 2 %}
+    {% if user.id != 1 and user_id != 1 %}
     <a href="#" class="btn btn-outline-primary" id="reduceClientStock">Sold Products
         <div class="overlay" id="reduceClientStockOverlay">
             <div class="form-container p-1" id="popupformreduceClientStock">
@@ -104,15 +104,22 @@
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                     </svg>
                 </button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="addProduct()">Add</button>
                 <form id="productForm" method="POST" action="{{ url_for('add_client_stock', id=user.id) }}" autocomplete="off">
-                    <div id="productList" class="form-group form-floating mt-4">
-                        <select class="product me-5" name="products_id">
+                    <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden">
+                        <div class="d-flex">
+                        <select class="product me-1" name="products_id">
+                            {% if products is none %}
+                            <option value="-100">No Products To Sell</option>
+                            {% else %}
                             {% for product in products %}
                             <option value="{{ product.product_id }}">{{ product.product_name }}</option>
                             {% endfor %}
+                            {% endif %}
                         </select>
-                        <input type="number" class="quantity me-5" name="quantities" placeholder="Quantity" required style="width: 100px;">
-                        <button type="button" class="btn btn-sm btn-primary" onclick="addProduct()">Add</button>
+                        <input type="number" class="quantity me-5" name="quantities" placeholder="Quantity" required style="width: auto;">
+                        <label for="quantities">Quantity</label>
+                    </div>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
@@ -263,34 +270,47 @@
     function addProduct() {
         // Create new product selection and quantity input elements
         var newProduct = document.createElement('select');
-        newProduct.className = 'product me-5';
+        newProduct.className = 'product me-1';
         newProduct.name = 'products_id';
-        newProduct.innerHTML = document.querySelector('.product').innerHTML;
+        // newProduct.innerHTML = document.querySelector('.product').innerHTML;
+        var originalOptions = document.querySelector('.product').options;
+        for (var i = 0; i < originalOptions.length; i++) {
+            var option = document.createElement('option');
+            option.value = originalOptions[i].value;
+            option.text = originalOptions[i].text;
+            newProduct.add(option);
+        }
 
         var newQuantity = document.createElement('input');
-        newQuantity.style.width = '100px';
+        newQuantity.style.width = 'auto';
         newQuantity.type = 'number';
-        newQuantity.className = 'quantity me-5';
+        newQuantity.className = 'quantity';
         newQuantity.name = 'quantities';
         newQuantity.placeholder = 'Quantity';
         newQuantity.required = true;
 
         // Append line break for better formatting (optional)
-        var lineBreak = document.createElement('br');
+        // var lineBreak = document.createElement('br');
 
+        var newProductDiv = document.createElement('div');
+        newProductDiv.className = 'd-flex';
+        newProductDiv.appendChild(newProduct);
+        newProductDiv.appendChild(newQuantity);
+
+        document.getElementById('productList').appendChild(newProductDiv);
         // Append the new fields to the existing product list
-        document.getElementById('productList').appendChild(lineBreak);
-        document.getElementById('productList').appendChild(newProduct);
-        document.getElementById('productList').appendChild(newQuantity);
+        // document.getElementById('productList').appendChild(lineBreak);
+        // document.getElementById('productList').appendChild(newProduct);
+        // document.getElementById('productList').appendChild(newQuantity);
     }
 </script>
 <script>
     function reduceProduct() {
-        // Create new product selection and quantity input elements
+
         var newStock = document.createElement('select');
         newStock.name = 'products_id';
         newStock.className = 'product me-1';
-        // newStock.innerHTML = document.querySelector('.product').innerHTML;
+
         var originalOptions = document.querySelector('.product').options;
         for (var i = 0; i < originalOptions.length; i++) {
             var option = document.createElement('option');
@@ -307,20 +327,12 @@
         newQuantity.placeholder = 'Quantity';
         newQuantity.required = true;
 
-        // Append line break for better formatting (optional)
-        // var lineBreak = document.createElement('br');
-
         var newStockDiv = document.createElement('div');
         newStockDiv.className = 'd-flex';
         newStockDiv.appendChild(newStock);
         newStockDiv.appendChild(newQuantity);
 
         document.getElementById('stockList').appendChild(newStockDiv);
-
-        // Append the new fields to the existing product list
-        // document.getElementById('innerStockList').appendChild(lineBreak);
-        // document.getElementById('innerStockList').appendChild(newStock);
-        // document.getElementById('innerStockList').appendChild(newQuantity);
     }
 </script>
 {% endblock %}
