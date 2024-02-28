@@ -29,9 +29,9 @@
 <nav class="navbar my-2" style="background-color: #DCF2F1;">
     <div class="container-fluid" style="background-color: #DCF2F1;">
         {% if ct == 'users' %}
-      <form class="d-flex flex-grow-1" role="search" method="post" action="#">
+      <form class="d-flex flex-grow-1" role="search">
         {% else %}
-        <form class="d-flex flex-grow-1" role="search" method="post" action="#">
+        <form class="d-flex flex-grow-1" role="search">
         {% endif %}
         <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
         <button class="btn btn-outline-primary" type="submit">Search</button>
@@ -220,7 +220,7 @@
                 {% endif %}
                 {% endfor %}
             </ul>
-            <a href="{{ url_for('receiptDownload', id_param=data.receipt_number) }}" target="_blank" class="btn btn-success text-uppercase" id="submitButton" style="text-decoration: none;" type="submit">
+            <a href="{{ url_for('receiptDownload', id_param=data.receipt_number) }}" target="_blank" class="btn btn-success text-uppercase m-2" id="submitButton" style="text-decoration: none;" type="submit">
                 Download Receipt
             </a>
         </div>
@@ -258,7 +258,7 @@
                 {% endif %}
                 {% endfor %}
             </ul>
-            <a href="{{ url_for('invoiceDownload', id_param=data.invoice_number) }}" class="btn btn-success text-uppercase" id="submitButton" style="text-decoration: none;" type="submit">
+            <a href="{{ url_for('invoiceDownload', id_param=data.invoice_number) }}" class="btn btn-success text-uppercase m-2" id="submitButton" style="text-decoration: none;" type="submit">
                 Download Receipt
             </a>
         </div>
