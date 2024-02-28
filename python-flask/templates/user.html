@@ -65,7 +65,8 @@
                 </button>
                 <button type="button" class="btn btn-sm btn-primary" onclick="reduceProduct()">Add</button>
                 <form id="productForm" method="POST" action="{{ url_for('reduce_client_stock', id=user.id) }}" autocomplete="off">
-                    <div id="stockList" class="d-flex form-group form-floating m-1 p-1">
+                    <div id="stockList" class="d-flex flex-column form-group form-floating m-1 p-1">
+                        <div class="d-flex">
                         <select class="product me-1" name="products_id">
                             {% if user.stock is none %}
                             <option value="-100">No Products To Sell</option>
@@ -77,6 +78,7 @@
                         </select>
                         <input type="number" class="quantity form-control" name="quantities" placeholder="Quantity" required style="width: 30px;">
                         <label for="quantities form-label">Product Quantity</label>
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
