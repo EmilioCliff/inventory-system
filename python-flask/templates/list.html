@@ -29,9 +29,9 @@
 <nav class="navbar my-2" style="background-color: #DCF2F1;">
     <div class="container-fluid" style="background-color: #DCF2F1;">
         {% if ct == 'users' %}
-      <form class="d-flex flex-grow-1" role="search" method="post" action="{{ url_for('search_users') }}">
+      <form class="d-flex flex-grow-1" role="search" method="post" action="#">
         {% else %}
-        <form class="d-flex flex-grow-1" role="search" method="post" action="{{ url_for('search_products') }}">
+        <form class="d-flex flex-grow-1" role="search" method="post" action="#">
         {% endif %}
         <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
         <button class="btn btn-outline-primary" type="submit">Search</button>
@@ -202,7 +202,7 @@
         <p style="overflow: hidden; white-space: nowrap;">{{ data.receipt_create_time }}</p>
     </a>
     <div id="overlay_receiptview" class="overlay">
-        <div id="popupFormReceiptView" class="form-container">
+        <div id="popupFormReceiptView" class="form-container p-1">
             <button id="receiptViewCloseBtn" class="close-button" data-productid="{{ data.product_id }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
                     <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
@@ -242,7 +242,7 @@
         <p style="overflow: hidden; white-space: nowrap;">{{ data.invoice_create_time }}</p>
     </a>
     <div id="overlay_invoiceview" class="overlay">
-        <div id="popupFormInvoiceView" class="form-container">
+        <div id="popupFormInvoiceView" class="form-container p-1">
             <button id="invoiceViewCloseBtn" class="close-button" data-productid="{{ data.product_id }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
                     <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
