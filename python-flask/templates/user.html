@@ -76,7 +76,7 @@
                             {% endfor %}
                             {% endif %}
                         </select>
-                        <input type="number" class="quantity flex-grow-1" name="quantities" placeholder="Quantity" required style="width: auto;">
+                        <input type="number" class="quantity" name="quantities" placeholder="Quantity" required style="width: auto;">
                         <label for="quantities">Quantity</label>
                         </div>
                     </div>
@@ -295,7 +295,7 @@
         var newQuantity = document.createElement('input');
         newQuantity.style.width = 'auto';
         newQuantity.type = 'number';
-        newQuantity.className = 'quantity flex-grow-1';
+        newQuantity.className = 'quantity';
         newQuantity.name = 'quantities';
         newQuantity.placeholder = 'Quantity';
         newQuantity.required = true;

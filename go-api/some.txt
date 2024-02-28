@@ -3,3 +3,28 @@ postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable
 postgresql://postgres:D*fd6EDcc5bdA6AG1c4FF6DafFeG33b*@postgres.railway.internal:5432/railway
 postgresql://postgres:D*fd6EDcc5bdA6AG1c4FF6DafFeG33b*@viaduct.proxy.rlwy.net:26578/railway
 CMD ["gunicorn", "-b", "0.0.0.0:3030", "app:app"]
+<script>
+    function reduceProduct() {
+        // Create new product selection and quantity input elements
+        var newStock = document.createElement('select');
+        newStock.name = 'products_id';
+        newStock.className = 'product me-1';
+        newStock.innerHTML = document.querySelector('.product').innerHTML;
+
+        var newQuantity = document.createElement('input');
+        newQuantity.style.width = 'auto';
+        newQuantity.type = 'number';
+        newQuantity.className = 'quantity flex-grow-1';
+        newQuantity.name = 'quantities';
+        newQuantity.placeholder = 'Quantity';
+        newQuantity.required = true;
+
+        // Append line break for better formatting (optional)
+        var lineBreak = document.createElement('br');
+
+        // Append the new fields to the existing product list
+        document.getElementById('innerStockList').appendChild(lineBreak);
+        document.getElementById('innerStockList').appendChild(newStock);
+        document.getElementById('innerStockList').appendChild(newQuantity);
+    }
+</script>
