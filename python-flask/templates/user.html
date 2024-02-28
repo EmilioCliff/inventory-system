@@ -19,9 +19,9 @@
 {% endwith %}
 <div class="d-inline-flex align-items-center justify-content-start">
     <!-- change to 1 -->
-    {% if user_id <= 2 and user.id <= 2 %}
+    {% if user_id == 1 and user.id == 1 %}
     <a href="{{ url_for('dashboard') }}">
-    {% elif user_id <= 2 %}
+    {% elif user_id == 1 %}
     <a href="{{ url_for('list_users') }}">
     {% else %}
     <a href="{{ url_for('dashboard') }}">
@@ -54,7 +54,7 @@
 </div>
 <div class="d-inline-flex justify-content-around" style="flex-wrap: wrap; gap: 10px;">
     <!-- {% if ct not in ['receipts', 'invoices'] %} -->
-    {% if user.id > 2 and user_id > 2 %}
+    {% if user.id != 1 and user_id != 2 %}
     <a href="#" class="btn btn-outline-primary" id="reduceClientStock">Sold Products
         <div class="overlay" id="reduceClientStockOverlay">
             <div class="form-container" id="popupformreduceClientStock">
@@ -66,7 +66,7 @@
                 <button type="button" class="btn btn-sm btn-primary" onclick="reduceProduct()">Add</button>
                 <form id="productForm" method="POST" action="{{ url_for('reduce_client_stock', id=user.id) }}" autocomplete="off">
                     <div id="stockList" class="form-group form-floating mt-4">
-                        <select class="product me-5" name="products_id">
+                        <select class="product me-1" name="products_id">
                             {% if user.stock is none %}
                             <option value="-100">No Products To Sell</option>
                             {% else %}
