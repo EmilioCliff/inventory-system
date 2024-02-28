@@ -92,6 +92,7 @@ func (q *Queries) GetReceiptByID(ctx context.Context, receiptID int64) (Receipt,
 const getUserReceiptsByID = `-- name: GetUserReceiptsByID :many
 SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
 WHERE user_receipt_id = $1
+ORDER BY created_at DESC
 `
 
 func (q *Queries) GetUserReceiptsByID(ctx context.Context, userReceiptID int32) ([]Receipt, error) {
@@ -125,6 +126,7 @@ func (q *Queries) GetUserReceiptsByID(ctx context.Context, userReceiptID int32) 
 const getUserReceiptsByUsername = `-- name: GetUserReceiptsByUsername :many
 SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
 WHERE user_receipt_username = $1
+ORDER BY created_at DESC
 `
 
 func (q *Queries) GetUserReceiptsByUsername(ctx context.Context, userReceiptUsername string) ([]Receipt, error) {
@@ -157,7 +159,7 @@ func (q *Queries) GetUserReceiptsByUsername(ctx context.Context, userReceiptUser
 
 const listReceipts = `-- name: ListReceipts :many
 SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
-ORDER BY receipt_id
+ORDER BY created_at DESC
 `
 
 func (q *Queries) ListReceipts(ctx context.Context) ([]Receipt, error) {

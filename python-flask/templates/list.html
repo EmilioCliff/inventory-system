@@ -251,8 +251,10 @@
             <h2 style="text-decoration: underline;">Invoice Data</h2>
             <ul>
                 {% for detail in data.invoice_data %}
-                {% if detail.user_contact %}
+                {% if detail.user_contact %}           
+                <p>{{ data.user_invoice_username }}</p>
                 <p>{{ data.invoice_number }}</p>
+                <p>{{ data.invoice_create_time }}</p>
                 {% else %}
                 <li>{{ detail.productName }} - {{ detail.productQuantity }} - {{ detail.totalBill }}</li>
                 {% endif %}

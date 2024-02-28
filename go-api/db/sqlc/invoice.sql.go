@@ -92,6 +92,7 @@ func (q *Queries) GetInvoiceByID(ctx context.Context, invoiceID int64) (Invoice,
 const getUserInvoicesByID = `-- name: GetUserInvoicesByID :many
 SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
 WHERE user_invoice_id = $1
+ORDER BY created_at DESC
 `
 
 func (q *Queries) GetUserInvoicesByID(ctx context.Context, userInvoiceID int32) ([]Invoice, error) {
@@ -125,6 +126,7 @@ func (q *Queries) GetUserInvoicesByID(ctx context.Context, userInvoiceID int32) 
 const getUserInvoicesByUsername = `-- name: GetUserInvoicesByUsername :many
 SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
 WHERE user_invoice_username = $1
+ORDER BY created_at DESC
 `
 
 func (q *Queries) GetUserInvoicesByUsername(ctx context.Context, userInvoiceUsername string) ([]Invoice, error) {
@@ -157,7 +159,7 @@ func (q *Queries) GetUserInvoicesByUsername(ctx context.Context, userInvoiceUser
 
 const listInvoices = `-- name: ListInvoices :many
 SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
-ORDER BY invoice_id
+ORDER BY created_at DESC
 `
 
 func (q *Queries) ListInvoices(ctx context.Context) ([]Invoice, error) {
