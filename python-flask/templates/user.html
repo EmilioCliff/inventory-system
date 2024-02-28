@@ -66,7 +66,7 @@
                 <button type="button" class="btn btn-sm btn-primary" onclick="reduceProduct()">Add</button>
                 <form id="productForm" method="POST" action="{{ url_for('reduce_client_stock', id=user.id) }}" autocomplete="off">
                     <div id="stockList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden">
-                        <div class="d-flex" id="innerStockList">
+                        <div class="d-flex">
                         <select class="product me-1" name="products_id">
                             {% if user.stock is none %}
                             <option value="-100">No Products To Sell</option>
@@ -290,7 +290,14 @@
         var newStock = document.createElement('select');
         newStock.name = 'products_id';
         newStock.className = 'product me-1';
-        newStock.innerHTML = document.querySelector('.product').innerHTML;
+        // newStock.innerHTML = document.querySelector('.product').innerHTML;
+        var originalOptions = document.querySelector('.product').options;
+        for (var i = 0; i < originalOptions.length; i++) {
+            var option = document.createElement('option');
+            option.value = originalOptions[i].value;
+            option.text = originalOptions[i].text;
+            newStock.add(option);
+        }
 
         var newQuantity = document.createElement('input');
         newQuantity.style.width = 'auto';
@@ -301,12 +308,19 @@
         newQuantity.required = true;
 
         // Append line break for better formatting (optional)
-        var lineBreak = document.createElement('br');
+        // var lineBreak = document.createElement('br');
+
+        var newStockDiv = document.createElement('div');
+        newStockDiv.className = 'd-flex';
+        newStockDiv.appendChild(newStock);
+        newStockDiv.appendChild(newQuantity);
+
+        document.getElementById('stockList').appendChild(newStockDiv);
 
         // Append the new fields to the existing product list
-        document.getElementById('innerStockList').appendChild(lineBreak);
-        document.getElementById('innerStockList').appendChild(newStock);
-        document.getElementById('innerStockList').appendChild(newQuantity);
+        // document.getElementById('innerStockList').appendChild(lineBreak);
+        // document.getElementById('innerStockList').appendChild(newStock);
+        // document.getElementById('innerStockList').appendChild(newQuantity);
     }
 </script>
 {% endblock %}
