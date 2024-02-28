@@ -65,8 +65,8 @@
                 </button>
                 <button type="button" class="btn btn-sm btn-primary" onclick="reduceProduct()">Add</button>
                 <form id="productForm" method="POST" action="{{ url_for('reduce_client_stock', id=user.id) }}" autocomplete="off">
-                    <div id="stockList" class="form-group form-floating mt-4">
-                        <select class="product me-1" name="products_id">
+                    <div id="stockList" class="form-group form-floating mt-4 p-1 row">
+                        <select class="product me-1 col-md-6" name="products_id">
                             {% if user.stock is none %}
                             <option value="-100">No Products To Sell</option>
                             {% else %}
@@ -75,8 +75,8 @@
                             {% endfor %}
                             {% endif %}
                         </select>
-                        <input type="number" class="quantity" name="quantities" placeholder="Quantity" required style="width: 20px;">
-                        <label for="quantities">Product Quantity</label>
+                        <input type="number" class="quantity form-control col-md-6" name="quantities" placeholder="Quantity" required style="width: 20px;">
+                        <label for="quantities form-label">Product Quantity</label>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>
@@ -287,13 +287,13 @@
         // Create new product selection and quantity input elements
         var newStock = document.createElement('select');
         newStock.name = 'products_id';
-        newStock.className = 'product me-5';
+        newStock.className = 'product me-1';
         newStock.innerHTML = document.querySelector('.product').innerHTML;
 
         var newQuantity = document.createElement('input');
-        newQuantity.style.width = '100px';
+        newQuantity.style.width = '20px';
         newQuantity.type = 'number';
-        newQuantity.className = 'quantity me-5';
+        newQuantity.className = 'quantity';
         newQuantity.name = 'quantities';
         newQuantity.placeholder = 'Quantity';
         newQuantity.required = true;
