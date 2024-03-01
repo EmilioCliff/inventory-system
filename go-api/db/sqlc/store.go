@@ -296,7 +296,7 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 		<h5>Thank You For Choosing Us.</h5>
 	`, result.ToUser.Username)
 
-		_ = emailSender.SendMail("Receipt Issued", emailBody, []string{result.ToUser.Email}, nil, nil, "Invoice.pdf", []byte(result.InvoiceGenerated.InvoicePdf))
+		_ = emailSender.SendMail("Invoice Issued", emailBody, []string{result.ToUser.Email}, nil, nil, "Invoice.pdf", []byte(result.InvoiceGenerated.InvoicePdf))
 	}()
 
 	return result, err
