@@ -31,7 +31,6 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 
 	transactionID = time.Now().Format("20060102150405")
 
-	log.Println("Generate Token")
 	accessToken, err := generateAccessToken(consumerKey, consumerSecret)
 	if err != nil {
 		return transactionID, err
@@ -39,7 +38,6 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 
 	// callback := fmt.Sprintf("https://e864-105-163-157-51.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	callback := fmt.Sprintf("https://hip-letters-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
-	log.Println(callback)
 	requestBody := map[string]interface{}{
 		"BusinessShortCode": shortCode,
 		"Password":          generatePassword(shortCode, config.PASSKEY),
@@ -85,47 +83,9 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	if err != nil {
 		return transactionID, err
 	}
-	// log.Println(stkResponseBody)
 
-	// if stkResponseBody["ResponseCode"] != 0 {
-	// 	return transactionID, fmt.Errorf("Unsuccessful STK push")
-	// }
-
-	// log.Println("STK Push Response Body:", string(responseBody))
 	return transactionID, nil
 }
-
-// func mpesaCallbackHandler(c *gin.Context) {
-
-// 	body, err := io.ReadAll(c.Request.Body)
-// 	if err != nil {
-// 		fmt.Println("Error reading request body:", err)
-// 		c.String(http.StatusInternalServerError, "Internal Server Error")
-// 		return
-// 	}
-
-// 	var callbackBody map[string]interface{}
-// 	err = json.Unmarshal(body, &callbackBody)
-// 	if err != nil {
-// 		fmt.Println("Error unmarshaling callback data:", err)
-// 		return
-// 	}
-
-// 	log.Println(callbackBody)
-// 	fmt.Println(callbackBody)
-
-// 	merchantRequestID, _ := callbackBody["MerchantRequestID"].(string)
-// 	checkoutRequestID, _ := callbackBody["CheckoutRequestID"].(string)
-// 	resultCode, _ := callbackBody["ResultCode"].(float64)
-// 	resultDesc, _ := callbackBody["ResultDesc"].(string)
-
-// 	fmt.Println("MerchantRequestID:", merchantRequestID)
-// 	fmt.Println("CheckoutRequestID:", checkoutRequestID)
-// 	fmt.Println("ResultCode:", resultCode)
-// 	fmt.Println("ResultDesc:", resultDesc)
-
-// 	c.JSON(http.StatusOK, gin.H{"Successful": "Reached"})
-// }
 
 func generateAccessToken(consumerKey string, consumerSecret string) (string, error) {
 	authString := consumerKey + ":" + consumerSecret
@@ -140,7 +100,6 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 
 	req.Header.Set("Authorization", "Basic "+encodedAuthString)
 
-	log.Println("Sending request")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -152,13 +111,10 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 		return "", fmt.Errorf("Request failed with status code %d", resp.StatusCode)
 	}
 
-	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
-
-	log.Println("Response Body:", string(body))
 
 	var tokenResponse map[string]interface{}
 	err = json.Unmarshal(body, &tokenResponse)
