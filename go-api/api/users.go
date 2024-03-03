@@ -551,12 +551,14 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		}
 		amount += int(removeProduct.UnitPrice) * int(req.Quantities[idx])
 	}
+	log.Println("Sending STK PUSH")
 	trasactionID, err := utils.SendSTK(strconv.Itoa(amount), uri.ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
+	log.Println("Success STK PUSH")
 	jsonSoldProduct, err := json.Marshal(req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
