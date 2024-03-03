@@ -35,10 +35,10 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	if err != nil {
 		return transactionID, err
 	}
-	log.Println("Received AccessToken")
 
 	// callback := fmt.Sprintf("https://e864-105-163-157-51.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	callback := fmt.Sprintf("https://hip-letters-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
+	log.Println(callback)
 	requestBody := map[string]interface{}{
 		"BusinessShortCode": shortCode,
 		"Password":          generatePassword(shortCode, config.PASSKEY),
@@ -90,7 +90,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	// 	return transactionID, fmt.Errorf("Unsuccessful STK push")
 	// }
 
-	log.Println("STK Push Response Body:", string(responseBody))
+	// log.Println("STK Push Response Body:", string(responseBody))
 	return transactionID, nil
 }
 
@@ -139,7 +139,6 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 
 	req.Header.Set("Authorization", "Basic "+encodedAuthString)
 
-	log.Println("Sending AccessToken Generate")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
