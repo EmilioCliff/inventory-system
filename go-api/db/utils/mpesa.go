@@ -31,8 +31,9 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 
 	transactionID = time.Now().Format("20060102150405")
 
-	accessToken, err := generateAccessToken(consumerKey, consumerSecret)
+	accessToken, err := getAccessToken(consumerKey, consumerSecret)
 	if err != nil {
+		log.Fatal("Failed to obtain access token:", err)
 		return transactionID, err
 	}
 
@@ -85,6 +86,25 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	}
 
 	return transactionID, nil
+}
+
+var accessToken string
+var expiryTimestamp time.Time
+
+func getAccessToken(consumerKey, consumerSecret string) (string, error) {
+	if time.Now().Before(expiryTimestamp) {
+		return accessToken, nil
+	}
+
+	newToken, err := generateAccessToken(consumerKey, consumerSecret)
+	if err != nil {
+		return "", err
+	}
+
+	accessToken = newToken
+	expiryTimestamp = time.Now().Add(3600 * time.Second)
+
+	return accessToken, nil
 }
 
 func generateAccessToken(consumerKey string, consumerSecret string) (string, error) {
