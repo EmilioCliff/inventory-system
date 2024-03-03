@@ -624,7 +624,9 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 		return
 	}
 
-	processMpesaCallbackData(ctx, server, user, transaction)
+	go func() {
+		processMpesaCallbackData(ctx, server, user, transaction)
+	}()
 
 	ctx.JSON(http.StatusOK, gin.H{"Successful": "Reached"})
 	return
