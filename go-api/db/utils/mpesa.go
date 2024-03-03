@@ -30,6 +30,9 @@ func SendSTK(amount string, userID int64) (string, error) {
 	consumerSecret := config.CONSUMER_SECRET
 
 	transactionID = time.Now().Format("20060102150405")
+	log.Println(consumerKey)
+	log.Println(consumerSecret)
+	log.Println(transactionID)
 
 	accessToken, err := generateAccessToken(consumerKey, consumerSecret)
 	if err != nil {
