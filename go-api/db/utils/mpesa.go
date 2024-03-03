@@ -31,6 +31,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 
 	transactionID = time.Now().Format("20060102150405")
 
+	log.Println("Generate Token")
 	accessToken, err := generateAccessToken(consumerKey, consumerSecret)
 	if err != nil {
 		return transactionID, err
@@ -139,6 +140,7 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 
 	req.Header.Set("Authorization", "Basic "+encodedAuthString)
 
+	log.Println("Sending request")
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -156,6 +158,7 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	if !ok {
 		return "", fmt.Errorf("Access token not found in response")
 	}
+	log.Println(accessToken)
 
 	return accessToken, nil
 }
