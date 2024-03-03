@@ -36,6 +36,7 @@ func SendSTK(amount string, userID int64) (string, error) {
 		return transactionID, err
 	}
 
+	log.Println(accessToken)
 	// callback := fmt.Sprintf("https://e864-105-163-157-51.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	callback := fmt.Sprintf("https://hip-letters-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	log.Printf("type %T - %v", callback, callback)
