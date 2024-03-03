@@ -646,23 +646,14 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 
 	log.Println(callbackBody)
 
-	// map[
-	// 	Body:
-	// 	map[stkCallback:
-	// 	map[CheckoutRequestID:ws_CO_03032024210351107718750145
-	// 	MerchantRequestID:c4dd-4669-a173-d5cee84d66e91428607
-	// 	ResultCode:1032
-	// 	ResultDesc:Request cancelled by user]
-	// 	]
-	// 	]
-
 	bodyValue, _ := callbackBody["Body"].(map[string]interface{})
 	stkCallbackValue, _ := bodyValue["stkCallback"].(map[string]interface{})
 
 	var resultCode int
-	if val, ok := stkCallbackValue["ResultCode"].(float64); ok {
+	if val, ok := stkCallbackValue["ResultCode"].(int); ok {
 		resultCode = int(val)
 		if resultCode != 0 {
+			log.Printf("resultCode %v not same as 0", resultCode)
 			resultDesc, _ := stkCallbackValue["ResultDesc"].(string)
 			redirectToPythonApp(user, transaction, fmt.Errorf(resultDesc))
 			return
@@ -733,7 +724,7 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 }
 
 func redirectToPythonApp(user db.User, transaction db.Transaction, passErr error) {
-	pythonEndpoint := "http://0.0.0.0:3030/notify"
+	pythonEndpoint := "https://inventory-system.railway.internal/notify"
 
 	data := gin.H{
 		"status":        passErr,
