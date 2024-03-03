@@ -283,7 +283,7 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 	})
 
 	go func() {
-		config, _ := utils.ReadConfig("../..")
+		config, err := utils.ReadConfig("../..")
 		if err != nil {
 			log.Fatal("Could not log config file: ", err)
 		}

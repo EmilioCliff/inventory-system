@@ -21,8 +21,13 @@ const (
 var transactionID string
 
 func SendSTK(amount string, userID int64) (string, error) {
-	consumerKey := "nx6MdOSd9HkxO6PFylLfGB8FRgpGxtXAsIHrPj5Hzh7MAGWa"
-	consumerSecret := "OAtYbAYHodtL5vDxL2AIAkzhDIblJN4Px8Ke4cORcrrPr8y5GWTRwl8KvgL4mW2I"
+	config, err := ReadConfig("../..")
+	if err != nil {
+		log.Fatal("Could not log config file: ", err)
+	}
+
+	consumerKey := config.CONSUMER_KEY
+	consumerSecret := config.CONSUMER_SECRET
 
 	transactionID = time.Now().Format("20060102150405")
 
@@ -31,11 +36,12 @@ func SendSTK(amount string, userID int64) (string, error) {
 		return transactionID, err
 	}
 
-	callback := fmt.Sprintf("https://e864-105-163-157-51.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
+	// callback := fmt.Sprintf("https://e864-105-163-157-51.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
+	callback := fmt.Sprintf("https://hip-letters-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	log.Printf("type %T - %v", callback, callback)
 	requestBody := map[string]interface{}{
 		"BusinessShortCode": shortCode,
-		"Password":          generatePassword(shortCode),
+		"Password":          generatePassword(shortCode, config.PASSKEY),
 		"Timestamp":         time.Now().Format("20060102150405"),
 		"TransactionType":   "CustomerPayBillOnline",
 		"Amount":            "1",
@@ -80,9 +86,9 @@ func SendSTK(amount string, userID int64) (string, error) {
 	}
 	// log.Println(stkResponseBody)
 
-	// if stkResponseBody["ResponseCode"] != 0 {
-	// 	return transactionID, fmt.Errorf("Unsuccessful STK push")
-	// }
+	if stkResponseBody["ResponseCode"] != 0 {
+		return transactionID, fmt.Errorf("Unsuccessful STK push")
+	}
 
 	fmt.Println("STK Push Response Body:", string(responseBody))
 	return transactionID, nil
@@ -156,8 +162,8 @@ func generateAccessToken(consumerKey, consumerSecret string) (string, error) {
 	return accessToken, nil
 }
 
-func generatePassword(shortCode string) string {
-	passkey := "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
+func generatePassword(shortCode string, key string) string {
+	passkey := key
 	timestamp := time.Now().Format("20060102150405")
 
 	password := shortCode + passkey + timestamp
