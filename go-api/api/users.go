@@ -551,7 +551,7 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		}
 		amount += int(removeProduct.UnitPrice) * int(req.Quantities[idx])
 	}
-	log.Println("Sending STK PUSH")
+
 	trasactionID, err := utils.SendSTK(strconv.Itoa(amount), uri.ID)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -583,7 +583,6 @@ type mpesaCallbackRequest struct {
 }
 
 func (server *Server) mpesaCallback(ctx *gin.Context) {
-	log.Println("Callback Successful")
 	var req mpesaCallbackRequest
 
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -593,9 +592,6 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 
 	userId := req.TransactionID[len(req.TransactionID)-3:]
 	transactionId := req.TransactionID[:len(req.TransactionID)-3]
-
-	log.Println(userId)
-	log.Println(transactionId)
 
 	intUserID, _ := strconv.Atoi(userId)
 	user, err := server.store.GetUserForUpdate(ctx, int64(intUserID))
@@ -640,17 +636,27 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 	}
 
 	log.Println(callbackBody)
-	merchantRequestID, _ := callbackBody["MerchantRequestID"].(string)
-	checkoutRequestID, _ := callbackBody["CheckoutRequestID"].(string)
-	resultCode, _ := callbackBody["ResultCode"].(string)
-	resultDesc, _ := callbackBody["ResultDesc"].(string)
+	bodyValue := callbackBody["Body"].(map[string]interface{})
+	stkCallbackValue := bodyValue["stkCallback"].(map[string]interface{})
+	metaData := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
+	items := metaData["Item"].([]map[string]interface{})
+	resultCode := stkCallbackValue["ResultCode"].(int)
+	phoneNumber := items[3]["Value"].(string)
+	mpesaReceiptNumber := items[1]["Value"].(string)
+	_ = items[0]["Value"].(float64)
+	resultDesc := stkCallbackValue["ResultDesc"].(string)
 
-	fmt.Println("MerchantRequestID:", merchantRequestID)
-	fmt.Println("CheckoutRequestID:", checkoutRequestID)
-	fmt.Println("ResultCode:", resultCode)
-	fmt.Println("ResultDesc:", resultDesc)
+	_, err = server.store.UpdateTransaction(ctx, db.UpdateTransactionParams{
+		TransactionID:      transaction.TransactionID,
+		MpesaReceiptNumber: mpesaReceiptNumber,
+		PhoneNumber:        phoneNumber,
+	})
+	if err != nil {
+		redirectToPythonApp(user, transaction, err)
+		return
+	}
 
-	if resultCode != "0" {
+	if resultCode != 0 {
 		redirectToPythonApp(user, transaction, fmt.Errorf(resultDesc))
 		return
 	}
@@ -693,7 +699,7 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 }
 
 func redirectToPythonApp(user db.User, transaction db.Transaction, passErr error) {
-	pythonEndpoint := "http://0.0.0.0:5000/notify"
+	pythonEndpoint := "http://0.0.0.0:3030/notify"
 
 	data := gin.H{
 		"status":        passErr,

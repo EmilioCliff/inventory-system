@@ -13,7 +13,7 @@ const changeStatus = `-- name: ChangeStatus :one
 UPDATE transactions
     set status = $2
 WHERE transaction_id = $1
-RETURNING transaction_id, amount, status, data_sold, created_at
+RETURNING transaction_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at
 `
 
 type ChangeStatusParams struct {
@@ -29,6 +29,8 @@ func (q *Queries) ChangeStatus(ctx context.Context, arg ChangeStatusParams) (Tra
 		&i.Amount,
 		&i.Status,
 		&i.DataSold,
+		&i.PhoneNumber,
+		&i.MpesaReceiptNumber,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -40,7 +42,7 @@ INSERT INTO transactions (
 ) VALUES (
     $1, $2, $3
 )
-RETURNING transaction_id, amount, status, data_sold, created_at
+RETURNING transaction_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at
 `
 
 type CreateTransactionParams struct {
@@ -57,13 +59,15 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 		&i.Amount,
 		&i.Status,
 		&i.DataSold,
+		&i.PhoneNumber,
+		&i.MpesaReceiptNumber,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getTransaction = `-- name: GetTransaction :one
-SELECT transaction_id, amount, status, data_sold, created_at FROM transactions
+SELECT transaction_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at FROM transactions
 WHERE transaction_id = $1 
 LIMIT 1
 `
@@ -76,6 +80,37 @@ func (q *Queries) GetTransaction(ctx context.Context, transactionID string) (Tra
 		&i.Amount,
 		&i.Status,
 		&i.DataSold,
+		&i.PhoneNumber,
+		&i.MpesaReceiptNumber,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateTransaction = `-- name: UpdateTransaction :one
+UPDATE transactions
+  set mpesa_receipt_number = $3,
+  phone_number = $2
+WHERE transaction_id = $1
+RETURNING transaction_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at
+`
+
+type UpdateTransactionParams struct {
+	TransactionID      string `json:"transaction_id"`
+	PhoneNumber        string `json:"phone_number"`
+	MpesaReceiptNumber string `json:"mpesa_receipt_number"`
+}
+
+func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error) {
+	row := q.db.QueryRow(ctx, updateTransaction, arg.TransactionID, arg.PhoneNumber, arg.MpesaReceiptNumber)
+	var i Transaction
+	err := row.Scan(
+		&i.TransactionID,
+		&i.Amount,
+		&i.Status,
+		&i.DataSold,
+		&i.PhoneNumber,
+		&i.MpesaReceiptNumber,
 		&i.CreatedAt,
 	)
 	return i, err

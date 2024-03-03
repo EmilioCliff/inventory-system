@@ -4,6 +4,8 @@ CREATE TABLE "transactions" (
   "amount" integer NOT NULL,
   "status" boolean NOT NULL DEFAULT false,
   "data_sold" json NOT NULL,
+  "phone_number" varchar NOT NULL DEFAULT '00',
+  "mpesa_receipt_number" varchar NOT NULL DEFAULT 'No Receipt Number',
   "created_at" timestamptz NOT NULL DEFAULT now()
 );
 

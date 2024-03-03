@@ -16,3 +16,10 @@ UPDATE transactions
     set status = $2
 WHERE transaction_id = $1
 RETURNING *;
+
+-- name: UpdateTransaction :one
+UPDATE transactions
+  set mpesa_receipt_number = $3,
+  phone_number = $2
+WHERE transaction_id = $1
+RETURNING *;
