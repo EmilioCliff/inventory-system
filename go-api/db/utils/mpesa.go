@@ -16,7 +16,6 @@ const (
 	shortCode    = "174379"
 	lipaEndpoint = "/mpesa/stkpush/v1/processrequest"
 	callbackPath = "/callback"
-	maxRetries   = 3
 )
 
 var transactionID string
@@ -33,20 +32,9 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	transactionID = time.Now().Format("20060102150405")
 
 	log.Println("Generate Token")
-	var accessToken string
-
-	for attempt := 1; attempt <= maxRetries; attempt++ {
-		accessToken, err = generateAccessToken(consumerKey, consumerSecret)
-		if err == nil {
-			break
-		}
-
-		log.Printf("Attempt %d failed. Waiting before retrying...", attempt)
-		time.Sleep(time.Duration(attempt) * time.Second)
-	}
-
+	accessToken, err := generateAccessToken(consumerKey, consumerSecret)
 	if err != nil {
-		log.Fatal("Failed to obtain access token after multiple attempts.")
+		return transactionID, err
 	}
 
 	// callback := fmt.Sprintf("https://e864-105-163-157-51.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
