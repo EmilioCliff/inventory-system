@@ -148,6 +148,10 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("Request failed with status code %d", resp.StatusCode)
+	}
+
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -166,7 +170,6 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	if !ok {
 		return "", fmt.Errorf("Access token not found in response")
 	}
-	log.Println(accessToken)
 
 	return accessToken, nil
 }
