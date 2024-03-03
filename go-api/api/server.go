@@ -47,6 +47,7 @@ func (server *Server) setRoutes() {
 	router.GET("/users/login", server.loginUser)
 	router.POST("/reset", server.resetPassword)
 	router.POST("/resetit", server.resetIt)
+	router.Any("/transaction/:id", server.mpesaCallback)
 	auth.GET("/users/:id", server.getUser)
 	auth.PUT("/users/:id/edit", server.editUser)
 	auth.POST("/users/admin/add", server.createUser)

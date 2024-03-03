@@ -13,9 +13,9 @@ HEADERS={
     "Authorization": "Bearer "
 }
 
-# BASE_URL="http://0.0.0.0:8080" # When Testing
+BASE_URL="http://0.0.0.0:3030" # When Testing
 # BASE_URL = "http://inventory-system-api-1:8080" When using Docker Compose
-BASE_URL = "http://hip-letters.railway.internal:8080"  #  Production
+# BASE_URL = "http://hip-letters.railway.internal:8080"  #  Production
    
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "32e234353t4rffbfbfgxx"
@@ -459,7 +459,7 @@ def reduce_client_stock(id):
         rsp = requests.post(url, json=data, headers={"Authorization": f"Bearer {session['token']}"})
 
         if rsp.status_code == 200:
-            flash("Item Sold Successful")
+            # flash("STK push sent")
             return redirect(url_for('get_user', id=id))  # Redirect to some success page
         elif rsp.status_code == 401:
             flash("Please login")
@@ -507,6 +507,12 @@ def receiptDownload(id_param):
 def request_stock():
     return render_template("coming-soon.html")
 
+@app.route("/notify", methods=["POST", "GET"])
+def notify():
+    if request.method == "POST":
+        data = request.get_json()
+        return render_template("failed.html", error_code=data.get('transactionID'),error=data.get('status'))
+
 @app.errorhandler(ConnectionError)
 def handle_connection_error(error):
     return render_template('failed.html', error_code=500, error=str(error), connection=True)
@@ -520,4 +526,4 @@ if __name__ == '__main__':
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5000)

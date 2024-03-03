@@ -4,8 +4,14 @@ postgres:
 migrateup:
 	migrate -path go-api/db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose up
 
+migrateup1:
+	migrate -path go-api/db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose up 1
+
 migratedown:
 	migrate -path go-api/db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose down
+
+migratedown1:
+	migrate -path go-api/db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose down 1
 
 createdb:
 	docker exec -it postgres3 createdb --username=root --owner=root inventorydb
@@ -35,4 +41,4 @@ go:
 	docker run --name goapi -d -p 8080:8080 go-api:latest 
 
 
-.PHONY: postgres createdb dropdb migratedown migrateup sqlc test server python-image python go-image go
+.PHONY: postgres createdb dropdb migratedown migrateup migratedown1 migrateup1 sqlc test server python-image python go-image go

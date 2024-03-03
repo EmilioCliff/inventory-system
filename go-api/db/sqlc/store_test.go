@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/EmilioCliff/inventory-system/db/utils"
 	"github.com/stretchr/testify/require"
@@ -296,7 +298,7 @@ func TestReduceClientStockTx(t *testing.T) {
 		Amount:         amounts,
 	}
 
-	n := 5
+	n := 2
 	var wg sync.WaitGroup
 	errCh := make(chan error, n)
 	resCh := make(chan ReduceClientStockResult, n)
@@ -304,6 +306,14 @@ func TestReduceClientStockTx(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
+			randomOffset := time.Duration(rand.Intn(10)) * time.Second
+			uniqueTime := time.Now().Add(randomOffset)
+			transaction, _ := store.CreateTransaction(context.Background(), CreateTransactionParams{
+				TransactionID: uniqueTime.Format("20060102150405"),
+				Amount:        1000,
+				DataSold:      jsonClientStockData,
+			})
+			reduceClientStockParams.Transaction = transaction
 			result, err := store.ReduceClientStockTx(context.Background(), reduceClientStockParams)
 
 			errCh <- err

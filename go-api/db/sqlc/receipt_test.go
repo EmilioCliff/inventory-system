@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 
 	"github.com/EmilioCliff/inventory-system/db/utils"
 	"github.com/stretchr/testify/require"
@@ -16,8 +18,15 @@ func createReceiptTest() (CreateReceiptParams, Receipt, error) {
 		fmt.Println("Error creating user", err)
 	}
 
+	randomOffset := time.Duration(rand.Intn(10)) * time.Second
+	uniqueTime := time.Now().Add(randomOffset)
+	transactionParam := CreateTransactionParams{
+		TransactionID: uniqueTime.Format("20060102150405"),
+		Amount:        1000,
+	}
+
 	args := CreateReceiptParams{
-		ReceiptNumber:       utils.RandomInvoiceReceiptNumber(),
+		ReceiptNumber:       transactionParam.TransactionID,
 		UserReceiptID:       int32(user.UserID),
 		UserReceiptUsername: user.Username,
 		ReceiptPdf:          []byte(utils.RandomString(6)),
@@ -45,6 +54,8 @@ func createReceiptTest() (CreateReceiptParams, Receipt, error) {
 		fmt.Println("error marshaling recceipt data: ", err)
 	}
 	args.ReceiptData = jsonReceiptData
+	transactionParam.DataSold = jsonReceiptData
+	_, _ = testStore.CreateTransaction(context.Background(), transactionParam)
 	newReceipt, err := testStore.CreateReceipt(context.Background(), args)
 	if err != nil {
 		fmt.Println("error creating recceipt: ", err)

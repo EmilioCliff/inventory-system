@@ -391,9 +391,10 @@ func (store *Store) EditUserTx(ctx context.Context, arg EditUserParams) (EditUse
 }
 
 type ReduceClientStockParams struct {
-	Client         User      `json:"touser"`
-	ProducToReduce []Product `json:"productoadd"`
-	Amount         []int8    `json:"amount"`
+	Client         User        `json:"touser"`
+	ProducToReduce []Product   `json:"productoadd"`
+	Amount         []int8      `json:"amount"`
+	Transaction    Transaction `json:"transaction_id"`
 }
 
 type ReduceClientStockResult struct {
@@ -417,7 +418,6 @@ func (store *Store) ReduceClientStockTx(ctx context.Context, arg ReduceClientSto
 			}
 		}
 
-		// Generate client's receipt
 		receiptData := []map[string]interface{}{
 			{
 				"user_contact": client.PhoneNumber,
@@ -427,12 +427,10 @@ func (store *Store) ReduceClientStockTx(ctx context.Context, arg ReduceClientSto
 		}
 
 		for index, addProduct := range arg.ProducToReduce {
-			// Reduce Clients Product
 			for _, clientProduct := range clientProducts {
 				if id, ok := clientProduct["productID"].(float64); ok {
 					idInt := int64(id)
 					if idInt == addProduct.ProductID {
-						// Convert product quantity to int8 before subtraction
 						quantityFloat := clientProduct["productQuantity"].(float64)
 						quantityInt := quantityFloat
 						if quantityInt-float64(arg.Amount[index]) < 0 {
@@ -443,7 +441,6 @@ func (store *Store) ReduceClientStockTx(ctx context.Context, arg ReduceClientSto
 				}
 			}
 
-			// Update receipt data
 			receiptData = append(receiptData, map[string]interface{}{
 				"productID":       float64(addProduct.ProductID),
 				"productName":     addProduct.ProductName,
@@ -470,7 +467,7 @@ func (store *Store) ReduceClientStockTx(ctx context.Context, arg ReduceClientSto
 			return err
 		}
 
-		timestamp := time.Now().Format("20060102150405")
+		timestamp := arg.Transaction.TransactionID
 		createdTime := time.Now().Format("2006-01-02")
 		receiptC := map[string]string{
 			"receipt_number":   timestamp,
@@ -489,7 +486,7 @@ func (store *Store) ReduceClientStockTx(ctx context.Context, arg ReduceClientSto
 		go func() {
 			defer wg.Done()
 			result.ReceiptGenerated, err = q.CreateReceipt(ctx, CreateReceiptParams{
-				ReceiptNumber:       timestamp + utils.RandomString(5),
+				ReceiptNumber:       timestamp,
 				UserReceiptID:       int32(client.UserID),
 				ReceiptData:         jsonReceiptData,
 				UserReceiptUsername: client.Username,

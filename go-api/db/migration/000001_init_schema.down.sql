@@ -1,5 +1,7 @@
-ALTER TABLE invoices DROP CONSTRAINT invoices_user_invoice_id_fkey;
-ALTER TABLE receipts DROP CONSTRAINT receipts_user_receipt_id_fkey;
+ALTER TABLE invoices DROP CONSTRAINT fk_user_invoice_id;
+ALTER TABLE invoices DROP CONSTRAINT fk_user_invoice_username;
+ALTER TABLE receipts DROP CONSTRAINT fk_user_receipt_id;
+ALTER TABLE receipts DROP CONSTRAINT fk_user_receipt_username;
 
 
 DROP TABLE IF EXISTS users;

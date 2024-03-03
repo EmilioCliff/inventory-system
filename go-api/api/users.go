@@ -1,10 +1,14 @@
 package api
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -516,8 +520,8 @@ type reduceClientStockURIRequest struct {
 }
 
 type reduceClientStockJSONRequest struct {
-	ProductsID []int64 `json:"products_id" biding:"required"`
-	Quantities []int8  `json:"quantities" biding:"required"`
+	ProductsID []int8 `json:"products_id" biding:"required"`
+	Quantities []int8 `json:"quantities" biding:"required"`
 }
 
 func (server *Server) reduceClientStock(ctx *gin.Context) {
@@ -534,7 +538,63 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.store.GetUserForUpdate(ctx, uri.ID)
+	var amount int
+	for idx, id := range req.ProductsID {
+		removeProduct, err := server.store.GetProduct(ctx, int64(id))
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, errorResponse(err))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+		amount += int(removeProduct.UnitPrice) * int(req.Quantities[idx])
+	}
+	trasactionID, err := utils.SendSTK(strconv.Itoa(amount), uri.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	jsonSoldProduct, err := json.Marshal(req)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	_, err = server.store.CreateTransaction(ctx, db.CreateTransactionParams{
+		TransactionID: trasactionID,
+		Amount:        int32(amount),
+		DataSold:      jsonSoldProduct,
+	})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"successful": "STK push success"})
+	return
+}
+
+type mpesaCallbackRequest struct {
+	TransactionID string `uri:"id" binding:"required"`
+}
+
+func (server *Server) mpesaCallback(ctx *gin.Context) {
+	log.Println("Callback Successful")
+	var req mpesaCallbackRequest
+
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	userId := req.TransactionID[len(req.TransactionID)-3:]
+	transactionId := req.TransactionID[:len(req.TransactionID)-3]
+
+	intUserID, _ := strconv.Atoi(userId)
+	user, err := server.store.GetUserForUpdate(ctx, int64(intUserID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -544,32 +604,105 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		return
 	}
 
-	var newProducts []db.Product
-	for _, id := range req.ProductsID {
-		removeProduct, err := server.store.GetProduct(ctx, id)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				ctx.JSON(http.StatusNotFound, errorResponse(err))
-				return
-			}
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	transaction, err := server.store.GetTransaction(ctx, transactionId)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
-
-		newProducts = append(newProducts, removeProduct)
-	}
-
-	updatedData, err := server.store.ReduceClientStockTx(ctx, db.ReduceClientStockParams{
-		Client:         user,
-		ProducToReduce: newProducts,
-		Amount:         req.Quantities,
-	})
-	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, updatedData)
+	processMpesaCallbackData(ctx, server, user, transaction)
+
+	ctx.JSON(http.StatusOK, gin.H{"Successful": "Reached"})
+	return
+}
+
+func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, transaction db.Transaction) {
+
+	body, err := io.ReadAll(ctx.Request.Body)
+	if err != nil {
+		redirectToPythonApp(user, transaction, err)
+		return
+	}
+
+	var callbackBody map[string]interface{}
+	err = json.Unmarshal(body, &callbackBody)
+	if err != nil {
+		redirectToPythonApp(user, transaction, err)
+		return
+	}
+
+	merchantRequestID, _ := callbackBody["MerchantRequestID"].(string)
+	checkoutRequestID, _ := callbackBody["CheckoutRequestID"].(string)
+	resultCode, _ := callbackBody["ResultCode"].(string)
+	resultDesc, _ := callbackBody["ResultDesc"].(string)
+
+	fmt.Println("MerchantRequestID:", merchantRequestID)
+	fmt.Println("CheckoutRequestID:", checkoutRequestID)
+	fmt.Println("ResultCode:", resultCode)
+	fmt.Println("ResultDesc:", resultDesc)
+
+	if resultCode != "0" {
+		redirectToPythonApp(user, transaction, fmt.Errorf(resultDesc))
+		return
+	}
+
+	var data map[string][]int8
+	if unerr := json.Unmarshal(transaction.DataSold, &data); unerr != nil {
+		redirectToPythonApp(user, transaction, err)
+		return
+	}
+
+	var newProducts []db.Product
+	for _, id := range data["products_id"] {
+		addProduct, err := server.store.GetProduct(ctx, int64(id))
+		if err != nil {
+			if err == sql.ErrNoRows {
+				redirectToPythonApp(user, transaction, err)
+				return
+			}
+			redirectToPythonApp(user, transaction, err)
+			return
+		}
+
+		newProducts = append(newProducts, addProduct)
+	}
+	_, err = server.store.ReduceClientStockTx(ctx, db.ReduceClientStockParams{
+		Client:         user,
+		ProducToReduce: newProducts,
+		Amount:         data["quantities"],
+		Transaction:    transaction,
+	})
+	if err != nil {
+		redirectToPythonApp(user, transaction, err)
+		return
+	}
+
+	server.store.ChangeStatus(ctx, db.ChangeStatusParams{
+		TransactionID: transaction.TransactionID,
+		Status:        true,
+	})
+}
+
+func redirectToPythonApp(user db.User, transaction db.Transaction, passErr error) {
+	pythonEndpoint := "http://0.0.0.0:5000/notify"
+
+	data := gin.H{
+		"status":        passErr,
+		"user_id":       user.UserID,
+		"transactionID": transaction.TransactionID,
+	}
+
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return
+	}
+
+	_, err = http.Post(pythonEndpoint, "application/json", bytes.NewBuffer(jsonData))
+	fmt.Println(err)
 	return
 }
 
