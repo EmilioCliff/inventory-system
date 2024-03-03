@@ -20,7 +20,7 @@ const (
 
 var transactionID string
 
-func SendSTK(amount string, userID int64) (string, error) {
+func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	config, err := ReadConfig("../..")
 	if err != nil {
 		log.Fatal("Could not log config file: ", err)
@@ -43,10 +43,10 @@ func SendSTK(amount string, userID int64) (string, error) {
 		"Password":          generatePassword(shortCode, config.PASSKEY),
 		"Timestamp":         time.Now().Format("20060102150405"),
 		"TransactionType":   "CustomerPayBillOnline",
-		"Amount":            "1",
-		"PartyA":            "254718750145",
+		"Amount":            amount,
+		"PartyA":            phoneNumber,
 		"PartyB":            shortCode,
-		"PhoneNumber":       "254718750145",
+		"PhoneNumber":       phoneNumber,
 		"CallBackURL":       callback,
 		"AccountReference":  "Cliff Test",
 		"TransactionDesc":   "Pay Bob For Test",

@@ -552,7 +552,17 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		amount += int(removeProduct.UnitPrice) * int(req.Quantities[idx])
 	}
 
-	trasactionID, err := utils.SendSTK(strconv.Itoa(amount), uri.ID)
+	user, err := server.store.GetUser(ctx, uri.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	trasactionID, err := utils.SendSTK(strconv.Itoa(amount), user.UserID, user.PhoneNumber)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -636,6 +646,7 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 	}
 
 	log.Println(callbackBody)
+
 	bodyValue := callbackBody["Body"].(map[string]interface{})
 	stkCallbackValue := bodyValue["stkCallback"].(map[string]interface{})
 	metaData := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
