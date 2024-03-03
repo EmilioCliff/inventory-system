@@ -30,19 +30,14 @@ func SendSTK(amount string, userID int64) (string, error) {
 	consumerSecret := config.CONSUMER_SECRET
 
 	transactionID = time.Now().Format("20060102150405")
-	log.Println(consumerKey)
-	log.Println(consumerSecret)
-	log.Println(transactionID)
 
 	accessToken, err := generateAccessToken(consumerKey, consumerSecret)
 	if err != nil {
 		return transactionID, err
 	}
 
-	log.Println(accessToken)
 	// callback := fmt.Sprintf("https://e864-105-163-157-51.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	callback := fmt.Sprintf("https://hip-letters-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
-	log.Printf("type %T - %v", callback, callback)
 	requestBody := map[string]interface{}{
 		"BusinessShortCode": shortCode,
 		"Password":          generatePassword(shortCode, config.PASSKEY),
@@ -90,11 +85,11 @@ func SendSTK(amount string, userID int64) (string, error) {
 	}
 	// log.Println(stkResponseBody)
 
-	if stkResponseBody["ResponseCode"] != 0 {
-		return transactionID, fmt.Errorf("Unsuccessful STK push")
-	}
+	// if stkResponseBody["ResponseCode"] != 0 {
+	// 	return transactionID, fmt.Errorf("Unsuccessful STK push")
+	// }
 
-	fmt.Println("STK Push Response Body:", string(responseBody))
+	log.Println("STK Push Response Body:", string(responseBody))
 	return transactionID, nil
 }
 
@@ -150,7 +145,6 @@ func generateAccessToken(consumerKey, consumerSecret string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	log.Println("HERE")
 	var tokenResponse map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&tokenResponse)
 	if err != nil {
@@ -162,7 +156,6 @@ func generateAccessToken(consumerKey, consumerSecret string) (string, error) {
 		return "", fmt.Errorf("Access token not found in response")
 	}
 
-	fmt.Println(accessToken)
 	return accessToken, nil
 }
 

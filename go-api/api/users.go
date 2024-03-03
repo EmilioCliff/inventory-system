@@ -558,7 +558,6 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		return
 	}
 
-	log.Println("Success STK PUSH")
 	jsonSoldProduct, err := json.Marshal(req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -594,6 +593,9 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 
 	userId := req.TransactionID[len(req.TransactionID)-3:]
 	transactionId := req.TransactionID[:len(req.TransactionID)-3]
+
+	log.Println(userId)
+	log.Println(transactionId)
 
 	intUserID, _ := strconv.Atoi(userId)
 	user, err := server.store.GetUserForUpdate(ctx, int64(intUserID))
@@ -637,6 +639,7 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 		return
 	}
 
+	log.Println(callbackBody)
 	merchantRequestID, _ := callbackBody["MerchantRequestID"].(string)
 	checkoutRequestID, _ := callbackBody["CheckoutRequestID"].(string)
 	resultCode, _ := callbackBody["ResultCode"].(string)
