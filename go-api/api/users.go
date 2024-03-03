@@ -653,11 +653,23 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 	bodyValue := callbackBody["Body"].(map[string]interface{})
 	stkCallbackValue := bodyValue["stkCallback"].(map[string]interface{})
 	metaData := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
-	items := metaData["Item"].([]map[string]interface{})
-	resultCode := stkCallbackValue["ResultCode"].(int)
-	phoneNumber := items[3]["Value"].(string)
-	mpesaReceiptNumber := items[1]["Value"].(string)
-	_ = items[0]["Value"].(float64)
+	items := metaData["Item"].([]interface{})
+	var resultCode int
+	if val, ok := stkCallbackValue["ResultCode"].(float64); ok {
+		resultCode = int(val)
+	}
+	var phoneNumber, mpesaReceiptNumber string
+	if len(items) > 3 {
+		if val, ok := items[3].(map[string]interface{}); ok {
+			phoneNumber, _ = val["Value"].(string)
+		}
+	}
+
+	if len(items) > 1 {
+		if val, ok := items[1].(map[string]interface{}); ok {
+			mpesaReceiptNumber, _ = val["Value"].(string)
+		}
+	}
 	resultDesc := stkCallbackValue["ResultDesc"].(string)
 
 	_, err = server.store.UpdateTransaction(ctx, db.UpdateTransactionParams{
