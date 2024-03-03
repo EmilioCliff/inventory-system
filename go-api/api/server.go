@@ -34,6 +34,7 @@ func NewServer(config utils.Config, store *db.Store, emailSender utils.GmailSend
 }
 
 func (server *Server) setRoutes() {
+	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
 	auth := router.Group("/").Use(authMiddleware(server.tokenMaker))
