@@ -148,6 +148,14 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	}
 	defer resp.Body.Close()
 
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	// Print the response body
+	log.Println("Response Body:", string(body))
+
 	var tokenResponse map[string]interface{}
 	err = json.NewDecoder(resp.Body).Decode(&tokenResponse)
 	if err != nil {
