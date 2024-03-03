@@ -646,14 +646,32 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 
 	log.Println(callbackBody)
 
-	bodyValue := callbackBody["Body"].(map[string]interface{})
-	stkCallbackValue := bodyValue["stkCallback"].(map[string]interface{})
-	metaData := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
-	items := metaData["Item"].([]interface{})
+	// map[
+	// 	Body:
+	// 	map[stkCallback:
+	// 	map[CheckoutRequestID:ws_CO_03032024210351107718750145
+	// 	MerchantRequestID:c4dd-4669-a173-d5cee84d66e91428607
+	// 	ResultCode:1032
+	// 	ResultDesc:Request cancelled by user]
+	// 	]
+	// 	]
+
+	bodyValue, _ := callbackBody["Body"].(map[string]interface{})
+	stkCallbackValue, _ := bodyValue["stkCallback"].(map[string]interface{})
+
 	var resultCode int
 	if val, ok := stkCallbackValue["ResultCode"].(float64); ok {
 		resultCode = int(val)
+		if resultCode != 0 {
+			resultDesc, _ := stkCallbackValue["ResultDesc"].(string)
+			redirectToPythonApp(user, transaction, fmt.Errorf(resultDesc))
+			return
+		}
 	}
+
+	metaData, _ := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
+	items, _ := metaData["Item"].([]interface{})
+
 	var phoneNumber, mpesaReceiptNumber string
 	if len(items) > 3 {
 		if val, ok := items[3].(map[string]interface{}); ok {
@@ -666,7 +684,6 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 			mpesaReceiptNumber, _ = val["Value"].(string)
 		}
 	}
-	resultDesc := stkCallbackValue["ResultDesc"].(string)
 
 	_, err = server.store.UpdateTransaction(ctx, db.UpdateTransactionParams{
 		TransactionID:      transaction.TransactionID,
@@ -675,11 +692,6 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 	})
 	if err != nil {
 		redirectToPythonApp(user, transaction, err)
-		return
-	}
-
-	if resultCode != 0 {
-		redirectToPythonApp(user, transaction, fmt.Errorf(resultDesc))
 		return
 	}
 
