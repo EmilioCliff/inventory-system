@@ -33,7 +33,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 
 	accessToken, err := getAccessToken(consumerKey, consumerSecret)
 	if err != nil {
-		log.Fatal("Failed to obtain access token:", err)
+		log.Println("Failed to obtain access token:", err)
 		return transactionID, err
 	}
 
