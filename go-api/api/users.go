@@ -562,6 +562,7 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		return
 	}
 
+	log.Println("Sending STK push")
 	trasactionID, err := utils.SendSTK(strconv.Itoa(amount), user.UserID, user.PhoneNumber)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -593,6 +594,7 @@ type mpesaCallbackRequest struct {
 }
 
 func (server *Server) mpesaCallback(ctx *gin.Context) {
+	log.Println("Callback Successful")
 	var req mpesaCallbackRequest
 
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -631,6 +633,7 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 }
 
 func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, transaction db.Transaction) {
+	log.Println("Processing Mpesa Callback")
 
 	body, err := io.ReadAll(ctx.Request.Body)
 	if err != nil {
