@@ -153,7 +153,6 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 		return "", err
 	}
 
-	// Print the response body
 	log.Println("Response Body:", string(body))
 
 	var tokenResponse map[string]interface{}
