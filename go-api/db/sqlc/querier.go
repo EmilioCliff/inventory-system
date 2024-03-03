@@ -9,9 +9,11 @@ import (
 )
 
 type Querier interface {
+	ChangeStatus(ctx context.Context, arg ChangeStatusParams) (Transaction, error)
 	CreateInvoice(ctx context.Context, arg CreateInvoiceParams) (Invoice, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
 	CreateReceipt(ctx context.Context, arg CreateReceiptParams) (Receipt, error)
+	CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteProduct(ctx context.Context, productID int64) error
 	DeleteUser(ctx context.Context, userID int64) error
@@ -21,6 +23,7 @@ type Querier interface {
 	GetProductForUpdate(ctx context.Context, productID int64) (Product, error)
 	GetReceipt(ctx context.Context, receiptNumber string) (Receipt, error)
 	GetReceiptByID(ctx context.Context, receiptID int64) (Receipt, error)
+	GetTransaction(ctx context.Context, transactionID string) (Transaction, error)
 	GetUser(ctx context.Context, userID int64) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	GetUserByUsename(ctx context.Context, username string) (User, error)

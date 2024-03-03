@@ -36,6 +36,14 @@ type Receipt struct {
 	CreatedAt           time.Time `json:"created_at"`
 }
 
+type Transaction struct {
+	TransactionID string    `json:"transaction_id"`
+	Amount        int32     `json:"amount"`
+	Status        bool      `json:"status"`
+	DataSold      []byte    `json:"data_sold"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
 type User struct {
 	UserID      int64     `json:"user_id"`
 	Username    string    `json:"username"`
