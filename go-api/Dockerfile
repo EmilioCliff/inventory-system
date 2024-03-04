@@ -12,7 +12,7 @@ WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
 COPY db/migration ./migration
-COPY db/sqlc/logi.png .
+COPY db/sqlc/Kokomed-Logo.png .
 COPY start.sh .
 COPY app.env .
 

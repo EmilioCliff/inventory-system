@@ -21,14 +21,6 @@ const fromAddress = "00100 - Nairobi"
 const fromEmail = "company@gmail.com"
 const fromContact = "1234567890"
 
-// Input flags
-// var invoiceNo string
-// var invoiceDate string
-// var toName string
-// var toAddress string
-// var toContact string
-// var toEmail string
-
 func SetInvoiceVariables(invoiceData map[string]string, data []map[string]interface{}) ([]byte, error) {
 	userDetails := map[string]string{
 		"invoiceNo":   fmt.Sprintf("INV - %v", invoiceData["invoice_number"]),
@@ -65,6 +57,14 @@ func generateInvoice(data [][]string, user map[string]string) ([]byte, error) {
 	gapY := 2.0
 	pdf := fpdf.New("P", "mm", "A4", "") // 210mm x 297mm
 	pdf.SetMargins(marginX, marginY, marginX)
+	pdf.SetFooterFunc(func() {
+		pdf.SetY(-15)
+		pdf.SetX(marginX)
+		pdf.SetFont("Arial", "I", 8)
+		pdf.Cell(marginX+10, 10, "Your satisfaction is our priority. If you have any concerns, please let us know.")
+		pdf.SetX(-marginX)
+		pdf.CellFormat(0, 10, fmt.Sprintf("Page %d/%d", pdf.PageNo(), pdf.PageCount()), "", 0, "C", false, 0, "")
+	})
 	pdf.AddPage()
 	pageW, _ := pdf.GetPageSize()
 	safeAreaW := pageW - 2*marginX
@@ -75,99 +75,74 @@ func generateInvoice(data [][]string, user map[string]string) ([]byte, error) {
 		return nil, err
 	}
 
-	imagePath := filepath.Join(currentDir, "logi.png")
+	imagePath := filepath.Join(currentDir, "Kokomed-Logo.png")
 
-	pdf.ImageOptions(imagePath, 0, 0, 50, 40, false, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
+	pdf.SetXY(-(marginX + 60), marginY+20)
+	pdf.ImageOptions(imagePath, -20, 0, 60, 50, false, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
+
+	pdf.SetXY(marginX, marginY-15)
+	pdf.SetFont("Arial", "B", 32)
+	pdf.Cell(70, 35, "INVOICE")
+	pdf.Ln(-1)
+
 	pdf.SetFont("Arial", "B", 16)
 	_, lineHeight := pdf.GetFontSize()
-	currentY := pdf.GetY() + lineHeight + gapY + 16
+	currentY := pdf.GetY() - gapY - 5
 	pdf.SetXY(marginX, currentY)
 
-	pdf.Cell(40, 10, defaultFromName)
-
-	if companyNo != "" {
-		pdf.SetFont("Arial", "BI", 12)
-		_, lineHeight = pdf.GetFontSize()
-		pdf.SetXY(marginX, pdf.GetY()+lineHeight+gapY)
-		pdf.Cell(40, 10, fmt.Sprintf("Company No : %v", defaultFromContact))
-	}
-
-	leftY := pdf.GetY() + lineHeight + gapY
-	// Build invoice word on right
-	pdf.SetFont("Arial", "B", 32)
-	_, lineHeight = pdf.GetFontSize()
-	pdf.SetXY(130, currentY)
-	pdf.Cell(100, 40, "INVOICE")
-
-	newY := leftY
-	if (pdf.GetY() + gapY) > newY {
-		newY = pdf.GetY() + gapY
-	}
-
-	newY += 10.0 // Add margin
-
-	pdf.SetXY(marginX, newY)
 	pdf.SetFont("Arial", "", 12)
 	_, lineHeight = pdf.GetFontSize()
-	lineBreak := lineHeight + float64(1)
-
-	pdf.SetFontStyle("B")
-	pdf.Cell(safeAreaW/2, lineHeight, fromName)
-	pdf.Ln(lineBreak)
-
-	pdf.SetFontStyle("")
-	pdf.Cell(safeAreaW/2, lineHeight, fromAddress)
-	pdf.Ln(lineBreak)
-
-	pdf.Cell(safeAreaW/2, lineHeight, "Kenya")
-	pdf.Ln(lineBreak)
-
-	pdf.Cell(safeAreaW/2, lineHeight, fromEmail)
-	pdf.Ln(lineBreak)
-
+	pdf.Cell(40, lineHeight, "RG Center, Ground Floor")
+	pdf.Ln(lineHeight + gapY)
+	pdf.Cell(40, lineHeight, "Room A10")
+	pdf.Ln(lineHeight + gapY)
+	pdf.Cell(40, lineHeight, "Eastern Bypass Road")
+	pdf.Ln(lineHeight + gapY)
+	pdf.Cell(40, lineHeight, "Utawala, Nairobi")
+	pdf.Ln(lineHeight + gapY)
+	pdf.Cell(40, lineHeight, "kokomed421@gmail.com")
+	pdf.Ln(lineHeight + gapY)
 	pdf.SetFontStyle("I")
-	pdf.Cell(safeAreaW/2, lineHeight, fmt.Sprintf("Tel: %s", fromContact))
-	pdf.Ln(lineBreak)
-	pdf.Ln(lineBreak)
-	pdf.Ln(lineBreak)
+	pdf.Cell(40, lineHeight, "Tel: 0713851482")
+	pdf.Ln(lineHeight * 3)
 
-	pdf.SetFontStyle("B")
-	pdf.Cell(safeAreaW/2, lineHeight, "Invoice To:")
-	pdf.Line(marginX, pdf.GetY()+lineHeight, marginX+safeAreaW/2, pdf.GetY()+lineHeight)
-	pdf.Ln(lineBreak)
-	pdf.Cell(safeAreaW/2, lineHeight, user["toName"])
+	headerY := pdf.GetY()
 
-	pdf.SetFontStyle("")
-	pdf.Ln(lineBreak)
-
-	pdf.Cell(safeAreaW/2, lineHeight, user["toAddress"])
-	pdf.Ln(lineBreak)
-
-	pdf.Cell(safeAreaW/2, lineHeight, "Kenya")
-	pdf.Ln(lineBreak)
-
-	pdf.Cell(safeAreaW/2, lineHeight, user["toEmail"])
-	pdf.Ln(lineBreak)
-
+	pdf.SetFont("Arial", "B", 16)
+	_, lineHeight = pdf.GetFontSize()
+	pdf.SetXY(marginX, headerY)
+	pdf.Cell(40, lineHeight, "INVOICE TO")
+	pdf.SetFont("Arial", "", 12)
+	_, lineHeight = pdf.GetFontSize()
+	pdf.Ln(lineHeight + gapY + 2)
+	pdf.Cell(40, lineHeight, user["toName"])
+	pdf.Ln(lineHeight + gapY)
+	pdf.Cell(40, lineHeight, user["toAddress"])
+	pdf.Ln(lineHeight + gapY)
+	pdf.Cell(40, lineHeight, user["toEmail"])
+	pdf.Ln(lineHeight + gapY)
 	pdf.SetFontStyle("I")
-	pdf.Cell(safeAreaW/2, lineHeight, fmt.Sprintf("Tel: %s", user["toContact"]))
+	pdf.Cell(40, lineHeight, fmt.Sprintf("Tel: %s", user["toContact"]))
 
-	endOfInvoiceDetailY := pdf.GetY() + lineHeight
-	pdf.SetFontStyle("")
-
-	// Right hand side info, invoice no & invoice date
-	invoiceDetailW := float64(30)
-	pdf.SetXY(safeAreaW/2+30, newY)
-	pdf.Cell(invoiceDetailW, lineHeight, "Invoice No.:")
-	pdf.Cell(invoiceDetailW, lineHeight, user["invoiceNo"])
-	pdf.Ln(lineBreak)
-	pdf.SetX(safeAreaW/2 + 30)
-	pdf.Cell(invoiceDetailW, lineHeight, "Invoice Date:")
-	pdf.Cell(invoiceDetailW, lineHeight, user["invoiceDate"])
-	pdf.Ln(lineBreak)
+	pdf.SetY(headerY)
+	pdf.SetFont("Arial", "B", 16)
+	_, lineHeight = pdf.GetFontSize()
+	middleX := safeAreaW / 2
+	pdf.SetX(-middleX)
+	pdf.Cell(40, lineHeight, "INVOICE")
+	pdf.Ln(lineHeight + gapY + 2)
+	pdf.SetX(-middleX)
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(42, lineHeight, "INVOICE NO: ")
+	pdf.Cell(40, lineHeight, user["invoiceNo"])
+	pdf.Ln(lineHeight + gapY)
+	pdf.SetX(-middleX)
+	pdf.Cell(42, lineHeight, "INVOICE DATE:")
+	pdf.Cell(40, lineHeight, user["invoiceDate"])
+	pdf.Ln(lineHeight * 4)
 
 	// Draw the table
-	pdf.SetXY(marginX, endOfInvoiceDetailY+10.0)
+	pdf.SetX(marginX)
 	lineHt := 10.0
 	const colNumber = 5
 	header := [colNumber]string{"No", "Description", "Quantity", "Unit Price (Ksh)", "Price (Ksh)"}
@@ -225,10 +200,6 @@ func generateInvoice(data [][]string, user map[string]string) ([]byte, error) {
 	pdf.CellFormat(colWidth[3], lineHt, "Grand total", "1", 0, "CM", true, 0, "")
 	pdf.CellFormat(colWidth[4], lineHt, fmt.Sprintf("%.2f", grandTotal), "1", 0, "CM", true, 0, "")
 	pdf.Ln(-1)
-
-	pdf.SetFontStyle("")
-	pdf.Ln(lineBreak)
-	pdf.Cell(safeAreaW, lineHeight, "Your satisfaction is our priority. If you have any concerns, please let us know.")
 
 	var buffer bytes.Buffer
 	if err := pdf.Output(&buffer); err != nil {

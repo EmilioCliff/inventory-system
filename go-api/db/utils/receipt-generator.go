@@ -11,13 +11,6 @@ import (
 	"github.com/go-pdf/fpdf"
 )
 
-// var invoiceNo string
-// var invoiceDate string
-// var toName string
-// var toAddress string
-// var toContact string
-// var toEmail string
-
 func SetReceiptVariables(receipt map[string]string, data []map[string]interface{}) ([]byte, error) {
 	userDetails := map[string]string{
 		"receiptNo":   fmt.Sprintf("RCT - %v", receipt["receipt_number"]),
@@ -40,7 +33,6 @@ func SetReceiptVariables(receipt map[string]string, data []map[string]interface{
 			products = append(products, product)
 		}
 	}
-	// fmt.Println(products)
 	pdfBytes, err := generateReceipt(products, userDetails)
 	if err != nil {
 		return nil, err
@@ -50,36 +42,35 @@ func SetReceiptVariables(receipt map[string]string, data []map[string]interface{
 
 func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 	marginX := 10.0
-	marginY := 10.0
-	gapY := 1.0
-	pdf := fpdf.New("P", "mm", "A4", "")
+	marginY := 20.0
+	gapY := 2.0
+	pdf := fpdf.New("P", "mm", "A4", "") // 210mm x 297mm
 	pdf.SetMargins(marginX, marginY, marginX)
-
-	pdf.SetHeaderFuncMode(func() {
-		pdf.SetFont("Arial", "B", 15)
-		pdf.Cell(80, 0, "")
-		pdf.CellFormat(30, 10, "Payment Receipt", "", 0, "C", false, 0, "")
-		pdf.Ln(2)
-	}, true)
-
 	pdf.SetFooterFunc(func() {
-		pdf.SetY(-15)
+		pdf.SetFont("Arial", "I", 12)
+		pdf.SetXY((170/2)-20, -36)
+		pdf.CellFormat(40, 5, "PAYMENT METHOD", "", 0, "CM", false, 0, "")
+		pdf.Ln(-1)
+		pdf.SetX((170 / 2) - 20)
+		pdf.CellFormat(40, 5, "PAYBILL", "", 0, "CM", false, 0, "")
+		pdf.Ln(-1)
+		pdf.SetX((170 / 2) - 20)
+		pdf.CellFormat(40, 5, "PAYBILL NO: 102332", "", 0, "CM", false, 0, "")
+		pdf.Ln(-1)
+		pdf.SetX((170 / 2) - 20)
+		pdf.CellFormat(40, 5, "PAYBILL ACCOUNT: 1242343", "", 0, "CM", false, 0, "")
+		pdf.Ln(-1)
+		pdf.SetX((170 / 2) - 20)
+
+		pdf.SetXY(marginX, -15)
 		pdf.SetFont("Arial", "I", 8)
 		pdf.Cell(marginX+10, 10, "Your satisfaction is our priority. If you have any concerns, please let us know.")
-		pdf.SetX(-15)
+		pdf.SetX(-marginX)
 		pdf.CellFormat(0, 10, fmt.Sprintf("Page %d/%d", pdf.PageNo(), pdf.PageCount()), "", 0, "C", false, 0, "")
 	})
 	pdf.AddPage()
 	pageW, _ := pdf.GetPageSize()
-	safeW := pageW - 2*marginX
-	centerW := safeW/2 - 10
-
-	pdf.SetXY(safeW/2-20, marginY+25)
-	pdf.SetFont("Arial", "B", 18)
-	_, lineHeight := pdf.GetFontSize()
-	pdf.Cell(40, 10, "PAYMENT RECEIPT")
-	pdf.Ln(lineHeight)
-	pdf.Ln(lineHeight)
+	safeAreaW := pageW - 2*marginX
 
 	currentDir, err := os.Getwd()
 	if err != nil {
@@ -87,68 +78,74 @@ func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 		return nil, err
 	}
 
-	imagePath := filepath.Join(currentDir, "logi.png")
+	imagePath := filepath.Join(currentDir, "Kokomed-Logo.png")
 
-	pdf.ImageOptions(imagePath, safeW/2, pdf.GetY()+lineHeight*3, 30, 20, true, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
+	pdf.SetXY(-(marginX + 60), marginY+20)
+	pdf.ImageOptions(imagePath, -20, 0, 60, 50, false, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
+
+	pdf.SetXY(marginX, marginY-15)
+	pdf.SetFont("Arial", "B", 32)
+	pdf.Cell(70, 35, "RECEIPT")
+	pdf.Ln(-1)
+
+	pdf.SetFont("Arial", "B", 16)
+	_, lineHeight := pdf.GetFontSize()
+	currentY := pdf.GetY() - gapY - 5
+	pdf.SetXY(marginX, currentY)
 
 	pdf.SetFont("Arial", "", 12)
 	_, lineHeight = pdf.GetFontSize()
-	currentY := pdf.GetY()
-	// pdf.SetXY(safeW/2 - 30, currentY+lineHeight*3)
-	// pdf.Cell(safeW/2, lineHeight, defaultFromAddress)
-
-	// currentY = pdf.GetY()
-	pdf.SetFontStyle("B")
-	pdf.SetXY(centerW, currentY+lineHeight*3)
-	pdf.Cell(50, lineHeight, defaultFromName)
+	pdf.Cell(40, lineHeight, "RG Center, Ground Floor")
 	pdf.Ln(lineHeight + gapY)
-
-	pdf.SetX(centerW)
-	pdf.SetFontStyle("")
-	pdf.Cell(50, lineHeight, defaultFromAddress)
+	pdf.Cell(40, lineHeight, "Room A10")
 	pdf.Ln(lineHeight + gapY)
+	pdf.Cell(40, lineHeight, "Eastern Bypass Road")
+	pdf.Ln(lineHeight + gapY)
+	pdf.Cell(40, lineHeight, "Utawala, Nairobi")
+	pdf.Ln(lineHeight + gapY)
+	pdf.Cell(40, lineHeight, "kokomed421@gmail.com")
+	pdf.Ln(lineHeight + gapY)
+	pdf.SetFontStyle("I")
+	pdf.Cell(40, lineHeight, "Tel: 0713851482")
+	pdf.Ln(lineHeight * 3)
 
-	pdf.SetX(centerW)
-	pdf.SetFontStyle("")
-	pdf.Cell(50, lineHeight, defaultFromContact)
-	pdf.Ln(lineHeight)
-	// pdf.Ln(lineHeight)
+	headerY := pdf.GetY()
 
-	pdf.Line(marginX, pdf.GetY()+lineHeight, marginX+safeW, pdf.GetY()+lineHeight)
-	pdf.Ln(lineHeight)
-	pdf.Ln(lineHeight)
-
-	pdf.SetX(centerW)
+	pdf.SetFont("Arial", "B", 16)
+	_, lineHeight = pdf.GetFontSize()
+	pdf.SetXY(marginX, headerY)
+	pdf.Cell(40, lineHeight, "RECEIPT TO")
+	pdf.SetFont("Arial", "", 12)
+	_, lineHeight = pdf.GetFontSize()
+	pdf.Ln(lineHeight + gapY + 2)
 	pdf.Cell(40, lineHeight, user["toName"])
 	pdf.Ln(lineHeight + gapY)
-
-	pdf.SetX(centerW)
-	pdf.Cell(40, lineHeight, user["toContact"])
+	pdf.Cell(40, lineHeight, user["toAddress"])
 	pdf.Ln(lineHeight + gapY)
-
-	pdf.SetX(centerW)
 	pdf.Cell(40, lineHeight, user["toEmail"])
 	pdf.Ln(lineHeight + gapY)
-	pdf.Ln(lineHeight + gapY)
-	pdf.Ln(lineHeight + gapY)
+	pdf.SetFontStyle("I")
+	pdf.Cell(40, lineHeight, fmt.Sprintf("Tel: %s", user["toContact"]))
 
-	pdf.SetX(centerW)
-	pdf.SetFontStyle("B")
-	pdf.Cell(30, lineHeight, "Receipt No: ")
-	pdf.SetFontStyle("")
-	pdf.Cell(30, lineHeight, user["receiptNo"])
+	pdf.SetY(headerY)
+	pdf.SetFont("Arial", "B", 16)
+	_, lineHeight = pdf.GetFontSize()
+	middleX := safeAreaW / 2
+	pdf.SetX(-middleX)
+	pdf.Cell(40, lineHeight, "RECEIPT")
+	pdf.Ln(lineHeight + gapY + 2)
+	pdf.SetX(-middleX)
+	pdf.SetFont("Arial", "", 12)
+	pdf.Cell(42, lineHeight, "RECEIPT NO: ")
+	pdf.Cell(40, lineHeight, user["receiptNo"])
 	pdf.Ln(lineHeight + gapY)
+	pdf.SetX(-middleX)
+	pdf.Cell(42, lineHeight, "RECEIPT DATE:")
+	pdf.Cell(40, lineHeight, user["receiptDate"])
+	pdf.Ln(lineHeight * 4)
 
-	pdf.SetX(centerW)
-	pdf.SetFontStyle("B")
-	pdf.Cell(30, lineHeight, "Receipt Date: ")
-	pdf.SetFontStyle("")
-	pdf.Cell(30, lineHeight, user["receiptDate"])
-	pdf.Ln(lineHeight + gapY)
-	pdf.Ln(lineHeight + gapY)
-
-	const colNum = 4
-	headers := [colNum]string{"Product", "Quantity", "Unit Price (Ksh)", "Total Price (Ksh)"}
+	const colNum = 5
+	headers := [colNum]string{"No", "Product", "Quantity", "Unit Price (Ksh)", "Total Price (Ksh)"}
 	colW := [colNum]float64{75.0, 25.0, 40.0, 40.0}
 
 	pdf.SetX(marginX)
@@ -167,9 +164,6 @@ func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 	for rowJ := 0; rowJ < len(data); rowJ++ {
 		val := data[rowJ]
 		if len(val) == 3 {
-			// Column 1: Unit
-			// Column 2: Description
-			// Column 3: Price per unit
 			unit, _ := strconv.Atoi(val[2])
 			desc := val[1]
 			quantity, _ := strconv.ParseFloat(val[2], 64)
@@ -177,7 +171,7 @@ func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 			unitPrice := math.Round((totalBill/quantity)*100) / 100
 			subtotal += totalBill
 
-			// pdf.CellFormat(colW[0], 10, fmt.Sprintf("%d", rowJ+1), "", 0, "CM", true, 0, "")      // No
+			pdf.CellFormat(colW[0], 10, fmt.Sprintf("%d", rowJ+1), "", 0, "CM", true, 0, "")       // No
 			pdf.CellFormat(colW[0], 10, desc, "B", 0, "LM", true, 0, "")                           // Description
 			pdf.CellFormat(colW[1], 10, fmt.Sprintf("%d", unit), "B", 0, "CM", true, 0, "")        // Quantity
 			pdf.CellFormat(colW[2], 10, fmt.Sprintf("%.2f", unitPrice), "B", 0, "CM", true, 0, "") // Unit Price
@@ -189,7 +183,7 @@ func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 	// Calculate the subtotal
 	pdf.SetFontStyle("B")
 	leftIndent := 0.0
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 3; i++ {
 		leftIndent += colW[i]
 	}
 	pdf.SetX(marginX + leftIndent)
@@ -202,10 +196,6 @@ func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 	pdf.CellFormat(colW[2], 10, "Grand total", "B", 0, "CM", true, 0, "")
 	pdf.CellFormat(colW[3], 10, fmt.Sprintf("%.2f", grandTotal), "B", 0, "CM", true, 0, "")
 	pdf.Ln(-1)
-
-	// pdf.SetFontStyle("")
-	// pdf.Ln(lineBreak)
-	// pdf.Cell(safeAreaW, lineHeight, "Your satisfaction is our priority. If you have any concerns, please let us know.")
 
 	var buffer bytes.Buffer
 	if err := pdf.Output(&buffer); err != nil {

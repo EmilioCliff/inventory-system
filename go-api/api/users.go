@@ -633,12 +633,14 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 }
 
 func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, transaction db.Transaction) {
+	log.Println("In processMpesaCallbackData")
 	body, err := io.ReadAll(ctx.Request.Body)
 	if err != nil {
 		redirectToPythonApp(user, transaction, err)
 		return
 	}
 
+	log.Println("Unmarshalling body")
 	var callbackBody map[string]interface{}
 	err = json.Unmarshal(body, &callbackBody)
 	if err != nil {
@@ -660,6 +662,7 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 			redirectToPythonApp(user, transaction, fmt.Errorf(resultDesc))
 			return
 		}
+		log.Println("ResultCode is zero")
 	}
 
 	metaData, _ := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
@@ -678,6 +681,7 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 		}
 	}
 
+	log.Println("Updating transaction")
 	_, err = server.store.UpdateTransaction(ctx, db.UpdateTransactionParams{
 		TransactionID:      transaction.TransactionID,
 		MpesaReceiptNumber: mpesaReceiptNumber,
@@ -696,6 +700,7 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 
 	var newProducts []db.Product
 	for _, id := range data["products_id"] {
+		log.Println("Getting products")
 		addProduct, err := server.store.GetProduct(ctx, int64(id))
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -708,6 +713,7 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 
 		newProducts = append(newProducts, addProduct)
 	}
+	log.Println("Sending reduceClientStockTx")
 	_, err = server.store.ReduceClientStockTx(ctx, db.ReduceClientStockParams{
 		Client:         user,
 		ProducToReduce: newProducts,
