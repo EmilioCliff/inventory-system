@@ -13,7 +13,8 @@ import (
 
 const (
 	baseURL      = "https://sandbox.safaricom.co.ke"
-	shortCode    = "174379"
+	shortCode    = "5839537"
+	storeNo      = "7839941"
 	lipaEndpoint = "/mpesa/stkpush/v1/processrequest"
 	callbackPath = "/callback"
 )
@@ -40,7 +41,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	// callback := fmt.Sprintf("https://e864-105-163-157-51.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	callback := fmt.Sprintf("https://hip-letters-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	requestBody := map[string]interface{}{
-		"BusinessShortCode": shortCode,
+		"BusinessShortCode": storeNo,
 		"Password":          generatePassword(shortCode, config.PASSKEY),
 		"Timestamp":         time.Now().Format("20060102150405"),
 		"TransactionType":   "CustomerPayBillOnline",
