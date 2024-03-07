@@ -86,6 +86,8 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 		return transactionID, err
 	}
 
+	log.Println(stkResponseBody)
+
 	return transactionID, nil
 }
 
