@@ -97,15 +97,33 @@ type getUserInvoicesRequest struct {
 	ID int32 `uri:"id" binding:"required"`
 }
 
+type getUserInvoicesFormRequest struct {
+	PageID int32 `form:"page_id" binding:"required,min=1"`
+}
+
+type getUserInvoicesResponse struct {
+	Data     []invoiceResponse  `json:"data"`
+	Metadata PaginationMetadata `json:"metadata"`
+}
+
 func (server *Server) getUserInvoices(ctx *gin.Context) {
 	var req getUserInvoicesRequest
-
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	invoices, err := server.store.GetUserInvoicesByID(ctx, req.ID)
+	var page getUserInvoicesFormRequest
+	if err := ctx.ShouldBindQuery(&page); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	invoices, err := server.store.GetUserInvoicesByID(ctx, db.GetUserInvoicesByIDParams{
+		Limit:         PageSize,
+		Offset:        (page.PageID - 1) * PageSize,
+		UserInvoiceID: req.ID,
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
@@ -116,7 +134,26 @@ func (server *Server) getUserInvoices(ctx *gin.Context) {
 		rsp = append(rsp, updatedInvoice)
 	}
 
-	ctx.JSON(http.StatusOK, rsp)
+	totalInvoice, err := server.store.CountUserInvoicesByID(ctx, req.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
+	totalPages := totalInvoice / PageSize
+	if totalInvoice%PageSize != 0 {
+		totalPages++
+	}
+
+	newRsp := getUserInvoicesResponse{
+		Data: rsp,
+		Metadata: PaginationMetadata{
+			CurrentPage: page.PageID,
+			TotalPages:  int32(totalPages),
+			TotalData:   int32(totalInvoice),
+		},
+	}
+
+	ctx.JSON(http.StatusOK, newRsp)
 	return
 }
 

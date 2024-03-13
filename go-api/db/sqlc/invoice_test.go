@@ -91,7 +91,11 @@ func TestGetUserInvoice(t *testing.T) {
 	require.NotEmpty(t, invoice)
 	require.NotEmpty(t, arg)
 
-	invoices, err := testStore.GetUserInvoicesByID(context.Background(), 3)
+	invoices, err := testStore.GetUserInvoicesByID(context.Background(), GetUserInvoicesByIDParams{
+		Limit:         10,
+		Offset:        0,
+		UserInvoiceID: 8,
+	})
 	require.NoError(t, err)
 	for _, invoice := range invoices {
 		require.NotEmpty(t, invoice)

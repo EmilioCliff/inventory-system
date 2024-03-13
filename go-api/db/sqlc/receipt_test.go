@@ -95,7 +95,11 @@ func TestGetUSerReceipts(t *testing.T) {
 	// require.NotEmpty(t, user)
 
 	var receipts []Receipt
-	receipts, err := testStore.GetUserReceiptsByID(context.Background(), int32(18))
+	receipts, err := testStore.GetUserReceiptsByID(context.Background(), GetUserReceiptsByIDParams{
+		Limit:         10,
+		Offset:        0,
+		UserReceiptID: int32(18),
+	})
 	require.NoError(t, err)
 	// require.NotEmpty(t, receipts)
 

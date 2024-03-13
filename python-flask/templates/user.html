@@ -243,26 +243,44 @@
 {% endfor %}
 {% endif %}
 {% elif ct == 'invoice' %}
-{% if invoice is none %}
+{% if invoice.data is none %}
 <p>No Invoices Yet</p>
 {% else %}
-{% for data in invoice %}
+{% for data in invoice.data %}
     <div class="d-flex justify-content-between list--container mb-3 p-3">
         <p style="font-size: 18px; font-weight: 500;">Invoice Number: INV - {{ data.invoice_number }}</p>
         <a href="{{ url_for('invoiceDownload', id_param=data.invoice_number) }}" class="btn btn-sm btn-outline-success">Download</a>
     </div>
 {% endfor %}
+<div class="d-inline-flex justify-content-between w-100">
+    {% if invoice.metadata.current_page > 1 %}
+    <a class="btn" href="{{ url_for('get_user_invoices', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+{% endif %}
+
+{% if invoice.metadata.current_page < data_sent.metadata.total_pages %}
+    <a class="btn" href="{{ url_for('get_user_invoices', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+{% endif %}
+</div>
 {% endif %}
 {% else %}
-{% if receipt is none %}
+{% if receipt.data is none %}
 <p>No Receipts Yet</p>
 {% else %}
-{% for data in receipt %}
+{% for data in receipt.data %}
     <div class="d-flex justify-content-between list--container mb-3 p-3">
         <p style="font-size: 18px; font-weight: 500;">Receipt Number: RCPT - {{ data.receipt_number }}</p>
         <a href="{{ url_for('receiptDownload', id_param=data.receipt_number) }}" class="btn btn-sm btn-outline-success">Download</a>
     </div>
 {% endfor %}
+<div class="d-inline-flex justify-content-between w-100">
+    {% if receipt.metadata.current_page > 1 %}
+    <a class="btn" href="{{ url_for('get_user_receipts', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+{% endif %}
+
+{% if receipt.metadata.current_page < data_sent.metadata.total_pages %}
+    <a class="btn" href="{{ url_for('get_user_receipts', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+{% endif %}
+</div>
 {% endif %}
 {% endif %}
 </div>

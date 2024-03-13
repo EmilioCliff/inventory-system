@@ -20,6 +20,18 @@ func (q *Queries) CountReceipts(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countUserReceiptsByID = `-- name: CountUserReceiptsByID :one
+SELECT COUNT(*) FROM receipts
+WHERE user_receipt_id = $1
+`
+
+func (q *Queries) CountUserReceiptsByID(ctx context.Context, userReceiptID int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserReceiptsByID, userReceiptID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createReceipt = `-- name: CreateReceipt :one
 INSERT INTO receipts(
     receipt_number, user_receipt_id, receipt_data, user_receipt_username, receipt_pdf
@@ -104,10 +116,18 @@ const getUserReceiptsByID = `-- name: GetUserReceiptsByID :many
 SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
 WHERE user_receipt_id = $1
 ORDER BY created_at DESC
+LIMIT $2
+OFFSET $3
 `
 
-func (q *Queries) GetUserReceiptsByID(ctx context.Context, userReceiptID int32) ([]Receipt, error) {
-	rows, err := q.db.Query(ctx, getUserReceiptsByID, userReceiptID)
+type GetUserReceiptsByIDParams struct {
+	UserReceiptID int32 `json:"user_receipt_id"`
+	Limit         int32 `json:"limit"`
+	Offset        int32 `json:"offset"`
+}
+
+func (q *Queries) GetUserReceiptsByID(ctx context.Context, arg GetUserReceiptsByIDParams) ([]Receipt, error) {
+	rows, err := q.db.Query(ctx, getUserReceiptsByID, arg.UserReceiptID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

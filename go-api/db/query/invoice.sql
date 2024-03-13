@@ -11,7 +11,13 @@ LIMIT 1;
 -- name: GetUserInvoicesByID :many
 SELECT * FROM invoices
 WHERE user_invoice_id = $1
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT $2
+OFFSET $3;
+
+-- name: CountUserInvoicesByID :one
+SELECT COUNT(*) FROM invoices
+WHERE user_invoice_id = $1;
 
 -- name: GetUserInvoicesByUsername :many
 SELECT * FROM invoices

@@ -99,15 +99,33 @@ type getUserReceiptsRequest struct {
 	ID int32 `uri:"id" binding:"required"`
 }
 
+type getUserReceiptsFormRequest struct {
+	PageID int32 `form:"page_id" binding:"required,min=1"`
+}
+
+type getUserReceiptsResponse struct {
+	Data     []receiptResponse  `json:"data"`
+	Metadata PaginationMetadata `json:"metadata"`
+}
+
 func (server *Server) getUserReceipts(ctx *gin.Context) {
 	var req getUserReceiptsRequest
-
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	receipts, err := server.store.GetUserReceiptsByID(ctx, req.ID)
+	var page getUserReceiptsFormRequest
+	if err := ctx.ShouldBindQuery(&page); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	receipts, err := server.store.GetUserReceiptsByID(ctx, db.GetUserReceiptsByIDParams{
+		UserReceiptID: req.ID,
+		Limit:         PageSize,
+		Offset:        (page.PageID - 1) * PageSize,
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 	}
@@ -118,7 +136,26 @@ func (server *Server) getUserReceipts(ctx *gin.Context) {
 		rsp = append(rsp, updatedReceipt)
 	}
 
-	ctx.JSON(http.StatusOK, rsp)
+	totalReceipt, err := server.store.CountUserReceiptsByID(ctx, req.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	}
+
+	totalPages := totalReceipt / PageSize
+	if totalReceipt%PageSize != 0 {
+		totalPages++
+	}
+
+	newRsp := getUserReceiptsResponse{
+		Data: rsp,
+		Metadata: PaginationMetadata{
+			CurrentPage: page.PageID,
+			TotalPages:  int32(totalPages),
+			TotalData:   int32(totalReceipt),
+		},
+	}
+
+	ctx.JSON(http.StatusOK, newRsp)
 	return
 }
 

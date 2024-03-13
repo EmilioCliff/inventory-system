@@ -366,9 +366,10 @@ def list_products():
 @app.route('/get_user_invoices/<int:id>')
 def get_user_invoices(id):
     user = requests.get(url=f"{BASE_URL}/users/{id}", headers={"Authorization": f"Bearer {session['token']}"})
+    params = {'page_id': request.args.get('page_id', 1)}
     getUserInvoiceUrl = f"{BASE_URL}/users/invoices/{id}"
-    product_reponse = requests.get(url=f"{BASE_URL}/products", headers={"Authorization": f"Bearer {session['token']}"})
-    rsp = requests.get(url=getUserInvoiceUrl, headers={"Authorization": f"Bearer {session['token']}"})
+    product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"})
+    rsp = requests.get(url=getUserInvoiceUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 200:
         return render_template("user.html", invoice=rsp.json(), user=user.json(), user_id=session['user_id'], ct='invoice', products=product_reponse.json())
     elif rsp.status_code == 401:
@@ -380,9 +381,10 @@ def get_user_invoices(id):
 @app.route('/get_user_receipts/<int:id>')
 def get_user_receipts(id):
     user = requests.get(url=f"{BASE_URL}/users/{id}", headers={"Authorization": f"Bearer {session['token']}"})
+    params = {'page_id': request.args.get('page_id', 1)}
     getUserReceiptsUrl = f"{BASE_URL}/users/receipts/{id}"
-    product_reponse = requests.get(url=f"{BASE_URL}/products", headers={"Authorization": f"Bearer {session['token']}"})
-    rsp = requests.get(url=getUserReceiptsUrl, headers={"Authorization": f"Bearer {session['token']}"})
+    product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"})
+    rsp = requests.get(url=getUserReceiptsUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 200:
         return render_template("user.html", receipt=rsp.json(), user=user.json(), user_id=session['user_id'], ct='receipt', products=product_reponse.json())
     elif rsp.status_code == 401:

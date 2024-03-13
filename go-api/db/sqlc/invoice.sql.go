@@ -20,6 +20,18 @@ func (q *Queries) CountInvoices(ctx context.Context) (int64, error) {
 	return count, err
 }
 
+const countUserInvoicesByID = `-- name: CountUserInvoicesByID :one
+SELECT COUNT(*) FROM invoices
+WHERE user_invoice_id = $1
+`
+
+func (q *Queries) CountUserInvoicesByID(ctx context.Context, userInvoiceID int32) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserInvoicesByID, userInvoiceID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createInvoice = `-- name: CreateInvoice :one
 INSERT INTO invoices (
     invoice_number, user_invoice_id, invoice_data, user_invoice_username, invoice_pdf
@@ -104,10 +116,18 @@ const getUserInvoicesByID = `-- name: GetUserInvoicesByID :many
 SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
 WHERE user_invoice_id = $1
 ORDER BY created_at DESC
+LIMIT $2
+OFFSET $3
 `
 
-func (q *Queries) GetUserInvoicesByID(ctx context.Context, userInvoiceID int32) ([]Invoice, error) {
-	rows, err := q.db.Query(ctx, getUserInvoicesByID, userInvoiceID)
+type GetUserInvoicesByIDParams struct {
+	UserInvoiceID int32 `json:"user_invoice_id"`
+	Limit         int32 `json:"limit"`
+	Offset        int32 `json:"offset"`
+}
+
+func (q *Queries) GetUserInvoicesByID(ctx context.Context, arg GetUserInvoicesByIDParams) ([]Invoice, error) {
+	rows, err := q.db.Query(ctx, getUserInvoicesByID, arg.UserInvoiceID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
