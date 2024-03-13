@@ -254,11 +254,11 @@
 {% endfor %}
 <div class="d-inline-flex justify-content-between w-100">
     {% if invoice.metadata.current_page > 1 %}
-    <a class="btn" href="{{ url_for('get_user_invoices', page_id=invoice.metadata.current_page - 1) }}">Previous</a>
+    <a class="btn" href="{{ url_for('get_user_invoices', id=user.id, page_id=invoice.metadata.current_page - 1) }}">Previous</a>
 {% endif %}
 
 {% if invoice.metadata.current_page < invoice.metadata.total_pages %}
-    <a class="btn" href="{{ url_for('get_user_invoices', page_id=invoice.metadata.current_page + 1) }}">Next</a>
+    <a class="btn" href="{{ url_for('get_user_invoices', id=user.id, page_id=invoice.metadata.current_page + 1) }}">Next</a>
 {% endif %}
 </div>
 {% endif %}
@@ -274,11 +274,11 @@
 {% endfor %}
 <div class="d-inline-flex justify-content-between w-100">
     {% if receipt.metadata.current_page > 1 %}
-    <a class="btn" href="{{ url_for('get_user_receipts', page_id=receipt.metadata.current_page - 1) }}">Previous</a>
+    <a class="btn" href="{{ url_for('get_user_receipts', id=user.id, page_id=receipt.metadata.current_page - 1) }}">Previous</a>
 {% endif %}
 
 {% if receipt.metadata.current_page < receipt.metadata.total_pages %}
-    <a class="btn" href="{{ url_for('get_user_receipts', page_id=receipt.metadata.current_page + 1) }}">Next</a>
+    <a class="btn" href="{{ url_for('get_user_receipts', id=user.id, page_id=receipt.metadata.current_page + 1) }}">Next</a>
 {% endif %}
 </div>
 {% endif %}
