@@ -112,7 +112,7 @@
                             {% if products is none %}
                             <option value="-100">No Products To Sell</option>
                             {% else %}
-                            {% for product in products %}
+                            {% for product in products.data %}
                             <option value="{{ product.product_id }}">{{ product.product_name }}</option>
                             {% endfor %}
                             {% endif %}
