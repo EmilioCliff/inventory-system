@@ -39,8 +39,27 @@ type receiptResponse struct {
 	ReceiptPdf          []byte                   `json:"receipt_pdf"`
 }
 
+type listReceiptRequest struct {
+	PageID int32 `form:"page_id" binding:"required,min=1"`
+}
+
+type listReceiptResponse struct {
+	Data     []receiptResponse  `json:"data"`
+	Metadata PaginationMetadata `json:"metadata"`
+}
+
 func (server *Server) listReceipts(ctx *gin.Context) {
-	receipts, err := server.store.ListReceipts(ctx)
+	var req listReceiptRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	receipts, err := server.store.ListReceipts(ctx, db.ListReceiptsParams{
+		Limit:  PageSize,
+		Offset: (req.PageID - 1) * PageSize,
+	})
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -52,7 +71,27 @@ func (server *Server) listReceipts(ctx *gin.Context) {
 		rsp = append(rsp, updatedReceipt)
 	}
 
-	ctx.JSON(http.StatusOK, rsp)
+	totalReceipt, err := server.store.CountReceipts(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	totalPages := totalReceipt / int64(PageSize)
+	if totalReceipt%int64(PageSize) != 0 {
+		totalPages++
+	}
+
+	newRsp := listReceiptResponse{
+		Data: rsp,
+		Metadata: PaginationMetadata{
+			CurrentPage: req.PageID,
+			TotalPages:  int32(totalPages),
+			TotalData:   int32(totalReceipt),
+		},
+	}
+
+	ctx.JSON(http.StatusOK, newRsp)
 	return
 }
 

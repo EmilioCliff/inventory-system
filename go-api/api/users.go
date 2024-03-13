@@ -61,7 +61,10 @@ func (server *Server) createUser(ctx *gin.Context) {
 	}
 
 	var arg db.CreateUserParams
-	lenDB, _ := server.store.ListUser(ctx)
+	lenDB, _ := server.store.ListUser(ctx, db.ListUserParams{
+		Limit:  5,
+		Offset: 0,
+	})
 	if len(lenDB) == 0 {
 		hashPassword, err := utils.GeneratePasswordHash(req.Password)
 		if err != nil {
@@ -226,8 +229,26 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 	return
 }
 
+type listUserRequest struct {
+	PageID int32 `form:"page_id" binding:"required,min=1"`
+}
+
+type listUserResponse struct {
+	Data     []userResponse     `json:"data"`
+	Metadata PaginationMetadata `json:"metadata"`
+}
+
 func (server *Server) listUsers(ctx *gin.Context) {
-	list_user, err := server.store.ListUser(ctx)
+	var req listUserRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	list_user, err := server.store.ListUser(ctx, db.ListUserParams{
+		Limit:  PageSize,
+		Offset: (req.PageID - 1) * PageSize,
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -238,7 +259,28 @@ func (server *Server) listUsers(ctx *gin.Context) {
 		us, _ := newUserResponse(user)
 		updateUser = append(updateUser, us)
 	}
-	ctx.JSON(http.StatusOK, updateUser)
+
+	totalUser, err := server.store.CountUsers(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	totalPages := totalUser / int64(PageSize)
+	if totalUser/int64(PageSize) != 0 {
+		totalPages++
+	}
+
+	rsp := listUserResponse{
+		Data: updateUser,
+		Metadata: PaginationMetadata{
+			CurrentPage: req.PageID,
+			TotalPages:  int32(totalPages),
+			TotalData:   int32(totalUser),
+		},
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
 	return
 }
 

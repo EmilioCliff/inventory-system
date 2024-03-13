@@ -25,7 +25,9 @@ FOR NO KEY UPDATE;
 
 -- name: ListUser :many
 SELECT * FROM users
-ORDER BY username;
+ORDER BY username
+LIMIT $1
+OFFSET $2;
 
 -- name: DeleteUser :exec
 DELETE FROM users
@@ -57,3 +59,6 @@ RETURNING *;
 SELECT username
 FROM users
 WHERE username ILIKE $1;
+
+-- name: CountUsers :one
+SELECT COUNT(*) FROM users;

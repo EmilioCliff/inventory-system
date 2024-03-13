@@ -40,11 +40,7 @@
   </nav>
   {% endif %}
 <div class="d-inline-flex justify-content-between">
-    {% if data_sent is none %}
-    <p class="mr-auto">{{ ct|title}} (0)</p>
-    {% else %}
-    <p class="mr-auto">{{ ct|title}} ({{ data_sent|length}})</p>
-    {% endif %}
+    <p class="mr-auto">{{ ct|title}} ({{ data_sent.metadata.total_data}})</p>
     {% if user_id == 1 %}
     {% if ct == 'users' %}
     <a href="#" id="createUserBtn">Add New
@@ -123,10 +119,10 @@
 </div>
 <div>
     {% if ct == 'users' %}
-    {% if data_sent is none %}
+    {% if data_sent.data is none %}
     <p>No Users Yet</p>
     {% else %}
-    {% for data in data_sent if not data.id == user_id %}
+    {% for data in data_sent.data if not data.id == user_id %}
     <a href="{{ url_for('get_user', id=data.id) }}" class="d-flex justify-content-between list--container p-3 mb-3">
         <div class="d-inline-flex justify-content-between">
             <div>
@@ -140,12 +136,21 @@
         <p style="overflow: hidden; white-space: nowrap;">{{ data.address }}</p>
     </a>
     {% endfor %}
+    <div class="d-inline-flex justify-content-between w-100">
+        {% if data_sent.metadata.current_page > 1 %}
+        <a class="btn" href="{{ url_for('list_users', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+    {% endif %}
+    
+    {% if data_sent.metadata.current_page < data_sent.metadata.total_pages %}
+        <a class="btn" href="{{ url_for('list_users', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+    {% endif %}
+    </div>
     {% endif %}
     {% elif ct == 'products' %}
-    {% if data_sent is none %}
+    {% if data_sent.data is none %}
     <p>No Products Yet</p>
     {% else %}
-    {% for data in data_sent %}
+    {% for data in data_sent.data %}
     <a href="#" class="d-flex justify-content-around mb-3 p-3 editProduct" data-productid="{{ data.product_id }}" style="text-decoration: none; color: black;box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);background-color: #fff;align-items: center;border-radius: 12%;">
         <div class="new_data">
             <div>
@@ -186,12 +191,21 @@
     </div>
     {% endif %}
     {% endfor %}
+    <div class="d-inline-flex justify-content-between w-100">
+        {% if data_sent.metadata.current_page > 1 %}
+    <a class="btn" href="{{ url_for('list_products', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+    {% endif %}
+
+    {% if data_sent.metadata.current_page < data_sent.metadata.total_pages %}
+        <a class="btn" href="{{ url_for('list_products', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+    {% endif %}
+    </div>
     {% endif %}
     {% elif ct == 'receipts' %}
-    {% if data_sent is none %}
+    {% if data_sent.data is none %}
     <p>No Receipts Yet</p>
     {% else %}
-    {% for data in data_sent %}
+    {% for data in data_sent.data %}
     <a href="#" id="viewReceipt" class="d-flex justify-content-between list--container mb-3 p-3">
         <div class="new_data">
             <div>
@@ -226,12 +240,21 @@
         </div>
     </div>
     {% endfor %}
+    <div class="d-inline-flex justify-content-between w-100">
+        {% if data_sent.metadata.current_page > 1 %}
+        <a class="btn" href="{{ url_for('list_receipts', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+        {% endif %}
+    
+        {% if data_sent.metadata.current_page < data_sent.metadata.total_pages %}
+            <a class="btn" href="{{ url_for('list_receipts', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+        {% endif %}
+    </div>
     {% endif %}
     {% else %}
-    {% if data_sent is none %}
+    {% if data_sent.data is none %}
     <p>No Invoice Yet</p>
     {% else %}
-    {% for data in data_sent %}
+    {% for data in data_sent.data %}
     <a href="#" id="viewInvoice" class="d-flex justify-content-between list--container mb-3 p-3">
         <div class="new_data">
             <div>
@@ -266,6 +289,15 @@
         </div>
     </div>
     {% endfor %}
+    <div class="d-inline-flex justify-content-between w-100">
+        {% if data_sent.metadata.current_page > 1 %}
+        <a class="btn" href="{{ url_for('list_invoices', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+        {% endif %}
+    
+        {% if data_sent.metadata.current_page < data_sent.metadata.total_pages %}
+            <a class="btn" href="{{ url_for('list_invoices', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+        {% endif %}
+    </div>
     {% endif %}
     {% endif %}
 </div>

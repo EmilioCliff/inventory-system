@@ -65,7 +65,10 @@ func TestGetProduct(t *testing.T) {
 }
 
 func TestListProduct(t *testing.T) {
-	products, err := testStore.ListProduct(context.Background())
+	products, err := testStore.ListProduct(context.Background(), ListProductParams{
+		Limit:  1,
+		Offset: 0,
+	})
 	require.NoError(t, err)
 	require.NotEmpty(t, products)
 

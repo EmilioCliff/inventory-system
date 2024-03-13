@@ -38,18 +38,57 @@ type invoiceResponse struct {
 	InvoicePdf          []byte                   `json:"invoice_pdf"`
 }
 
+type listInvoiceRequest struct {
+	PageID int32 `form:"page_id" binding:"required,min=1"`
+}
+
+type listInvoiceResponse struct {
+	Data     []invoiceResponse  `json:"data"`
+	Metadata PaginationMetadata `json:"metadata"`
+}
+
 func (server *Server) listInvoices(ctx *gin.Context) {
-	invoices, err := server.store.ListInvoices(ctx)
+	var req listInvoiceRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	invoices, err := server.store.ListInvoices(ctx, db.ListInvoicesParams{
+		Limit:  int32(PageSize),
+		Offset: int32((req.PageID - 1) * PageSize),
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	var rsp []invoiceResponse
+	var returnInvoices []invoiceResponse
 	for _, invoice := range invoices {
 		updatedInvoice, _ := newInvoiceResponse(invoice)
-		rsp = append(rsp, updatedInvoice)
+		returnInvoices = append(returnInvoices, updatedInvoice)
 	}
+
+	totalInvoice, err := server.store.CountInvoices(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	totalPages := totalInvoice / int64(PageSize)
+	if totalInvoice%int64(PageSize) != 0 {
+		totalPages++
+	}
+
+	rsp := listInvoiceResponse{
+		Data: returnInvoices,
+		Metadata: PaginationMetadata{
+			CurrentPage: int32(req.PageID),
+			TotalPages:  int32(totalPages),
+			TotalData:   int32(totalInvoice),
+		},
+	}
+
 	ctx.JSON(http.StatusOK, rsp)
 	return
 }

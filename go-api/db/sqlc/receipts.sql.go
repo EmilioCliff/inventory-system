@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const countReceipts = `-- name: CountReceipts :one
+SELECT COUNT(*) FROM receipts
+`
+
+func (q *Queries) CountReceipts(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countReceipts)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createReceipt = `-- name: CreateReceipt :one
 INSERT INTO receipts(
     receipt_number, user_receipt_id, receipt_data, user_receipt_username, receipt_pdf
@@ -160,10 +171,17 @@ func (q *Queries) GetUserReceiptsByUsername(ctx context.Context, userReceiptUser
 const listReceipts = `-- name: ListReceipts :many
 SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
 ORDER BY created_at DESC
+LIMIT $1
+OFFSET $2
 `
 
-func (q *Queries) ListReceipts(ctx context.Context) ([]Receipt, error) {
-	rows, err := q.db.Query(ctx, listReceipts)
+type ListReceiptsParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListReceipts(ctx context.Context, arg ListReceiptsParams) ([]Receipt, error) {
+	rows, err := q.db.Query(ctx, listReceipts, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

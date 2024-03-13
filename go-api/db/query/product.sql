@@ -10,7 +10,9 @@ FOR NO KEY UPDATE;
 
 -- name: ListProduct :many
 SELECT * FROM products
-ORDER BY product_name;
+ORDER BY product_name
+LIMIT $1
+OFFSET $2;
 
 -- name: CreateProduct :one
 INSERT INTO products (
@@ -35,3 +37,6 @@ WHERE product_id = $1;
 -- name: SearchILikeProducts :many
 SELECT * FROM products
 WHERE product_name ILIKE $1;
+
+-- name: CountProducts :one
+SELECT COUNT(*) FROM products;

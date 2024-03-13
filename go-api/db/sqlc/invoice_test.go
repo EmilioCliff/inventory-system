@@ -107,7 +107,10 @@ func TestGetUserInvoice(t *testing.T) {
 func TestListInvoices(t *testing.T) {
 	var invoices []Invoice
 	var err error
-	invoices, err = testStore.ListInvoices(context.Background())
+	invoices, err = testStore.ListInvoices(context.Background(), ListInvoicesParams{
+		Limit:  1,
+		Offset: 0,
+	})
 	require.NoError(t, err)
 	require.NotEmpty(t, invoices)
 	for _, invoice := range invoices {

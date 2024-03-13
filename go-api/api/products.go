@@ -131,14 +131,52 @@ func (server *Server) editProduct(ctx *gin.Context) {
 	return
 }
 
+type listProductsRequest struct {
+	PageID int32 `form:"page_id" binding:"required,min=1"`
+}
+
+type listProductsResponse struct {
+	Data     []db.Product       `json:"data"`
+	Metadata PaginationMetadata `json:"metadata"`
+}
+
 func (server *Server) listProducts(ctx *gin.Context) {
-	list_product, err := server.store.ListProduct(ctx)
+	var req listProductsRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	list_product, err := server.store.ListProduct(ctx, db.ListProductParams{
+		Limit:  int32(PageSize),
+		Offset: int32((req.PageID - 1) * PageSize),
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, list_product)
+	totalProduct, err := server.store.CountProducts(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	totalPages := totalProduct / int64(PageSize)
+	if totalProduct%int64(PageSize) != 0 {
+		totalPages++
+	}
+
+	rsp := listProductsResponse{
+		Data: list_product,
+		Metadata: PaginationMetadata{
+			TotalPages:  int32(totalPages),
+			CurrentPage: int32(req.PageID),
+			TotalData:   int32(totalProduct),
+		},
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
 	return
 }
 

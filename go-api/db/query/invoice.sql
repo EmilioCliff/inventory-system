@@ -20,7 +20,9 @@ ORDER BY created_at DESC;
 
 -- name: ListInvoices :many
 SELECT * FROM invoices
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT $1
+OFFSET $2;
 
 -- name: CreateInvoice :one
 INSERT INTO invoices (
@@ -29,3 +31,6 @@ INSERT INTO invoices (
   $1, $2, $3, $4, $5
 )
 RETURNING *;
+
+-- name: CountInvoices :one
+SELECT COUNT(*) FROM invoices;

@@ -108,7 +108,10 @@ func TestGetUSerReceipts(t *testing.T) {
 }
 
 func TestListReceipts(t *testing.T) {
-	receipts, err := testStore.ListReceipts(context.Background())
+	receipts, err := testStore.ListReceipts(context.Background(), ListReceiptsParams{
+		Limit:  1,
+		Offset: 0,
+	})
 	require.NoError(t, err)
 	require.NotEmpty(t, receipts)
 

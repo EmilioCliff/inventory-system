@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const countInvoices = `-- name: CountInvoices :one
+SELECT COUNT(*) FROM invoices
+`
+
+func (q *Queries) CountInvoices(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countInvoices)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createInvoice = `-- name: CreateInvoice :one
 INSERT INTO invoices (
     invoice_number, user_invoice_id, invoice_data, user_invoice_username, invoice_pdf
@@ -160,10 +171,17 @@ func (q *Queries) GetUserInvoicesByUsername(ctx context.Context, userInvoiceUser
 const listInvoices = `-- name: ListInvoices :many
 SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
 ORDER BY created_at DESC
+LIMIT $1
+OFFSET $2
 `
 
-func (q *Queries) ListInvoices(ctx context.Context) ([]Invoice, error) {
-	rows, err := q.db.Query(ctx, listInvoices)
+type ListInvoicesParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListInvoices(ctx context.Context, arg ListInvoicesParams) ([]Invoice, error) {
+	rows, err := q.db.Query(ctx, listInvoices, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

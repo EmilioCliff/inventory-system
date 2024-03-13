@@ -13,7 +13,7 @@ HEADERS={
     "Authorization": "Bearer "
 }
 
-# BASE_URL="http://0.0.0.0:3030" # When Testing
+# BASE_URL="http://0.0.0.0:8080" # When Testing
 # BASE_URL = "http://inventory-system-api-1:8080" When using Docker Compose
 BASE_URL = "http://hip-letters.railway.internal:8080"  #  Production
    
@@ -286,7 +286,8 @@ def dashboard():
 @app.route('/list_invoices')
 def list_invoices():
     listInvoicesUri = f"{BASE_URL}/invoices/admin"
-    rsp = requests.get(url=listInvoicesUri, headers={"Authorization": f"Bearer {session['token']}"})
+    params = {'page_id': request.args.get('page_id', 1)}
+    rsp = requests.get(url=listInvoicesUri, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -298,7 +299,8 @@ def list_invoices():
 @app.route('/list_receipts')
 def list_receipts():
     listReceiptUrl = f"{BASE_URL}/receipts/admin"
-    rsp = requests.get(url=listReceiptUrl, headers={"Authorization": f"Bearer {session['token']}"})
+    params = {'page_id': request.args.get('page_id', 1)}
+    rsp = requests.get(url=listReceiptUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -310,7 +312,8 @@ def list_receipts():
 @app.route('/list_users', methods=['GET', 'POST'])
 def list_users():
     listUsersUrl = f"{BASE_URL}/users/admin"
-    rsp = requests.get(url=listUsersUrl, headers={"Authorization": f"Bearer {session['token']}"})
+    params = {'page_id': request.args.get('page_id', 1)}
+    rsp = requests.get(url=listUsersUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -350,7 +353,8 @@ def search_products():
 @app.route('/list_products')
 def list_products():
     listProductsUrl = f"{BASE_URL}/products"
-    rsp = requests.get(url=listProductsUrl, headers={"Authorization": f"Bearer {session['token']}"})
+    params = {'page_id': request.args.get('page_id', 1)}
+    rsp = requests.get(url=listProductsUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])

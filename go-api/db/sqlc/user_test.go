@@ -147,7 +147,10 @@ func TestUpdateUserStock(t *testing.T) {
 }
 
 func TestListUser(t *testing.T) {
-	users, err := testStore.ListUser(context.Background())
+	users, err := testStore.ListUser(context.Background(), ListUserParams{
+		Limit:  1,
+		Offset: 0,
+	})
 	require.NoError(t, err)
 	require.NotEmpty(t, users)
 	for _, user := range users {

@@ -20,7 +20,9 @@ ORDER BY created_at DESC;
 
 -- name: ListReceipts :many
 SELECT * FROM receipts
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT $1
+OFFSET $2;
 
 -- name: CreateReceipt :one
 INSERT INTO receipts(
@@ -29,3 +31,6 @@ INSERT INTO receipts(
   $1, $2, $3, $4, $5
 )
 RETURNING *;
+
+-- name: CountReceipts :one
+SELECT COUNT(*) FROM receipts;

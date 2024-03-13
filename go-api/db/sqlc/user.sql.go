@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const countUsers = `-- name: CountUsers :one
+SELECT COUNT(*) FROM users
+`
+
+func (q *Queries) CountUsers(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countUsers)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (
   username, password, email, phone_number, address, stock, role
@@ -155,10 +166,17 @@ func (q *Queries) GetUserForUpdate(ctx context.Context, userID int64) (User, err
 const listUser = `-- name: ListUser :many
 SELECT user_id, username, password, email, phone_number, address, stock, role, created_at FROM users
 ORDER BY username
+LIMIT $1
+OFFSET $2
 `
 
-func (q *Queries) ListUser(ctx context.Context) ([]User, error) {
-	rows, err := q.db.Query(ctx, listUser)
+type ListUserParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]User, error) {
+	rows, err := q.db.Query(ctx, listUser, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}

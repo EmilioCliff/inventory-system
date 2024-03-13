@@ -9,6 +9,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	PageSize = 10
+)
+
 type Server struct {
 	config      utils.Config
 	store       *db.Store
@@ -76,10 +80,16 @@ func (server *Server) Start(address string) error {
 	return server.router.Run(address)
 }
 
-func (server *Server) GeneratePythonToken(username string) (string, error) {
-	return server.tokenMaker.CreateToken(username, server.config.PYTHON_APP_TOKEN_DURATION)
+type PaginationMetadata struct {
+	CurrentPage int32 `json:"current_page"`
+	TotalData   int32 `json:"total_data"`
+	TotalPages  int32 `json:"total_pages"`
 }
 
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
+}
+
+func (server *Server) GeneratePythonToken(username string) (string, error) {
+	return server.tokenMaker.CreateToken(username, server.config.PYTHON_APP_TOKEN_DURATION)
 }

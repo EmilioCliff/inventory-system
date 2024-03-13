@@ -9,6 +9,17 @@ import (
 	"context"
 )
 
+const countProducts = `-- name: CountProducts :one
+SELECT COUNT(*) FROM products
+`
+
+func (q *Queries) CountProducts(ctx context.Context) (int64, error) {
+	row := q.db.QueryRow(ctx, countProducts)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createProduct = `-- name: CreateProduct :one
 INSERT INTO products (
   product_name, unit_price, packsize
@@ -88,10 +99,17 @@ func (q *Queries) GetProductForUpdate(ctx context.Context, productID int64) (Pro
 const listProduct = `-- name: ListProduct :many
 SELECT product_id, product_name, unit_price, packsize, created_at FROM products
 ORDER BY product_name
+LIMIT $1
+OFFSET $2
 `
 
-func (q *Queries) ListProduct(ctx context.Context) ([]Product, error) {
-	rows, err := q.db.Query(ctx, listProduct)
+type ListProductParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListProduct(ctx context.Context, arg ListProductParams) ([]Product, error) {
+	rows, err := q.db.Query(ctx, listProduct, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
