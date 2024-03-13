@@ -36,6 +36,7 @@ type Querier interface {
 	GetUserInvoicesByUsername(ctx context.Context, userInvoiceUsername string) ([]Invoice, error)
 	GetUserReceiptsByID(ctx context.Context, userReceiptID int32) ([]Receipt, error)
 	GetUserReceiptsByUsername(ctx context.Context, userReceiptUsername string) ([]Receipt, error)
+	ListAllProduct(ctx context.Context) ([]Product, error)
 	ListInvoices(ctx context.Context, arg ListInvoicesParams) ([]Invoice, error)
 	ListProduct(ctx context.Context, arg ListProductParams) ([]Product, error)
 	ListReceipts(ctx context.Context, arg ListReceiptsParams) ([]Receipt, error)

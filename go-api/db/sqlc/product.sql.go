@@ -96,6 +96,37 @@ func (q *Queries) GetProductForUpdate(ctx context.Context, productID int64) (Pro
 	return i, err
 }
 
+const listAllProduct = `-- name: ListAllProduct :many
+SELECT product_id, product_name, unit_price, packsize, created_at FROM products
+ORDER BY product_name
+`
+
+func (q *Queries) ListAllProduct(ctx context.Context) ([]Product, error) {
+	rows, err := q.db.Query(ctx, listAllProduct)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Product{}
+	for rows.Next() {
+		var i Product
+		if err := rows.Scan(
+			&i.ProductID,
+			&i.ProductName,
+			&i.UnitPrice,
+			&i.Packsize,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listProduct = `-- name: ListProduct :many
 SELECT product_id, product_name, unit_price, packsize, created_at FROM products
 ORDER BY product_name

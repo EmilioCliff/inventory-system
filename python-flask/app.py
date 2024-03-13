@@ -230,7 +230,7 @@ def login():
 def get_user(id):
     # print(session['user_id'])
     getUserUri = f"{BASE_URL}/users/{id}"
-    product_reponse = requests.get(url=f"{BASE_URL}/products", headers={"Authorization": f"Bearer {session['token']}"}) 
+    product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"}) 
     rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 200:
         return render_template('user.html', user=rsp.json(), user_id=session['user_id'], ct="user", products=product_reponse.json()) # unmarshal JSON and read data

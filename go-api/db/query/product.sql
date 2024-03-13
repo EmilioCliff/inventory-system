@@ -14,6 +14,10 @@ ORDER BY product_name
 LIMIT $1
 OFFSET $2;
 
+-- name: ListAllProduct :many
+SELECT * FROM products
+ORDER BY product_name;
+
 -- name: CreateProduct :one
 INSERT INTO products (
   product_name, unit_price, packsize

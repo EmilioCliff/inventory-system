@@ -180,6 +180,18 @@ func (server *Server) listProducts(ctx *gin.Context) {
 	return
 }
 
+func (server *Server) listAllProducts(ctx *gin.Context) {
+
+	list_product, err := server.store.ListAllProduct(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, list_product)
+	return
+}
+
 type getProductRequest struct {
 	ID int32 `uri:"id" binding:"required,min=1"`
 }

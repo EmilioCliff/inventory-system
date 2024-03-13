@@ -44,6 +44,7 @@ func (server *Server) setRoutes() {
 	auth := router.Group("/").Use(authMiddleware(server.tokenMaker))
 	auth.GET("users/products/:id", server.getUserProducts)
 	auth.GET("/products/", server.listProducts)
+	auth.GET("/allproducts/", server.listAllProducts)
 	auth.GET("/products/:id", server.getProduct)
 	auth.POST("/products/admin/add", server.createProduct)
 	auth.DELETE("/products/admin/delete/:id", server.deleteProduct)
