@@ -19,11 +19,5 @@ MedTrack is a comprehensive inventory management system designed to streamline t
 4. Access the application through your web browser and log in with your credentials.
 5. Begin managing your medicine inventory, recording transactions, and generating invoices and receipts.
 
-## Project Contributors
-- Emilio Limo Cliff (Lead Developer)
-
-## License
-This project is licensed under the [Add License Name] License.
-
 ## Contact Information
-For inquiries or support, please contact [Your Email Address].
+For inquiries or support, please contact emiliocliff@gmail.com.
