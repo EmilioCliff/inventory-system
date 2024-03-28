@@ -12,9 +12,10 @@ import (
 )
 
 const (
-	baseURL      = "https://sandbox.safaricom.co.ke"
-	shortCode    = "5839537"
-	storeNo      = "7839941"
+	baseURL = "https://sandbox.safaricom.co.ke"
+	// shortCode    = "5839537"
+	// storeNo      = "7839941"
+	sandbox      = "174379"
 	lipaEndpoint = "/mpesa/stkpush/v1/processrequest"
 	callbackPath = "/callback"
 )
@@ -32,23 +33,31 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 
 	transactionID = time.Now().Format("20060102150405")
 
-	accessToken, err := getAccessToken(consumerKey, consumerSecret)
+	// accessToken, err := getAccessToken(consumerKey, consumerSecret)
+	// if err != nil {
+	// 	log.Println("Failed to obtain access token:", err)
+	// 	return transactionID, err
+	// }
+
+	accessToken, err := generateAccessToken(consumerKey, consumerSecret)
 	if err != nil {
-		log.Println("Failed to obtain access token:", err)
+		fmt.Println("Error generating access token:", err)
 		return transactionID, err
 	}
+
+	newNumber := setPhoneNumber(phoneNumber)
 
 	// callback := fmt.Sprintf("https://e864-105-163-157-51.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	callback := fmt.Sprintf("https://hip-letters-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	requestBody := map[string]interface{}{
-		"BusinessShortCode": storeNo,
-		"Password":          generatePassword(shortCode, config.PASSKEY),
+		"BusinessShortCode": sandbox,
+		"Password":          generatePassword(sandbox, config.PASSKEY),
 		"Timestamp":         time.Now().Format("20060102150405"),
 		"TransactionType":   "CustomerPayBillOnline",
 		"Amount":            amount,
-		"PartyA":            phoneNumber,
-		"PartyB":            shortCode,
-		"PhoneNumber":       phoneNumber,
+		"PartyA":            newNumber,
+		"PartyB":            sandbox,
+		"PhoneNumber":       newNumber,
 		"CallBackURL":       callback,
 		"AccountReference":  "Cliff Test",
 		"TransactionDesc":   "Pay Bob For Test",
@@ -66,7 +75,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	}
 
 	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
+	// req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -91,24 +100,31 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	return transactionID, nil
 }
 
-var accessToken string
-var expiryTimestamp time.Time
-
-func getAccessToken(consumerKey, consumerSecret string) (string, error) {
-	if time.Now().Before(expiryTimestamp) {
-		return accessToken, nil
+func setPhoneNumber(phoneNumber string) string {
+	if len(phoneNumber) == 10 && phoneNumber[0] == '0' {
+		phoneNumber = "254" + phoneNumber[1:]
 	}
-
-	newToken, err := generateAccessToken(consumerKey, consumerSecret)
-	if err != nil {
-		return "", err
-	}
-
-	accessToken = newToken
-	expiryTimestamp = time.Now().Add(3600 * time.Second)
-
-	return accessToken, nil
+	return phoneNumber
 }
+
+// var accessToken string
+// var expiryTimestamp time.Time
+
+// func getAccessToken(consumerKey, consumerSecret string) (string, error) {
+// 	// if time.Now().Before(expiryTimestamp) {
+// 	// 	return accessToken, nil
+// 	// }
+
+// 	newToken, err := generateAccessToken(consumerKey, consumerSecret)
+// 	if err != nil {
+// 		return "", err
+// 	}
+
+// 	// accessToken = newToken
+// 	// expiryTimestamp = time.Now().Add(3600 * time.Second)
+
+// 	return accessToken, nil
+// }
 
 func generateAccessToken(consumerKey string, consumerSecret string) (string, error) {
 	authString := consumerKey + ":" + consumerSecret
