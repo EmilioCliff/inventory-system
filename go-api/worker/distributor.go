@@ -14,7 +14,17 @@ type TaskDistributor interface {
 	) error
 	DistributeGenerateAndSendInvoice(
 		ctx context.Context,
-		payload GenerateAndSendEmailPayload,
+		payload GenerateInvoiceAndSendEmailPayload,
+		opt ...asynq.Option,
+	) error
+	DistributeGenerateAndSendReceipt(
+		ctx context.Context,
+		payload GenerateReceiptAndSendEmailPayload,
+		opt ...asynq.Option,
+	) error
+	DistributeSendResetPasswordEmail(
+		ctx context.Context,
+		payload SendResetPasswordEmail,
 		opt ...asynq.Option,
 	) error
 }

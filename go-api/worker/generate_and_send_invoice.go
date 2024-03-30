@@ -12,21 +12,21 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const GenerateAndSendEmailTask = "task:generate_and_send_email"
+const GenerateInvoiceAndSendEmailTask = "task:generate_invoice_and_send_email"
 
-type GenerateAndSendEmailPayload struct {
+type GenerateInvoiceAndSendEmailPayload struct {
 	User     db.User      `json:"username"`
 	Products []db.Product `json:"products"`
 	Amount   []int64      `json:"amount"`
 }
 
-func (distributor *RedisTaskDistributor) DistributeGenerateAndSendInvoice(ctx context.Context, payload GenerateAndSendEmailPayload, opt ...asynq.Option) error {
+func (distributor *RedisTaskDistributor) DistributeGenerateAndSendInvoice(ctx context.Context, payload GenerateInvoiceAndSendEmailPayload, opt ...asynq.Option) error {
 	jsonGenearatePayload, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("Failed to marshal payload: %w", err)
 	}
 
-	task := asynq.NewTask(GenerateAndSendEmailTask, jsonGenearatePayload, opt...)
+	task := asynq.NewTask(GenerateInvoiceAndSendEmailTask, jsonGenearatePayload, opt...)
 	info, err := distributor.client.EnqueueContext(ctx, task)
 	if err != nil {
 		return fmt.Errorf("failed to enqueue task: %w", err)
@@ -43,7 +43,7 @@ func (distributor *RedisTaskDistributor) DistributeGenerateAndSendInvoice(ctx co
 }
 
 func (processor *RedisTaskProcessor) ProcessGenerateAndSendInvoice(ctx context.Context, task *asynq.Task) error {
-	var invoiceDataPayload GenerateAndSendEmailPayload
+	var invoiceDataPayload GenerateInvoiceAndSendEmailPayload
 	if err := json.Unmarshal(task.Payload(), &invoiceDataPayload); err != nil {
 		return fmt.Errorf("Failed to unmarshal payload: %w", err)
 	}
@@ -106,6 +106,7 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendInvoice(ctx context.C
 		Str("type", task.Type()).
 		Bytes("body", task.Payload()).
 		Str("email", invoiceDataPayload.User.Email).
+		Str("invoice_number", invoiceGenerated.InvoiceNumber).
 		Msg("tasked processed successfull")
 
 	return nil

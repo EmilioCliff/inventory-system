@@ -4,11 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"sync"
-	"time"
-
-	"github.com/EmilioCliff/inventory-system/db/utils"
 )
 
 type ReduceClientStockParams struct {
@@ -16,6 +11,7 @@ type ReduceClientStockParams struct {
 	ProducToReduce []Product   `json:"productoadd"`
 	Amount         []int8      `json:"amount"`
 	Transaction    Transaction `json:"transaction_id"`
+	AfterPaying    func() error
 }
 
 type ReduceClientStockResult struct {
@@ -83,58 +79,8 @@ func (store *Store) ReduceClientStockTx(ctx context.Context, arg ReduceClientSto
 			return err
 		}
 
-		jsonReceiptData, err := json.Marshal(receiptData)
-		if err != nil {
-			return err
-		}
-
-		timestamp := arg.Transaction.TransactionID
-		createdTime := time.Now().Format("2006-01-02")
-		receiptC := map[string]string{
-			"receipt_number":   timestamp,
-			"created_at":       createdTime,
-			"receipt_username": client.Username,
-		}
-
-		pdfBytes, err := utils.SetReceiptVariables(receiptC, receiptData)
-		if err != nil {
-			log.Printf("Error creating receipt pdf %v", err)
-			return err
-		}
-
-		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			result.ReceiptGenerated, err = q.CreateReceipt(ctx, CreateReceiptParams{
-				ReceiptNumber:       timestamp,
-				UserReceiptID:       int32(client.UserID),
-				ReceiptData:         jsonReceiptData,
-				UserReceiptUsername: client.Username,
-				ReceiptPdf:          pdfBytes,
-			})
-		}()
-
-		wg.Wait()
-
-		return err
+		return arg.AfterPaying()
 	})
 
-	go func() {
-		config, _ := utils.ReadConfig("../..")
-		if err != nil {
-			log.Fatal("Could not log config file: ", err)
-		}
-
-		emailSender := utils.NewGmailSender(config.EMAIL_SENDER_NAME, config.EMAIL_SENDER_ADDRESS, config.EMAIL_SENDER_PASSWORD)
-
-		emailBody := fmt.Sprintf(`
-		<h1>Hello %s</h1>
-		<p>We've received your payment. Find the receipt attached below</p>
-		<h5>Thank You For Choosing Us.</h5>
-	`, result.Client.Username)
-
-		_ = emailSender.SendMail("Receipt Issued", emailBody, []string{result.Client.Email}, nil, nil, "Receipt.pdf", []byte(result.ReceiptGenerated.ReceiptPdf))
-	}()
 	return result, err
 }

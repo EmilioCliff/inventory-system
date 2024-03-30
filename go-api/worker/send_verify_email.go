@@ -52,6 +52,7 @@ func (processor *RedisTaskProcessor) ProcessSendVerifyEmail(ctx context.Context,
 		}
 		return fmt.Errorf("Internal error: %w", err)
 	}
+
 	accessToken, err := processor.tokenMaker.CreateToken(user.Username, (24 * time.Hour))
 	if err != nil {
 		return fmt.Errorf("Internal error: %w", err)

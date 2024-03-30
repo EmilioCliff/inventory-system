@@ -569,7 +569,7 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 		ProducToAdd: newProducts,
 		Amount:      req.Quantities,
 		AfterProcess: func() error {
-			invoiceTaskPayload := &worker.GenerateAndSendEmailPayload{
+			invoiceTaskPayload := &worker.GenerateInvoiceAndSendEmailPayload{
 				User:     user,
 				Products: newProducts,
 				Amount:   req.Quantities,
@@ -578,7 +578,7 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 			opts := []asynq.Option{
 				asynq.MaxRetry(10),
 				asynq.ProcessIn(5 * time.Second),
-				asynq.Queue(worker.QueueCritical),
+				asynq.Queue(worker.QueueDefault),
 			}
 
 			return server.taskDistributor.DistributeGenerateAndSendInvoice(ctx, *invoiceTaskPayload, opts...)
@@ -703,6 +703,7 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 		return
 	}
 
+	// Add to redis queue
 	go func() {
 		processMpesaCallbackData(ctx, server, user, transaction)
 	}()
@@ -798,6 +799,21 @@ func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, tr
 		ProducToReduce: newProducts,
 		Amount:         data["quantities"],
 		Transaction:    transaction,
+		AfterPaying: func() error {
+			receiptTaskPayload := &worker.GenerateReceiptAndSendEmailPayload{
+				User:     user,
+				Products: newProducts,
+				Amount:   data["quantities"],
+			}
+
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(5 * time.Second),
+				asynq.Queue(worker.QueueDefault),
+			}
+
+			return server.taskDistributor.DistributeGenerateAndSendReceipt(ctx, *receiptTaskPayload, opts...)
+		},
 	})
 	if err != nil {
 		redirectToPythonApp(user, transaction, err)
@@ -841,32 +857,16 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.store.GetUserByEmail(ctx, req.Email)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
+	sendResetPasswordPayload := &worker.SendResetPasswordEmail{
+		Email: req.Email,
 	}
 
-	accessToken, err := server.tokenMaker.CreateToken(user.Username, (10 * time.Minute))
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
+	opts := []asynq.Option{
+		asynq.MaxRetry(10),
+		asynq.Queue(worker.QueueCritical),
 	}
 
-	resetPasswordLink := fmt.Sprintf("%v/resetit?token=%v", server.config.PUBLIC_URL, accessToken) // URL + TOKEN for passwordreset
-	emailBody := fmt.Sprintf(`
-	<h1>Hello %s</h1>
-	<p>We received a request to reset your password. Click the link below to reset it:</p>
-	<a href="%s" style="display:inline-block; padding:10px 20px; background-color:#007BFF; color:#fff; text-decoration:none; border-radius:5px;">Reset Password</a>
-	<h5>The link is valid for 10 Minutes</h5>
-`, user.Username, resetPasswordLink)
-
-	err = server.emailSender.SendMail("Reset Password", emailBody, []string{user.Email}, nil, nil, "", nil)
-	if err != nil {
+	if err := server.taskDistributor.DistributeSendResetPasswordEmail(ctx, *sendResetPasswordPayload, opts...); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

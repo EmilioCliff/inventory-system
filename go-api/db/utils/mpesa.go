@@ -12,9 +12,7 @@ import (
 )
 
 const (
-	baseURL = "https://sandbox.safaricom.co.ke"
-	// shortCode    = "5839537"
-	// storeNo      = "7839941"
+	baseURL      = "https://sandbox.safaricom.co.ke"
 	sandbox      = "174379"
 	lipaEndpoint = "/mpesa/stkpush/v1/processrequest"
 	callbackPath = "/callback"
@@ -33,21 +31,15 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 
 	transactionID = time.Now().Format("20060102150405")
 
-	// accessToken, err := getAccessToken(consumerKey, consumerSecret)
-	// if err != nil {
-	// 	log.Println("Failed to obtain access token:", err)
-	// 	return transactionID, err
-	// }
-
 	accessToken, err := generateAccessToken(consumerKey, consumerSecret)
 	if err != nil {
 		fmt.Println("Error generating access token:", err)
 		return transactionID, err
 	}
 
-	newNumber := setPhoneNumber(phoneNumber)
+	// newNumber := setPhoneNumber(phoneNumber)
 
-	// callback := fmt.Sprintf("https://e864-105-163-157-51.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
+	// callback := fmt.Sprintf("https://4676-105-163-2-242.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	callback := fmt.Sprintf("https://hip-letters-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	requestBody := map[string]interface{}{
 		"BusinessShortCode": sandbox,
@@ -55,9 +47,9 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 		"Timestamp":         time.Now().Format("20060102150405"),
 		"TransactionType":   "CustomerPayBillOnline",
 		"Amount":            amount,
-		"PartyA":            newNumber,
+		"PartyA":            "254718750145",
 		"PartyB":            sandbox,
-		"PhoneNumber":       newNumber,
+		"PhoneNumber":       "254718750145",
 		"CallBackURL":       callback,
 		"AccountReference":  "Cliff Test",
 		"TransactionDesc":   "Pay Bob For Test",
@@ -75,7 +67,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	}
 
 	req.Header.Set("Authorization", "Bearer "+accessToken)
-	// req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -165,14 +157,12 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	if !ok {
 		return "", fmt.Errorf("Access token not found in response")
 	}
+	log.Println(accessToken)
 
 	return accessToken, nil
 }
 
 func generatePassword(shortCode string, key string) string {
-	passkey := key
-	timestamp := time.Now().Format("20060102150405")
-
-	password := shortCode + passkey + timestamp
+	password := shortCode + key + time.Now().Format("20060102150405")
 	return base64.StdEncoding.EncodeToString([]byte(password))
 }
