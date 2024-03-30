@@ -6,6 +6,7 @@ import (
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/EmilioCliff/inventory-system/db/utils"
 	"github.com/EmilioCliff/inventory-system/token"
+	"github.com/EmilioCliff/inventory-system/worker"
 	"github.com/gin-gonic/gin"
 )
 
@@ -14,23 +15,25 @@ const (
 )
 
 type Server struct {
-	config      utils.Config
-	store       *db.Store
-	router      *gin.Engine
-	tokenMaker  token.Maker
-	emailSender utils.GmailSender
+	config          utils.Config
+	store           *db.Store
+	router          *gin.Engine
+	tokenMaker      token.Maker
+	emailSender     utils.GmailSender
+	taskDistributor worker.TaskDistributor
 }
 
-func NewServer(config utils.Config, store *db.Store, emailSender utils.GmailSender) (*Server, error) {
+func NewServer(config utils.Config, store *db.Store, emailSender utils.GmailSender, taskDistributor worker.TaskDistributor) (*Server, error) {
 	tokenMaker, err := token.NewPaseto(config.TOKEN_SYMMETRY_KEY)
 	if err != nil {
 		return nil, fmt.Errorf("Couldnt open tokenmaker %w", err)
 	}
 	server := &Server{
-		tokenMaker:  tokenMaker,
-		store:       store,
-		config:      config,
-		emailSender: emailSender,
+		tokenMaker:      tokenMaker,
+		store:           store,
+		config:          config,
+		emailSender:     emailSender,
+		taskDistributor: taskDistributor,
 	}
 
 	server.setRoutes()
@@ -40,6 +43,8 @@ func NewServer(config utils.Config, store *db.Store, emailSender utils.GmailSend
 func (server *Server) setRoutes() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
+
+	router.Use(loggerMiddleware())
 
 	auth := router.Group("/").Use(authMiddleware(server.tokenMaker))
 	auth.GET("users/products/:id", server.getUserProducts)

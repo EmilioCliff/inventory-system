@@ -197,6 +197,7 @@ def resetit():
         if rsp.status_code == 200:
             return redirect(url_for('login'))
         else:
+            print("error is here")
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     return render_template("forgot_password.html", token=token)
     
@@ -528,8 +529,4 @@ def handle_server_error(error):
     return render_template('failed.html', error_code=500, error=str(error), connection=True)
 
 if __name__ == '__main__':
-    app.run(debug=True)
-
-
-if __name__ == "__main__":
     app.run(debug=True)

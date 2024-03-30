@@ -13,7 +13,9 @@ import (
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/EmilioCliff/inventory-system/db/utils"
+	"github.com/EmilioCliff/inventory-system/worker"
 	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
 	// "google.golang.org/appengine/log"
 )
 
@@ -94,13 +96,33 @@ func (server *Server) createUser(ctx *gin.Context) {
 		}
 	}
 
-	user, err := server.store.CreateUser(ctx, arg)
+	// user, err := server.store.CreateUser(ctx, arg)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
+	createUserResult, err := server.store.CreateUserTx(ctx, db.CreateUserTxParams{
+		CreateUserParams: arg,
+		AfterCreate: func(user db.User) error {
+			sendPayload := &worker.SendEmailVerifyPayload{
+				Username: user.Username,
+			}
+
+			// TODO: do in the transaction
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(5 * time.Second),
+				asynq.Queue(worker.QueueCritical),
+			}
+			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, *sendPayload, opts...)
+		},
+	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	resp, _ := newUserResponse(user)
+	resp, _ := newUserResponse(createUserResult.User)
 
 	ctx.JSON(http.StatusOK, resp)
 	return

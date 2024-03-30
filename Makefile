@@ -40,5 +40,7 @@ go-image:
 go:
 	docker run --name goapi -d -p 8080:8080 go-api:latest 
 
+redis:
+	docker run --name redis -p 6379:6379 -d redis:7.2.4-alpine3.19
 
-.PHONY: postgres createdb dropdb migratedown migrateup migratedown1 migrateup1 sqlc test server python-image python go-image go
+.PHONY: postgres createdb dropdb migratedown migrateup migratedown1 migrateup1 sqlc test server python-image python go-image go redis

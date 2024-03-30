@@ -20,6 +20,7 @@ type Config struct {
 	CONSUMER_KEY              string        `mapstructure:"CONSUMER_KEY"`
 	CONSUMER_SECRET           string        `mapstructure:"CONSUMER_SECRET"`
 	PASSKEY                   string        `mapstructure:"PASSKEY"`
+	REDIS_ADDRESS             string        `mapstructure:"REDIS_ADDRESS"`
 }
 
 func ReadConfig(path string) (config Config, err error) {
