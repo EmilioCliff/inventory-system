@@ -4,18 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
-	"sync"
-	"time"
-
-	"github.com/EmilioCliff/inventory-system/db/utils"
 )
 
 type AddClientStockParams struct {
-	FromAdmin   User      `json:"fromuser"`
-	ToClient    User      `json:"touser"`
-	ProducToAdd []Product `json:"productoadd"`
-	Amount      []int64   `json:"amount"`
+	FromAdmin    User      `json:"fromuser"`
+	ToClient     User      `json:"touser"`
+	ProducToAdd  []Product `json:"productoadd"`
+	Amount       []int64   `json:"amount"`
+	AfterProcess func() error
 }
 
 type AddClientStockResult struct {
@@ -134,60 +130,60 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 			return err
 		}
 
-		jsonInvoiceData, err := json.Marshal(invoiceData)
-		if err != nil {
-			return err
-		}
-		timestamp := time.Now().Format("20060102150405")
-		createdTime := time.Now().Format("2006-01-02")
+		// jsonInvoiceData, err := json.Marshal(invoiceData)
+		// if err != nil {
+		// 	return err
+		// }
+		// timestamp := time.Now().Format("20060102150405")
+		// createdTime := time.Now().Format("2006-01-02")
 
-		invoiceC := map[string]string{
-			"invoice_number":   timestamp,
-			"created_at":       createdTime,
-			"invoice_username": client.Username,
-		}
+		// invoiceC := map[string]string{
+		// 	"invoice_number":   timestamp,
+		// 	"created_at":       createdTime,
+		// 	"invoice_username": client.Username,
+		// }
 
-		pdfBytes, err := utils.SetInvoiceVariables(invoiceC, invoiceData)
-		if err != nil {
-			log.Printf("Error creating invoice %v", err)
-			return err
-		}
+		// pdfBytes, err := utils.SetInvoiceVariables(invoiceC, invoiceData)
+		// if err != nil {
+		// 	log.Printf("Error creating invoice %v", err)
+		// 	return err
+		// }
 
-		var wg sync.WaitGroup
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		// var wg sync.WaitGroup
+		// wg.Add(1)
+		// go func() {
+		// 	defer wg.Done()
 
-			result.InvoiceGenerated, err = q.CreateInvoice(ctx, CreateInvoiceParams{
-				InvoiceNumber:       timestamp + utils.RandomString(4),
-				UserInvoiceID:       int32(client.UserID),
-				InvoiceData:         jsonInvoiceData,
-				UserInvoiceUsername: client.Username,
-				InvoicePdf:          pdfBytes,
-			})
-		}()
+		// 	result.InvoiceGenerated, err = q.CreateInvoice(ctx, CreateInvoiceParams{
+		// 		InvoiceNumber:       timestamp + utils.RandomString(4),
+		// 		UserInvoiceID:       int32(client.UserID),
+		// 		InvoiceData:         jsonInvoiceData,
+		// 		UserInvoiceUsername: client.Username,
+		// 		InvoicePdf:          pdfBytes,
+		// 	})
+		// }()
 
-		wg.Wait()
+		// wg.Wait()
 
-		return err
+		return arg.AfterProcess()
 	})
 
-	go func() {
-		config, err := utils.ReadConfig("../..")
-		if err != nil {
-			log.Fatal("Could not log config file: ", err)
-		}
+	// go func() {
+	// 	config, err := utils.ReadConfig("../..")
+	// 	if err != nil {
+	// 		log.Fatal("Could not log config file: ", err)
+	// 	}
 
-		emailSender := utils.NewGmailSender(config.EMAIL_SENDER_NAME, config.EMAIL_SENDER_ADDRESS, config.EMAIL_SENDER_PASSWORD)
+	// 	emailSender := utils.NewGmailSender(config.EMAIL_SENDER_NAME, config.EMAIL_SENDER_ADDRESS, config.EMAIL_SENDER_PASSWORD)
 
-		emailBody := fmt.Sprintf(`
-		<h1>Hello %s</h1>
-		<p>We've issued products. Find the invoice attached below</p>
-		<h5>Thank You For Choosing Us.</h5>
-	`, result.ToUser.Username)
+	// 	emailBody := fmt.Sprintf(`
+	// 	<h1>Hello %s</h1>
+	// 	<p>We've issued products. Find the invoice attached below</p>
+	// 	<h5>Thank You For Choosing Us.</h5>
+	// `, result.ToUser.Username)
 
-		_ = emailSender.SendMail("Invoice Issued", emailBody, []string{result.ToUser.Email}, nil, nil, "Invoice.pdf", []byte(result.InvoiceGenerated.InvoicePdf))
-	}()
+	// 	_ = emailSender.SendMail("Invoice Issued", emailBody, []string{result.ToUser.Email}, nil, nil, "Invoice.pdf", []byte(result.InvoiceGenerated.InvoicePdf))
+	// }()
 
 	return result, err
 }

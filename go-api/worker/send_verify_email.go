@@ -42,13 +42,13 @@ func (distributor RedisTaskDistributor) DistributeTaskSendVerifyEmail(ctx contex
 func (processor *RedisTaskProcessor) ProcessSendVerifyEmail(ctx context.Context, task *asynq.Task) error {
 	var payLoad SendEmailVerifyPayload
 	if err := json.Unmarshal(task.Payload(), &payLoad); err != nil {
-		return fmt.Errorf("failed to unmarshal payload: %w", asynq.SkipRetry)
+		return fmt.Errorf("failed to unmarshal payload: %w", err)
 	}
 
 	user, err := processor.store.GetUserByUsename(ctx, payLoad.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return fmt.Errorf("No user found: %w", asynq.SkipRetry)
+			return fmt.Errorf("No user found: %w", err)
 		}
 		return fmt.Errorf("Internal error: %w", err)
 	}

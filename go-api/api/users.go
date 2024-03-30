@@ -108,7 +108,6 @@ func (server *Server) createUser(ctx *gin.Context) {
 				Username: user.Username,
 			}
 
-			// TODO: do in the transaction
 			opts := []asynq.Option{
 				asynq.MaxRetry(10),
 				asynq.ProcessIn(5 * time.Second),
@@ -569,6 +568,22 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 		ToClient:    user,
 		ProducToAdd: newProducts,
 		Amount:      req.Quantities,
+		AfterProcess: func() error {
+			invoiceTaskPayload := &worker.GenerateAndSendEmailPayload{
+				User:     user,
+				Products: newProducts,
+				Amount:   req.Quantities,
+			}
+
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(5 * time.Second),
+				asynq.Queue(worker.QueueCritical),
+			}
+
+			return server.taskDistributor.DistributeGenerateAndSendInvoice(ctx, *invoiceTaskPayload, opts...)
+
+		},
 	})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))

@@ -12,6 +12,11 @@ type TaskDistributor interface {
 		payload SendEmailVerifyPayload,
 		opt ...asynq.Option,
 	) error
+	DistributeGenerateAndSendInvoice(
+		ctx context.Context,
+		payload GenerateAndSendEmailPayload,
+		opt ...asynq.Option,
+	) error
 }
 
 type RedisTaskDistributor struct {
