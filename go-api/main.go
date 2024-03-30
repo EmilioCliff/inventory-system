@@ -28,7 +28,8 @@ func main() {
 	store := db.NewStore(conn)
 
 	redisOpt := asynq.RedisClientOpt{
-		Addr: config.REDIS_ADDRESS,
+		Addr:     config.REDIS_ADDRESS,
+		Password: config.REDIS_PASSWORD,
 	}
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
