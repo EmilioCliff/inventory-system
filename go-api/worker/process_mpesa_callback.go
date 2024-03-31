@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"strconv"
 	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -18,9 +19,9 @@ import (
 const ProcessMpesaCallbackTask = "task:process_mpesa_callback"
 
 type ProcessMpesaCallbackPayload struct {
-	User        db.User
-	Transaction db.Transaction
-	GinCtx      *gin.Context
+	UserID        string `json:"user_id"`
+	TransactionID string `json:"transaction_id"`
+	GinCtx        *gin.Context
 }
 
 func (distributor *RedisTaskDistributor) DistributeProcessMpesaCallback(ctx context.Context, payload ProcessMpesaCallbackPayload, opts ...asynq.Option) error {
@@ -49,6 +50,23 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	var mpesaCallbackPayload ProcessMpesaCallbackPayload
 	if err := json.Unmarshal(task.Payload(), &mpesaCallbackPayload); err != nil {
 		return fmt.Errorf("failed to unmarshal mpesa callback payload: %w", err)
+	}
+
+	intUserID, _ := strconv.Atoi(mpesaCallbackPayload.UserID)
+	user, err := processor.store.GetUserForUpdate(ctx, int64(intUserID))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("user not found: %w", err)
+		}
+		return fmt.Errorf("internal server error: %w", err)
+	}
+
+	transaction, err := processor.store.GetTransaction(ctx, mpesaCallbackPayload.TransactionID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("transaction not found: %w", err)
+		}
+		return fmt.Errorf("internal server error: %w", err)
 	}
 
 	log.Info().Msg("In processMpesaCallbackData")
@@ -102,7 +120,7 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 
 	log.Info().Msg("Updating transaction")
 	_, err = processor.store.UpdateTransaction(ctx, db.UpdateTransactionParams{
-		TransactionID:      mpesaCallbackPayload.Transaction.TransactionID,
+		TransactionID:      transaction.TransactionID,
 		MpesaReceiptNumber: mpesaReceiptNumber,
 		PhoneNumber:        phoneNumber,
 	})
@@ -112,7 +130,7 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	}
 
 	var data map[string][]int8
-	if unerr := json.Unmarshal(mpesaCallbackPayload.Transaction.DataSold, &data); unerr != nil {
+	if unerr := json.Unmarshal(transaction.DataSold, &data); unerr != nil {
 		// redirectToPythonApp(user, transaction, err)
 		return fmt.Errorf("failed to unmarshal transaction data sold: %w", unerr)
 	}
@@ -134,13 +152,13 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	}
 	log.Info().Msg("Sending reduceClientStockTx")
 	_, err = processor.store.ReduceClientStockTx(ctx, db.ReduceClientStockParams{
-		Client:         mpesaCallbackPayload.User,
+		Client:         user,
 		ProducToReduce: newProducts,
 		Amount:         data["quantities"],
-		Transaction:    mpesaCallbackPayload.Transaction,
+		Transaction:    transaction,
 		AfterPaying: func() error {
 			receiptTaskPayload := &GenerateReceiptAndSendEmailPayload{
-				User:     mpesaCallbackPayload.User,
+				User:     user,
 				Products: newProducts,
 				Amount:   data["quantities"],
 			}
@@ -160,15 +178,15 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	}
 
 	processor.store.ChangeStatus(ctx, db.ChangeStatusParams{
-		TransactionID: mpesaCallbackPayload.Transaction.TransactionID,
+		TransactionID: transaction.TransactionID,
 		Status:        true,
 	})
 
 	log.Info().
 		Str("type", task.Type()).
 		Bytes("body", task.Payload()).
-		Str("transaction_id", mpesaCallbackPayload.Transaction.TransactionID).
-		Str("mpesa_receipt_number", mpesaCallbackPayload.Transaction.MpesaReceiptNumber).
+		Str("transaction_id", transaction.TransactionID).
+		Str("mpesa_receipt_number", transaction.MpesaReceiptNumber).
 		// Str("invoice_number", invoiceGenerated.InvoiceNumber).
 		Msg("tasked processed successfull")
 

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -670,6 +671,7 @@ type mpesaCallbackRequest struct {
 }
 
 func (server *Server) mpesaCallback(ctx *gin.Context) {
+	log.Println("In mpesaCallbackURL from safaricom")
 	var req mpesaCallbackRequest
 
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -680,31 +682,31 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 	userId := req.TransactionID[len(req.TransactionID)-3:]
 	transactionId := req.TransactionID[:len(req.TransactionID)-3]
 
-	intUserID, _ := strconv.Atoi(userId)
-	user, err := server.store.GetUserForUpdate(ctx, int64(intUserID))
-	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+	// intUserID, _ := strconv.Atoi(userId)
+	// user, err := server.store.GetUserForUpdate(ctx, int64(intUserID))
+	// if err != nil {
+	// 	if err == sql.ErrNoRows {
+	// 		ctx.JSON(http.StatusNotFound, errorResponse(err))
+	// 		return
+	// 	}
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
 
-	transaction, err := server.store.GetTransaction(ctx, transactionId)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+	// transaction, err := server.store.GetTransaction(ctx, transactionId)
+	// if err != nil {
+	// 	if err == sql.ErrNoRows {
+	// 		ctx.JSON(http.StatusNotFound, errorResponse(err))
+	// 		return
+	// 	}
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
 
 	processMpesaCallbackPayload := &worker.ProcessMpesaCallbackPayload{
-		User:        user,
-		Transaction: transaction,
-		GinCtx:      ctx,
+		UserID:        userId,
+		TransactionID: transactionId,
+		GinCtx:        ctx,
 	}
 
 	opts := []asynq.Option{
@@ -712,9 +714,10 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 		asynq.Queue(worker.QueueCritical),
 	}
 
-	err = server.taskDistributor.DistributeProcessMpesaCallback(ctx, *processMpesaCallbackPayload, opts...)
+	err := server.taskDistributor.DistributeProcessMpesaCallback(ctx, *processMpesaCallbackPayload, opts...)
 	if err != nil {
-		redirectToPythonApp(user, transaction, err)
+		log.Println(err)
+		// redirectToPythonApp(user, transaction, err)
 	}
 
 	// Add to redis queue
