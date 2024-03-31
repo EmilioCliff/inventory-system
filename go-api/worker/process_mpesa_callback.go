@@ -117,22 +117,24 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	}
 
 	var phoneNumber, mpesaReceiptNumber string
-	if len(items) > 0 {
-		if val, ok := items[3].(map[string]interface{}); ok {
-			phoneNumber, ok = val["Value"].(string)
-			if !ok {
-				return fmt.Errorf("failed to save phoneNumber: PhoneNumber field is not a map[string]interface{}")
+	for _, item := range items {
+		if itemMap, ok := item.(map[string]interface{}); ok {
+			name, nameOk := itemMap["Name"].(string)
+			value, valueOk := itemMap["Value"].(string)
+			if !nameOk || !valueOk {
+				continue
 			}
-			// log.Info().Msgf("number: %s", val["Value"].(string))
+			switch name {
+			case "PhoneNumber":
+				phoneNumber = value
+			case "MpesaReceiptNumber":
+				mpesaReceiptNumber = value
+			}
 		}
+	}
 
-		if val, ok := items[1].(map[string]interface{}); ok {
-			mpesaReceiptNumber, ok = val["Value"].(string)
-			if !ok {
-				return fmt.Errorf("failed to save mpesa receipt number: mpesa receipt number field is not a map[string]interface{}")
-			}
-			// log.Info().Msgf("mpesa_receipt%s", val["Value"].(string))
-		}
+	if phoneNumber == "" || mpesaReceiptNumber == "" {
+		return fmt.Errorf("failed to retrieve phoneNumber or mpesaReceiptNumber")
 	}
 	// if len(items) > 3 {
 	// 	if val, ok := items[3].(map[string]interface{}); ok {
