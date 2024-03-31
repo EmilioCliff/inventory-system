@@ -67,7 +67,7 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 		return fmt.Errorf("internal server error: %w", err)
 	}
 
-	log.Info().Msgf("In processMpesaCallbackData: %s", mpesaCallbackPayload.Body)
+	log.Info().Msgf("In processMpesaCallbackData: %s", mpesaCallbackPayload.Body["Body"].(map[string]interface{}))
 
 	bodyValue, _ := mpesaCallbackPayload.Body["Body"].(map[string]interface{})
 	stkCallbackValue, _ := bodyValue["stkCallback"].(map[string]interface{})
@@ -82,7 +82,7 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 			// redirectToPythonApp(user, transaction, fmt.Errorf(resultDesc))
 			return fmt.Errorf("different resultcode not 0: %w", newError)
 		}
-		log.Info().Msg("ResultCode is zero")
+		log.Info().Msg("ResultCode is zero can continue")
 	}
 
 	metaData, _ := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
