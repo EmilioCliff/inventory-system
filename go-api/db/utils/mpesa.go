@@ -138,10 +138,6 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("Request failed with status code %d", resp.StatusCode)
-	}
-
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
@@ -158,6 +154,10 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 		return "", fmt.Errorf("Access token not found in response")
 	}
 	log.Println(accessToken)
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("Request failed with status code %d", resp.StatusCode)
+	}
 
 	return accessToken, nil
 }
