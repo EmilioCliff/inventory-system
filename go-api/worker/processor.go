@@ -53,6 +53,7 @@ func (processor *RedisTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
 
 	mux.HandleFunc(SendVerifyEmailTask, processor.ProcessSendVerifyEmail)
+	mux.HandleFunc(SendResetPasswordEmailTask, processor.ProcessSendResetPasswordEmail)
 	mux.HandleFunc(GenerateInvoiceAndSendEmailTask, processor.ProcessGenerateAndSendInvoice)
 	mux.HandleFunc(GenerateReceiptAndSendEmailTask, processor.ProcessGenerateAndSendReceipt)
 
