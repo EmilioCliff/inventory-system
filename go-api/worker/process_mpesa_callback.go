@@ -72,7 +72,7 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	stkCallbackValue, _ := bodyValue["stkCallback"].(map[string]interface{})
 
 	if len(stkCallbackValue) != 5 {
-		return fmt.Errorf("No CallbackMetadata in the response")
+		return fmt.Errorf("No CallbackMetadata in the response: %w", asynq.SkipRetry)
 	}
 	// var resultCode int
 	// if val, ok := stkCallbackValue["ResultCode"].(int); ok {
