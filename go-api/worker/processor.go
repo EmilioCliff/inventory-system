@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/EmilioCliff/inventory-system/db/utils"
@@ -39,6 +40,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 			QueueCritical: 10,
 			QueueDefault:  5,
 		},
+		RetryDelayFunc: CustomRetryDelayFunc,
 	})
 
 	tokenMaker, _ := token.NewPaseto(config.TOKEN_SYMMETRY_KEY)
@@ -53,6 +55,9 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 	}
 }
 
+func CustomRetryDelayFunc(_ int, _ error, _ *asynq.Task) time.Duration {
+	return 2 * time.Second
+}
 func (processor *RedisTaskProcessor) Start() error {
 	mux := asynq.NewServeMux()
 
