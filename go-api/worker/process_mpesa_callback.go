@@ -112,12 +112,18 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	var phoneNumber, mpesaReceiptNumber string
 	if len(items) > 0 {
 		if val, ok := items[3].(map[string]interface{}); ok {
-			phoneNumber, _ = val["Value"].(string)
+			phoneNumber, ok = val["Value"].(string)
+			if !ok {
+				return fmt.Errorf("failed to save phoneNumber: PhoneNumber field is not a map[string]interface{}")
+			}
 			// log.Info().Msgf("number: %s", val["Value"].(string))
 		}
 
 		if val, ok := items[1].(map[string]interface{}); ok {
-			mpesaReceiptNumber, _ = val["Value"].(string)
+			mpesaReceiptNumber, ok = val["Value"].(string)
+			if !ok {
+				return fmt.Errorf("failed to save mpesa receipt number: mpesa receipt number field is not a map[string]interface{}")
+			}
 			// log.Info().Msgf("mpesa_receipt%s", val["Value"].(string))
 		}
 	}
@@ -133,7 +139,7 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	// 	}
 	// }
 
-	_, err = processor.store.UpdateTransaction(ctx, db.UpdateTransactionParams{
+	updateTransaction, err := processor.store.UpdateTransaction(ctx, db.UpdateTransactionParams{
 		TransactionID:      transaction.TransactionID,
 		MpesaReceiptNumber: mpesaReceiptNumber,
 		PhoneNumber:        phoneNumber,
@@ -144,7 +150,7 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	}
 
 	var data map[string][]int8
-	if unerr := json.Unmarshal(transaction.DataSold, &data); unerr != nil {
+	if unerr := json.Unmarshal(updateTransaction.DataSold, &data); unerr != nil {
 		// redirectToPythonApp(user, transaction, err)
 		return fmt.Errorf("failed to unmarshal transaction data sold: %w", unerr)
 	}
@@ -163,16 +169,17 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 
 		newProducts = append(newProducts, addProduct)
 	}
-	_, err = processor.store.ReduceClientStockTx(ctx, db.ReduceClientStockParams{
+	reduceResult, err := processor.store.ReduceClientStockTx(ctx, db.ReduceClientStockParams{
 		Client:         user,
 		ProducToReduce: newProducts,
 		Amount:         data["quantities"],
-		Transaction:    transaction,
+		Transaction:    updateTransaction,
 		AfterPaying: func() error {
 			receiptTaskPayload := &GenerateReceiptAndSendEmailPayload{
-				User:     user,
-				Products: newProducts,
-				Amount:   data["quantities"],
+				User:        user,
+				Products:    newProducts,
+				Amount:      data["quantities"],
+				Transaction: updateTransaction,
 			}
 
 			opts := []asynq.Option{
@@ -190,15 +197,15 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	}
 
 	processor.store.ChangeStatus(ctx, db.ChangeStatusParams{
-		TransactionID: transaction.TransactionID,
+		TransactionID: updateTransaction.TransactionID,
 		Status:        true,
 	})
 
 	log.Info().
 		Str("type", task.Type()).
 		Bytes("body", task.Payload()).
-		Str("transaction_id", transaction.TransactionID).
-		Str("mpesa_receipt_number", transaction.MpesaReceiptNumber).
+		Str("receipt_generated_no", reduceResult.ReceiptGenerated.ReceiptNumber).
+		Str("mpesa_receipt_number", updateTransaction.MpesaReceiptNumber).
 		Str("info", "transaction successful").
 		// Str("invoice_number", invoiceGenerated.InvoiceNumber).
 		Msg("tasked processed successfull")

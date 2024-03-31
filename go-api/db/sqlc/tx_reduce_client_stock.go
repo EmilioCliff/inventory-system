@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"github.com/rs/zerolog/log"
 )
 
 type ReduceClientStockParams struct {
@@ -20,6 +22,7 @@ type ReduceClientStockResult struct {
 }
 
 func (store *Store) ReduceClientStockTx(ctx context.Context, arg ReduceClientStockParams) (ReduceClientStockResult, error) {
+	log.Info().Msg("Reducing Transaction")
 	var result ReduceClientStockResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
