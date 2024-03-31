@@ -72,7 +72,16 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	stkCallbackValue, _ := bodyValue["stkCallback"].(map[string]interface{})
 
 	if len(stkCallbackValue) != 5 {
-		return fmt.Errorf("No CallbackMetadata in the response: %w", asynq.SkipRetry)
+		// ("No CallbackMetadata in the response: %w", asynq.SkipRetry)
+		log.Error().
+			Str("type", task.Type()).
+			Bytes("body", task.Payload()).
+			Str("transaction_id", transaction.TransactionID).
+			Str("mpesa_receipt_number", transaction.MpesaReceiptNumber).
+			Str("info", "transaction not successful").
+			// Str("invoice_number", invoiceGenerated.InvoiceNumber).
+			Msg("tasked processed successfull")
+		return nil
 	}
 	// var resultCode int
 	// if val, ok := stkCallbackValue["ResultCode"].(int); ok {
@@ -180,6 +189,7 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 		Bytes("body", task.Payload()).
 		Str("transaction_id", transaction.TransactionID).
 		Str("mpesa_receipt_number", transaction.MpesaReceiptNumber).
+		Str("info", "transaction successful").
 		// Str("invoice_number", invoiceGenerated.InvoiceNumber).
 		Msg("tasked processed successfull")
 
