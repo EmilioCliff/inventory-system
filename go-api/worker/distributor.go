@@ -32,6 +32,11 @@ type TaskDistributor interface {
 		payload SendSTKPayload,
 		opts ...asynq.Option,
 	) error
+	DistributeProcessMpesaCallback(
+		ctx context.Context,
+		payload ProcessMpesaCallbackPayload,
+		opts ...asynq.Option,
+	) error
 }
 
 type RedisTaskDistributor struct {

@@ -41,7 +41,7 @@ func main() {
 	accessToken, err := server.GeneratePythonToken("pythonApp")
 	fmt.Println(accessToken)
 
-	go runRedisTaskProcessor(redisOpt, *store, *emailSender, config)
+	go runRedisTaskProcessor(redisOpt, *store, *emailSender, config, taskDistributor)
 	err = server.Start(config.SERVER_ADDRESS)
 	log.Info().Msgf("starting server at port: %s", config.SERVER_ADDRESS)
 	if err != nil {
@@ -49,8 +49,8 @@ func main() {
 	}
 }
 
-func runRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender utils.GmailSender, config utils.Config) {
-	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, sender, config)
+func runRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender utils.GmailSender, config utils.Config, distributor worker.TaskDistributor) {
+	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, sender, config, distributor)
 	log.Info().Msg("Start task processor")
 
 	err := taskProcessor.Start()

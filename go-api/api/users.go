@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -663,22 +661,6 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		return
 	}
 
-	// trasactionID, err := utils.SendSTK(strconv.Itoa(amount), user.UserID, user.PhoneNumber)
-	// if err != nil {
-	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-	// 	return
-	// }
-
-	// _, err = server.store.CreateTransaction(ctx, db.CreateTransactionParams{
-	// 	TransactionID: trasactionID,
-	// 	Amount:        int32(amount),
-	// 	DataSold:      jsonSoldProduct,
-	// })
-	// if err != nil {
-	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-	// 	return
-	// }
-
 	ctx.JSON(http.StatusOK, gin.H{"successful": "STK push success"})
 	return
 }
@@ -719,128 +701,144 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 		return
 	}
 
+	processMpesaCallbackPayload := &worker.ProcessMpesaCallbackPayload{
+		User:        user,
+		Transaction: transaction,
+		GinCtx:      ctx,
+	}
+
+	opts := []asynq.Option{
+		asynq.MaxRetry(5),
+		asynq.Queue(worker.QueueCritical),
+	}
+
+	err = server.taskDistributor.DistributeProcessMpesaCallback(ctx, *processMpesaCallbackPayload, opts...)
+	if err != nil {
+		redirectToPythonApp(user, transaction, err)
+	}
+
 	// Add to redis queue
-	go func() {
-		processMpesaCallbackData(ctx, server, user, transaction)
-	}()
+	// go func() {
+	// 	processMpesaCallbackData(ctx, server, user, transaction)
+	// }()
 
 	ctx.JSON(http.StatusOK, gin.H{"Successful": "Reached"})
 	return
 }
 
-func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, transaction db.Transaction) {
-	log.Println("In processMpesaCallbackData")
-	body, err := io.ReadAll(ctx.Request.Body)
-	if err != nil {
-		redirectToPythonApp(user, transaction, err)
-		return
-	}
+// func processMpesaCallbackData(ctx *gin.Context, server *Server, user db.User, transaction db.Transaction) {
+// log.Println("In processMpesaCallbackData")
+// body, err := io.ReadAll(ctx.Request.Body)
+// if err != nil {
+// 	redirectToPythonApp(user, transaction, err)
+// 	return
+// }
 
-	log.Println("Unmarshalling body")
-	var callbackBody map[string]interface{}
-	err = json.Unmarshal(body, &callbackBody)
-	if err != nil {
-		redirectToPythonApp(user, transaction, err)
-		return
-	}
+// log.Println("Unmarshalling body")
+// var callbackBody map[string]interface{}
+// err = json.Unmarshal(body, &callbackBody)
+// if err != nil {
+// 	redirectToPythonApp(user, transaction, err)
+// 	return
+// }
 
-	log.Println(callbackBody)
+// log.Println(callbackBody)
 
-	bodyValue, _ := callbackBody["Body"].(map[string]interface{})
-	stkCallbackValue, _ := bodyValue["stkCallback"].(map[string]interface{})
+// bodyValue, _ := callbackBody["Body"].(map[string]interface{})
+// stkCallbackValue, _ := bodyValue["stkCallback"].(map[string]interface{})
 
-	var resultCode int
-	if val, ok := stkCallbackValue["ResultCode"].(int); ok {
-		resultCode = int(val)
-		if resultCode != 0 {
-			log.Printf("resultCode %v not same as 0", resultCode)
-			resultDesc, _ := stkCallbackValue["ResultDesc"].(string)
-			redirectToPythonApp(user, transaction, fmt.Errorf(resultDesc))
-			return
-		}
-		log.Println("ResultCode is zero")
-	}
+// var resultCode int
+// if val, ok := stkCallbackValue["ResultCode"].(int); ok {
+// 	resultCode = int(val)
+// 	if resultCode != 0 {
+// 		log.Printf("resultCode %v not same as 0", resultCode)
+// 		resultDesc, _ := stkCallbackValue["ResultDesc"].(string)
+// 		redirectToPythonApp(user, transaction, fmt.Errorf(resultDesc))
+// 		return
+// 	}
+// 	log.Println("ResultCode is zero")
+// }
 
-	metaData, _ := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
-	items, _ := metaData["Item"].([]interface{})
+// metaData, _ := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
+// items, _ := metaData["Item"].([]interface{})
 
-	var phoneNumber, mpesaReceiptNumber string
-	if len(items) > 3 {
-		if val, ok := items[3].(map[string]interface{}); ok {
-			phoneNumber, _ = val["Value"].(string)
-		}
-	}
+// var phoneNumber, mpesaReceiptNumber string
+// if len(items) > 3 {
+// 	if val, ok := items[3].(map[string]interface{}); ok {
+// 		phoneNumber, _ = val["Value"].(string)
+// 	}
+// }
 
-	if len(items) > 1 {
-		if val, ok := items[1].(map[string]interface{}); ok {
-			mpesaReceiptNumber, _ = val["Value"].(string)
-		}
-	}
+// if len(items) > 1 {
+// 	if val, ok := items[1].(map[string]interface{}); ok {
+// 		mpesaReceiptNumber, _ = val["Value"].(string)
+// 	}
+// }
 
-	log.Println("Updating transaction")
-	_, err = server.store.UpdateTransaction(ctx, db.UpdateTransactionParams{
-		TransactionID:      transaction.TransactionID,
-		MpesaReceiptNumber: mpesaReceiptNumber,
-		PhoneNumber:        phoneNumber,
-	})
-	if err != nil {
-		redirectToPythonApp(user, transaction, err)
-		return
-	}
+// log.Println("Updating transaction")
+// _, err = server.store.UpdateTransaction(ctx, db.UpdateTransactionParams{
+// 	TransactionID:      transaction.TransactionID,
+// 	MpesaReceiptNumber: mpesaReceiptNumber,
+// 	PhoneNumber:        phoneNumber,
+// })
+// if err != nil {
+// 	redirectToPythonApp(user, transaction, err)
+// 	return
+// }
 
-	var data map[string][]int8
-	if unerr := json.Unmarshal(transaction.DataSold, &data); unerr != nil {
-		redirectToPythonApp(user, transaction, err)
-		return
-	}
+// var data map[string][]int8
+// if unerr := json.Unmarshal(transaction.DataSold, &data); unerr != nil {
+// 	redirectToPythonApp(user, transaction, err)
+// 	return
+// }
 
-	var newProducts []db.Product
-	for _, id := range data["products_id"] {
-		log.Println("Getting products")
-		addProduct, err := server.store.GetProduct(ctx, int64(id))
-		if err != nil {
-			if err == sql.ErrNoRows {
-				redirectToPythonApp(user, transaction, err)
-				return
-			}
-			redirectToPythonApp(user, transaction, err)
-			return
-		}
+// var newProducts []db.Product
+// for _, id := range data["products_id"] {
+// 	log.Println("Getting products")
+// 	addProduct, err := server.store.GetProduct(ctx, int64(id))
+// 	if err != nil {
+// 		if err == sql.ErrNoRows {
+// 			redirectToPythonApp(user, transaction, err)
+// 			return
+// 		}
+// 		redirectToPythonApp(user, transaction, err)
+// 		return
+// 	}
 
-		newProducts = append(newProducts, addProduct)
-	}
-	log.Println("Sending reduceClientStockTx")
-	_, err = server.store.ReduceClientStockTx(ctx, db.ReduceClientStockParams{
-		Client:         user,
-		ProducToReduce: newProducts,
-		Amount:         data["quantities"],
-		Transaction:    transaction,
-		AfterPaying: func() error {
-			receiptTaskPayload := &worker.GenerateReceiptAndSendEmailPayload{
-				User:     user,
-				Products: newProducts,
-				Amount:   data["quantities"],
-			}
+// 	newProducts = append(newProducts, addProduct)
+// }
+// log.Println("Sending reduceClientStockTx")
+// _, err = server.store.ReduceClientStockTx(ctx, db.ReduceClientStockParams{
+// 	Client:         user,
+// 	ProducToReduce: newProducts,
+// 	Amount:         data["quantities"],
+// 	Transaction:    transaction,
+// 	AfterPaying: func() error {
+// 		receiptTaskPayload := &worker.GenerateReceiptAndSendEmailPayload{
+// 			User:     user,
+// 			Products: newProducts,
+// 			Amount:   data["quantities"],
+// 		}
 
-			opts := []asynq.Option{
-				asynq.MaxRetry(10),
-				asynq.ProcessIn(5 * time.Second),
-				asynq.Queue(worker.QueueDefault),
-			}
+// 		opts := []asynq.Option{
+// 			asynq.MaxRetry(10),
+// 			asynq.ProcessIn(5 * time.Second),
+// 			asynq.Queue(worker.QueueDefault),
+// 		}
 
-			return server.taskDistributor.DistributeGenerateAndSendReceipt(ctx, *receiptTaskPayload, opts...)
-		},
-	})
-	if err != nil {
-		redirectToPythonApp(user, transaction, err)
-		return
-	}
+// 		return server.taskDistributor.DistributeGenerateAndSendReceipt(ctx, *receiptTaskPayload, opts...)
+// 	},
+// })
+// if err != nil {
+// 	redirectToPythonApp(user, transaction, err)
+// 	return
+// }
 
-	server.store.ChangeStatus(ctx, db.ChangeStatusParams{
-		TransactionID: transaction.TransactionID,
-		Status:        true,
-	})
-}
+// server.store.ChangeStatus(ctx, db.ChangeStatusParams{
+// 	TransactionID: transaction.TransactionID,
+// 	Status:        true,
+// })
+// }
 
 func redirectToPythonApp(user db.User, transaction db.Transaction, passErr error) {
 	pythonEndpoint := "https://inventory-system.railway.internal/notify"
