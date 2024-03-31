@@ -71,8 +71,15 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 
 	log.Info().Msgf("In processMpesaCallbackData: %s\nUser and Transaction: %v:%v", mpesaCallbackPayload.Body["Body"].(map[string]interface{}), user, transaction)
 
-	bodyValue, _ := mpesaCallbackPayload.Body["Body"].(map[string]interface{})
-	stkCallbackValue, _ := bodyValue["stkCallback"].(map[string]interface{})
+	bodyValue, ok := mpesaCallbackPayload.Body["Body"].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("failed to parse mpesa callback body: Body field is not a map[string]interface{}")
+	}
+
+	stkCallbackValue, ok := bodyValue["stkCallback"].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("failed to parse mpesa callback body: stkCallback field is not a map[string]interface{}")
+	}
 
 	if len(stkCallbackValue) != 5 {
 		// ("No CallbackMetadata in the response: %w", asynq.SkipRetry)
@@ -106,12 +113,12 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	if len(items) > 0 {
 		if val, ok := items[3].(map[string]interface{}); ok {
 			phoneNumber, _ = val["Value"].(string)
-			log.Info().Msgf("number: %s", val["Value"].(string))
+			// log.Info().Msgf("number: %s", val["Value"].(string))
 		}
 
 		if val, ok := items[1].(map[string]interface{}); ok {
 			mpesaReceiptNumber, _ = val["Value"].(string)
-			log.Info().Msgf("mpesa_receipt%s", val["Value"].(string))
+			// log.Info().Msgf("mpesa_receipt%s", val["Value"].(string))
 		}
 	}
 	// if len(items) > 3 {
