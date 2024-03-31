@@ -101,7 +101,6 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 		}
 	}
 
-	log.Info().Msg("Updating transaction")
 	_, err = processor.store.UpdateTransaction(ctx, db.UpdateTransactionParams{
 		TransactionID:      transaction.TransactionID,
 		MpesaReceiptNumber: mpesaReceiptNumber,
@@ -120,7 +119,6 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 
 	var newProducts []db.Product
 	for _, id := range data["products_id"] {
-		log.Info().Msg("Getting products")
 		addProduct, err := processor.store.GetProduct(ctx, int64(id))
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -133,7 +131,6 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 
 		newProducts = append(newProducts, addProduct)
 	}
-	log.Info().Msg("Sending reduceClientStockTx")
 	_, err = processor.store.ReduceClientStockTx(ctx, db.ReduceClientStockParams{
 		Client:         user,
 		ProducToReduce: newProducts,
