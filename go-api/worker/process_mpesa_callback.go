@@ -27,6 +27,9 @@ func (distributor *RedisTaskDistributor) DistributeProcessMpesaCallback(ctx cont
 		return fmt.Errorf("failed to marshal process mpesa payload: %w", err)
 	}
 
+	// optsNew := []asynq.Option{
+	// 	asynq.MaxRetry(2),
+	// }
 	task := asynq.NewTask(ProcessMpesaCallbackTask, jsonProcessMpesaPayload, opts...)
 	info, err := distributor.client.EnqueueContext(ctx, task)
 	if err != nil {

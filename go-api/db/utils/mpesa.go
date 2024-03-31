@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -126,7 +127,7 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return "", err
+		return "", errors.New(fmt.Sprintf("Error Number 0:%s", err))
 	}
 
 	req.Header.Set("Authorization", "Basic "+encodedAuthString)
@@ -134,19 +135,19 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return "", errors.New(fmt.Sprintf("Error Number 1:%s", err))
 	}
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", err
+		return "", errors.New(fmt.Sprintf("Error Number 2:%s", err))
 	}
 
 	var tokenResponse map[string]interface{}
 	err = json.Unmarshal(body, &tokenResponse)
 	if err != nil {
-		return "", err
+		return "", errors.New(fmt.Sprintf("Error Number 3:%s", err))
 	}
 
 	accessToken, ok := tokenResponse["access_token"].(string)
