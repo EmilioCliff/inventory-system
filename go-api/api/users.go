@@ -641,27 +641,43 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		return
 	}
 
-	trasactionID, err := utils.SendSTK(strconv.Itoa(amount), user.UserID, user.PhoneNumber)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
 	jsonSoldProduct, err := json.Marshal(req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	_, err = server.store.CreateTransaction(ctx, db.CreateTransactionParams{
-		TransactionID: trasactionID,
-		Amount:        int32(amount),
-		DataSold:      jsonSoldProduct,
-	})
+	sendSTKPayload := &worker.SendSTKPayload{
+		User:            user,
+		Amount:          strconv.Itoa(amount),
+		TransactionData: jsonSoldProduct,
+	}
+
+	opts := []asynq.Option{
+		asynq.MaxRetry(5),
+		asynq.Queue(worker.QueueCritical),
+	}
+	err = server.taskDistributor.DistributeSendSTK(ctx, *sendSTKPayload, opts...)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	// trasactionID, err := utils.SendSTK(strconv.Itoa(amount), user.UserID, user.PhoneNumber)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
+
+	// _, err = server.store.CreateTransaction(ctx, db.CreateTransactionParams{
+	// 	TransactionID: trasactionID,
+	// 	Amount:        int32(amount),
+	// 	DataSold:      jsonSoldProduct,
+	// })
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
 
 	ctx.JSON(http.StatusOK, gin.H{"successful": "STK push success"})
 	return

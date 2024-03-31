@@ -20,6 +20,7 @@ type TaskProcessor interface {
 	ProcessGenerateAndSendInvoice(ctx context.Context, task *asynq.Task) error
 	ProcessGenerateAndSendReceipt(ctx context.Context, task *asynq.Task) error
 	ProcessSendResetPasswordEmail(ctx context.Context, task *asynq.Task) error
+	ProcessSendSTK(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
@@ -56,6 +57,7 @@ func (processor *RedisTaskProcessor) Start() error {
 	mux.HandleFunc(SendResetPasswordEmailTask, processor.ProcessSendResetPasswordEmail)
 	mux.HandleFunc(GenerateInvoiceAndSendEmailTask, processor.ProcessGenerateAndSendInvoice)
 	mux.HandleFunc(GenerateReceiptAndSendEmailTask, processor.ProcessGenerateAndSendReceipt)
+	mux.HandleFunc(SendSTKTask, processor.ProcessSendSTK)
 
 	return processor.server.Start(mux)
 }
