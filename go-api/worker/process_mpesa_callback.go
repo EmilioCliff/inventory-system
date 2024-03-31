@@ -107,7 +107,14 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	// }
 
 	metaData, _ := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
-	items, _ := metaData["Item"].([]interface{})
+	if !ok {
+		return fmt.Errorf("failed to parse mpesa metaData: metaData field is not a map[string]interface{}")
+	}
+
+	items, ok := metaData["Item"].([]interface{})
+	if !ok {
+		return fmt.Errorf("failed to parse mpesa metaData items: metaData items field is not a map[string]interface{}")
+	}
 
 	var phoneNumber, mpesaReceiptNumber string
 	if len(items) > 0 {
