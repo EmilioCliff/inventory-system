@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -682,6 +683,11 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 	userId := req.TransactionID[len(req.TransactionID)-3:]
 	transactionId := req.TransactionID[:len(req.TransactionID)-3]
 
+	body, _ := io.ReadAll(ctx.Request.Body)
+
+	var callbackBody map[string]interface{}
+	_ = json.Unmarshal(body, &callbackBody)
+
 	// intUserID, _ := strconv.Atoi(userId)
 	// user, err := server.store.GetUserForUpdate(ctx, int64(intUserID))
 	// if err != nil {
@@ -706,7 +712,7 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 	processMpesaCallbackPayload := &worker.ProcessMpesaCallbackPayload{
 		UserID:        userId,
 		TransactionID: transactionId,
-		GinCtx:        ctx,
+		Body:          callbackBody,
 	}
 
 	opts := []asynq.Option{

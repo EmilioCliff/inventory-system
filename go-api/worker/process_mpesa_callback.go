@@ -6,12 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"strconv"
 	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
-	"github.com/gin-gonic/gin"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )
@@ -19,9 +17,9 @@ import (
 const ProcessMpesaCallbackTask = "task:process_mpesa_callback"
 
 type ProcessMpesaCallbackPayload struct {
-	UserID        string `json:"user_id"`
-	TransactionID string `json:"transaction_id"`
-	GinCtx        *gin.Context
+	UserID        string                 `json:"user_id"`
+	TransactionID string                 `json:"transaction_id"`
+	Body          map[string]interface{} `json:"body"`
 }
 
 func (distributor *RedisTaskDistributor) DistributeProcessMpesaCallback(ctx context.Context, payload ProcessMpesaCallbackPayload, opts ...asynq.Option) error {
@@ -69,24 +67,9 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 		return fmt.Errorf("internal server error: %w", err)
 	}
 
-	log.Info().Msg("In processMpesaCallbackData")
-	body, err := io.ReadAll(mpesaCallbackPayload.GinCtx.Request.Body)
-	if err != nil {
-		// redirectToPythonApp(user, transaction, err)
-		return fmt.Errorf("failed to read mpesa callback body: %w", err)
-	}
+	log.Info().Msgf("In processMpesaCallbackData: %s", mpesaCallbackPayload.Body)
 
-	log.Info().Msg("Unmarshalling body")
-	var callbackBody map[string]interface{}
-	err = json.Unmarshal(body, &callbackBody)
-	if err != nil {
-		// redirectToPythonApp(user, transaction, err)
-		return fmt.Errorf("failed to unmarshal mpesa callback body: %w", err)
-	}
-
-	log.Info().Msgf("%s", callbackBody)
-
-	bodyValue, _ := callbackBody["Body"].(map[string]interface{})
+	bodyValue, _ := mpesaCallbackPayload.Body["Body"].(map[string]interface{})
 	stkCallbackValue, _ := bodyValue["stkCallback"].(map[string]interface{})
 
 	var resultCode int
