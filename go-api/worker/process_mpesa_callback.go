@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -67,39 +66,53 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 		return fmt.Errorf("internal server error: %w", err)
 	}
 
-	log.Info().Msgf("In processMpesaCallbackData: %s", mpesaCallbackPayload.Body["Body"].(map[string]interface{}))
+	log.Info().Msgf("In processMpesaCallbackData: %s\nUser and Transaction: %v:%v", mpesaCallbackPayload.Body["Body"].(map[string]interface{}), user, transaction)
 
 	bodyValue, _ := mpesaCallbackPayload.Body["Body"].(map[string]interface{})
 	stkCallbackValue, _ := bodyValue["stkCallback"].(map[string]interface{})
 
-	var resultCode int
-	if val, ok := stkCallbackValue["ResultCode"].(int); ok {
-		resultCode = int(val)
-		if resultCode != 0 {
-			resultDesc, _ := stkCallbackValue["ResultDesc"].(string)
-			newError := errors.New(fmt.Sprintf("resultCode %v not same as 0. Description: %v", resultCode, resultDesc))
-			log.Error().Err(newError)
-			// redirectToPythonApp(user, transaction, fmt.Errorf(resultDesc))
-			return fmt.Errorf("different resultcode not 0: %w", newError)
-		}
-		log.Info().Msg("ResultCode is zero can continue")
+	if len(stkCallbackValue) != 5 {
+		return fmt.Errorf("No CallbackMetadata in the response")
 	}
+	// var resultCode int
+	// if val, ok := stkCallbackValue["ResultCode"].(int); ok {
+	// 	resultCode = int(val)
+	// 	if resultCode != 0 {
+	// 		resultDesc, _ := stkCallbackValue["ResultDesc"].(string)
+	// 		newError := errors.New(fmt.Sprintf("resultCode %v not same as 0. Description: %v", resultCode, resultDesc))
+	// 		log.Error().Err(newError)
+	// 		// redirectToPythonApp(user, transaction, fmt.Errorf(resultDesc))
+	// 		return fmt.Errorf("different resultcode not 0: %w", newError)
+	// 	}
+	// 	log.Info().Msg("ResultCode is zero can continue")
+	// }
 
 	metaData, _ := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
 	items, _ := metaData["Item"].([]interface{})
 
 	var phoneNumber, mpesaReceiptNumber string
-	if len(items) > 3 {
+	if len(items) > 0 {
 		if val, ok := items[3].(map[string]interface{}); ok {
 			phoneNumber, _ = val["Value"].(string)
+			log.Info().Msgf("number: %s", val["Value"].(string))
 		}
-	}
 
-	if len(items) > 1 {
 		if val, ok := items[1].(map[string]interface{}); ok {
 			mpesaReceiptNumber, _ = val["Value"].(string)
+			log.Info().Msgf("mpesa_receipt%s", val["Value"].(string))
 		}
 	}
+	// if len(items) > 3 {
+	// 	if val, ok := items[3].(map[string]interface{}); ok {
+	// 		phoneNumber, _ = val["Value"].(string)
+	// 	}
+	// }
+
+	// if len(items) > 1 {
+	// 	if val, ok := items[1].(map[string]interface{}); ok {
+	// 		mpesaReceiptNumber, _ = val["Value"].(string)
+	// 	}
+	// }
 
 	_, err = processor.store.UpdateTransaction(ctx, db.UpdateTransactionParams{
 		TransactionID:      transaction.TransactionID,
