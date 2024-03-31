@@ -52,7 +52,7 @@ func authMiddleware(maker token.Maker) gin.HandlerFunc {
 }
 
 func loggerMiddleware() gin.HandlerFunc {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 
 	return func(c *gin.Context) {
 		start := time.Now()
