@@ -10,7 +10,7 @@ RUN echo "$DECRYPTION_KEY" | base64 -d > /tmp/git-crypt-key && \
     rm /tmp/git-crypt-key
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
-RUN go build -o main /app/main.go
+RUN go build -o main main.go
 
 # Run stage
 FROM alpine:3.19
