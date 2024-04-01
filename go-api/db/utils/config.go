@@ -54,7 +54,7 @@ func ReadConfig(path string) (config Config, err error) {
 		os.Setenv(key, value.(string))
 	}
 
-	log.Info().Msg("Done loading env")
+	log.Info().Msgf("Done loading env: %v", viper.AllSettings())
 
 	viper.Unmarshal(&config)
 
