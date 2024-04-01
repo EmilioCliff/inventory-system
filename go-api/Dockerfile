@@ -4,8 +4,9 @@ WORKDIR /app
 COPY . /app
 RUN pwd
 RUN ls -la
-RUN apk add --no-cache git-crypt
 ARG DECRYPTION_KEY
+RUN apk add --no-cache git-crypt
+RUN git init
 RUN echo "$DECRYPTION_KEY" > /tmp/decryption.key  && git-crypt unlock /tmp/decryption.key && rm /tmp/decryption.key
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
