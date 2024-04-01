@@ -1,7 +1,7 @@
 # Build stage
 FROM golang:1.22.0-alpine3.19 AS builder
 WORKDIR /app
-COPY ./go-api .
+COPY . .
 RUN pwd
 RUN ls -la
 RUN apk add --no-cache git-crypt
