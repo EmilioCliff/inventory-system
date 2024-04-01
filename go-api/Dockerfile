@@ -5,6 +5,9 @@ COPY . /app
 ARG DECRYPTION_KEY
 RUN apk add --no-cache git-crypt
 RUN git init
+COPY app.env /app/app.env
+RUN git add app.env
+RUN git commit -m "Add app.env file"
 RUN echo "$DECRYPTION_KEY" | base64 -d > git-crypt-key
 RUN git-crypt unlock git-crypt-key
 RUN rm git-crypt-key
