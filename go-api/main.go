@@ -24,7 +24,7 @@ func main() {
 		log.Fatal().Msgf("Couldnt connect to db: %s", err)
 	}
 
-	runMigration(config.MIGRATION_SOURCE, config.DB_SOURCE)
+	// runMigration(config.MIGRATION_SOURCE, config.DB_SOURCE)
 
 	emailSender := utils.NewGmailSender(config.EMAIL_SENDER_NAME, config.EMAIL_SENDER_ADDRESS, config.EMAIL_SENDER_PASSWORD)
 
