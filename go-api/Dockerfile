@@ -17,11 +17,11 @@ FROM alpine:3.19
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
-COPY --from=builder /app/db/migration ./migration
-COPY --from=builder /app/db/sqlc/Kokomed-Logo.png .
-COPY --from=builder /app/start.sh .
-COPY --from=builder /app/app.env .
-RUN cat /app/app.env
+COPY db/migration ./migration
+COPY db/sqlc/Kokomed-Logo.png .
+COPY start.sh .
+COPY app.env .
+RUN cat app.env
 
 EXPOSE 8080
 CMD ["/app/main"]
