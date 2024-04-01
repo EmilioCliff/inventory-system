@@ -6,6 +6,8 @@ ARG DECRYPTION_KEY
 RUN apk add --no-cache git-crypt
 RUN git init
 COPY app.env /app/app.env
+RUN git config --global user.email "clifftest33@gmail.com"
+RUN git config --global user.name "Inventory System"
 RUN git add app.env
 RUN git commit -m "Add app.env file"
 RUN echo "$DECRYPTION_KEY" | base64 -d > git-crypt-key
