@@ -58,3 +58,12 @@ func runRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 		log.Fatal().Msgf("could not start task processor: %s", err)
 	}
 }
+
+// func runConfig() (utils.Config, error) {
+// 	config, err := utils.ReadConfig(".")
+// 	if err != nil {
+// 		return config, err
+// 	}
+// 	// Other initialization logic goes here
+// 	return config, nil
+// }

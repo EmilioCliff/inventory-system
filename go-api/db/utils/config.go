@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -36,12 +37,20 @@ func ReadConfig(path string) (config Config, err error) {
 
 	viper.AutomaticEnv()
 
-	err = viper.ReadInConfig()
-	if err != nil {
-		return
+	// err = viper.ReadInConfig()
+	// if err != nil {
+	// 	return
+	// }
+	if err = viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
+			log.Info().Msg("Config file not found, using environment variables")
+		} else {
+			return
+		}
 	}
 
 	for key, value := range viper.AllSettings() {
+		log.Info().Msgf("Adding to env: %s:%s", key, value.(string))
 		os.Setenv(key, value.(string))
 	}
 
