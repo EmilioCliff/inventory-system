@@ -10,8 +10,8 @@ RUN git config user.email "clifftest33@gmail.com"
 RUN git config user.name "Inventory System"
 RUN git add app.env
 RUN git commit -m "Add app.env file"
-RUN echo "$DECRYPTION_KEY" | base64 -d > git-crypt-key
-RUN git-crypt unlock git-crypt-key
+# RUN echo "$DECRYPTION_KEY" | base64 -d > git-crypt-key
+RUN git-crypt unlock "$DECRYPTION_KEY"
 RUN rm git-crypt-key
 
 RUN mkdir /decrypted
