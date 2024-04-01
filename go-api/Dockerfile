@@ -7,11 +7,10 @@ COPY . .
 ARG DECRYPTION_KEY
 RUN git config user.email "clifftest33@gmail.com"
 RUN git config user.name "Inventory System"
-RUN mkdir /app/decrypted
 RUN git add .
 RUN git commit -m "Add app.env file"
 RUN echo "$DECRYPTION_KEY" | base64 -d > git-crypt-key
-RUN git-crypt unlock git-crypt-key --output /app/decrypted
+RUN git-crypt unlock git-crypt-key
 RUN rm git-crypt-key
 
 # RUN cp /app/app.env /app/decrypted
@@ -26,7 +25,7 @@ FROM alpine:3.19
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
-COPY --from=builder /app/decrypted .
+COPY --from=builder /app/app.env .
 COPY db/migration ./migration
 COPY db/sqlc/Kokomed-Logo.png .
 COPY start.sh .
