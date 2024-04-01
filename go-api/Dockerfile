@@ -3,6 +3,7 @@ FROM golang:1.22.0-alpine3.19 AS builder
 WORKDIR /app
 COPY . /app
 ARG DECRYPTION_KEY
+ARG DB_SOURCE
 RUN apk add --no-cache git-crypt
 RUN git init
 RUN echo "$DECRYPTION_KEY" | base64 -d > /tmp/git-crypt-key && \
@@ -21,7 +22,10 @@ COPY db/migration ./migration
 COPY db/sqlc/Kokomed-Logo.png .
 COPY start.sh .
 COPY app.env .
-RUN echo app.env
+COPY /tmp/app.env
+COPY DB_SOURCE .
+RUN echo "DB_SOURCE=${DB_SOURCE}" >> /app/.env
+
 
 EXPOSE 8080
 CMD ["/app/main"]
