@@ -21,11 +21,10 @@ FROM alpine:3.19
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
-COPY --from=builder /app/decrypted /app/decrypted
+COPY --from=builder /app/decrypted/app.env .
 COPY db/migration ./migration
 COPY db/sqlc/Kokomed-Logo.png .
 COPY start.sh .
-COPY app.env .
 
 
 EXPOSE 8080
