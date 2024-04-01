@@ -8,14 +8,14 @@ RUN git init
 COPY app.env /app/app.env
 RUN git config user.email "clifftest33@gmail.com"
 RUN git config user.name "Inventory System"
-RUN git add app.env
+RUN git add /app/app.env
 RUN git commit -m "Add app.env file"
-RUN echo "$DECRYPTION_KEY" > git-crypt-key
+RUN echo "$DECRYPTION_KEY" | base64 -d > git-crypt-key
 RUN git-crypt unlock git-crypt-key
 RUN rm git-crypt-key
 
 RUN mkdir /decrypted
-RUN cp -r /app/app.env /decrypted
+RUN cp /app/app.env /app
 
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
@@ -26,7 +26,7 @@ FROM alpine:3.19
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
-COPY --from=builder /decrypted .
+COPY --from=builder /app/app.env .
 COPY db/migration ./migration
 COPY db/sqlc/Kokomed-Logo.png .
 COPY start.sh .
