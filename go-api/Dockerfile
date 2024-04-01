@@ -4,9 +4,11 @@ WORKDIR /app
 COPY . /app
 ARG DECRYPTION_KEY
 # ENV ENCODED_DECRYPTION_KEY=$(echo "$DECRYPTION_KEY" | base64 -d)
+# Install git-crypt and git then inialize the .git
 RUN apk add --no-cache git-crypt
 RUN git init
-RUN echo (echo "$DECRYPTION_KEY" | base64 -d) > /tmp/git-crypt-key && \
+# encode the decrypt key back to binary data then pass it to unlock the repo
+RUN echo $(echo "$DECRYPTION_KEY" | base64 -d) > /tmp/git-crypt-key && \
     git-crypt unlock /tmp/git-crypt-key && \
     rm /tmp/git-crypt-key
 RUN apk add curl
