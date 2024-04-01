@@ -1,7 +1,7 @@
 # Build stage
 FROM golang:1.22.0-alpine3.19 AS builder
 WORKDIR /app
-COPY /go-api /app
+COPY . /app
 RUN pwd
 RUN ls -la
 RUN apk add --no-cache git-crypt
@@ -16,10 +16,10 @@ FROM alpine:3.19
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
-COPY --from=builder /app/db/migration ./migration
-COPY --from=builder /app/db/sqlc/Kokomed-Logo.png .
-COPY --from=builder /app/start.sh .
-COPY --from=builder /app/app.env .
+COPY --from=builder /app/go-api/db/migration ./migration
+COPY --from=builder /app/go-api/db/sqlc/Kokomed-Logo.png .
+COPY --from=builder /app/go-api/start.sh .
+COPY --from=builder /app/go-api/app.env .
 
 EXPOSE 8080
 CMD ["/app/main"]
