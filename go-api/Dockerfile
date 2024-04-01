@@ -3,18 +3,14 @@ FROM golang:1.22.0-alpine3.19 AS builder
 WORKDIR /app
 COPY . /app
 ARG DECRYPTION_KEY
-# ENV ENCODED_DECRYPTION_KEY=$(echo "$DECRYPTION_KEY" | base64 -d)
-# Install git-crypt and git then inialize the .git
 RUN apk add --no-cache git-crypt
 RUN git init
-# encode the decrypt key back to binary data then pass it to unlock the repo
 RUN echo "$DECRYPTION_KEY" | base64 -d > /tmp/git-crypt-key && \
-    cat /tmp/git-crypt-key && \
     git-crypt unlock /tmp/git-crypt-key && \
     rm /tmp/git-crypt-key
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
-RUN go build -o main main.go
+RUN go build -o main /app/go-api/main.go
 
 # Run stage
 FROM alpine:3.19
