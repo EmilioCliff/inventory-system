@@ -2,16 +2,16 @@ postgres:
 	docker run --name postgres3 -e POSTGRES_PASSWORD=secret -e POSTGRES_USER=root -p 5432:5432 -d postgres:alpine3.19
 
 migrateup:
-	migrate -path go-api/db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose up
+	migrate -path go-api/db/migration -database "$(DB_SOURCE_DEVELOPMENT)" -verbose up
 
 migrateup1:
-	migrate -path go-api/db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose up 1
+	migrate -path go-api/db/migration -database "$(DB_SOURCE_DEVELOPMENT)" -verbose up 1
 
 migratedown:
-	migrate -path go-api/db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose down
+	migrate -path go-api/db/migration -database "$(DB_SOURCE_DEVELOPMENT)" -verbose down
 
 migratedown1:
-	migrate -path go-api/db/migration -database "postgresql://root:secret@localhost:5432/inventorydb?sslmode=disable" -verbose down 1
+	migrate -path go-api/db/migration -database "$(DB_SOURCE_DEVELOPMENT)" -verbose down 1
 
 createdb:
 	docker exec -it postgres3 createdb --username=root --owner=root inventorydb
@@ -43,4 +43,7 @@ go:
 redis:
 	docker run --name redis -p 6379:6379 -d redis:7.2.4-alpine3.19
 
-.PHONY: postgres createdb dropdb migratedown migrateup migratedown1 migrateup1 sqlc test server python-image python go-image go redis
+connecRedis:
+	asynq dash --uri="$(REDIS_URI)" --password="$(REDIS_PASSWORD)"
+
+.PHONY: postgres createdb dropdb migratedown migrateup migratedown1 migrateup1 sqlc test server python-image python go-image go redis connecRedis
