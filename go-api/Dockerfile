@@ -1,5 +1,7 @@
 # Build stage
 FROM golang:1.22.0-alpine3.19 AS builder
+RUN pwd
+RUN ls -l
 RUN apk add --no-cache git-crypt
 ARG DECRYPTION_KEY
 RUN echo "$DECRYPTION_KEY" > /tmp/decryption.key && git init && git-crypt unlock /tmp/decryption.key && rm /tmp/decryption.key
