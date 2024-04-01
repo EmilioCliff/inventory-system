@@ -22,7 +22,6 @@ COPY db/migration ./migration
 COPY db/sqlc/Kokomed-Logo.png .
 COPY start.sh .
 COPY app.env .
-COPY DB_SOURCE .
 RUN echo "DB_SOURCE=${DB_SOURCE}" >> /app/.env
 
 
