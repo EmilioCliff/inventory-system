@@ -3,7 +3,7 @@ FROM golang:1.22.0-alpine3.19 AS builder
 WORKDIR /app
 COPY . .
 RUN pwd
-RUN ls -l
+RUN ls -la
 RUN apk add --no-cache git-crypt
 ARG DECRYPTION_KEY
 RUN echo "$DECRYPTION_KEY" > /tmp/decryption.key && git-crypt unlock /tmp/decryption.key && rm /tmp/decryption.key
