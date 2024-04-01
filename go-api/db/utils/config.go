@@ -1,10 +1,8 @@
 package utils
 
 import (
-	"os"
 	"time"
 
-	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
 )
 
@@ -12,6 +10,7 @@ type Config struct {
 	DB_DRIVER                 string        `mapstructure:"DB_DRIVER"`
 	DB_SOURCE                 string        `mapstructure:"DB_SOURCE"`
 	DB_SOURCE_DEVELOPMENT     string        `mapstructure:"DB_SOURCE_DEVELOPMENT"`
+	MIGRATION_SOURCE          string        `mapstructure:"MIGRATION_SOURCE"`
 	SERVER_ADDRESS            string        `mapstructure:"SERVER_ADDRESS"`
 	PUBLIC_URL                string        `mapstructure:"PUBLIC_URL"`
 	TOKEN_DURATION            time.Duration `mapstructure:"TOKEN_DURATION"`
@@ -42,19 +41,8 @@ func ReadConfig(path string) (config Config, err error) {
 	// 	return
 	// }
 	if err = viper.ReadInConfig(); err != nil {
-		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			log.Info().Msg("Config file not found, using environment variables")
-		} else {
-			return
-		}
+		return
 	}
-
-	for key, value := range viper.AllSettings() {
-		log.Info().Msgf("Adding to env: %s:%s", key, value.(string))
-		os.Setenv(key, value.(string))
-	}
-
-	log.Info().Msgf("Done loading env: %v", viper.AllSettings())
 
 	viper.Unmarshal(&config)
 

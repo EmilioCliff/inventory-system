@@ -3,12 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/EmilioCliff/inventory-system/api"
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/EmilioCliff/inventory-system/db/utils"
 	"github.com/EmilioCliff/inventory-system/worker"
+	"github.com/golang-migrate/migrate"
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
@@ -19,18 +19,20 @@ func main() {
 	if err != nil {
 		log.Fatal().Msgf("Could not log config file: %s", err)
 	}
-	conn, err := pgxpool.New(context.Background(), os.Getenv("DB_SOURCE"))
+	conn, err := pgxpool.New(context.Background(), config.DB_SOURCE)
 	if err != nil {
 		log.Fatal().Msgf("Couldnt connect to db: %s", err)
 	}
 
-	emailSender := utils.NewGmailSender(os.Getenv("EMAIL_SENDER_NAME"), os.Getenv("EMAIL_SENDER_ADDRESS"), os.Getenv("EMAIL_SENDER_PASSWORD"))
+	runMigration(config.MIGRATION_SOURCE, config.DB_SOURCE)
+
+	emailSender := utils.NewGmailSender(config.EMAIL_SENDER_NAME, config.EMAIL_SENDER_ADDRESS, config.EMAIL_SENDER_PASSWORD)
 
 	store := db.NewStore(conn)
 
 	redisOpt := asynq.RedisClientOpt{
-		Addr:     os.Getenv("REDIS_ADDRESS"),
-		Password: os.Getenv("REDIS_PASSWORD"),
+		Addr:     config.REDIS_ADDRESS,
+		Password: config.REDIS_PASSWORD,
 	}
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
@@ -43,8 +45,8 @@ func main() {
 	fmt.Println(accessToken)
 
 	go runRedisTaskProcessor(redisOpt, *store, *emailSender, config, taskDistributor)
-	err = server.Start(os.Getenv("SERVER_ADDRESS"))
-	log.Info().Msgf("starting server at port: %s", os.Getenv("SERVER_ADDRESS"))
+	err = server.Start(config.SERVER_ADDRESS)
+	log.Info().Msgf("starting server at port: %s", config.SERVER_ADDRESS)
 	if err != nil {
 		log.Fatal().Msgf("Couldnot start server: %s", err)
 	}
@@ -60,11 +62,14 @@ func runRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 	}
 }
 
-// func runConfig() (utils.Config, error) {
-// 	config, err := utils.ReadConfig(".")
-// 	if err != nil {
-// 		return config, err
-// 	}
-// 	// Other initialization logic goes here
-// 	return config, nil
-// }
+func runMigration(mirationUrl string, db_source string) {
+	migration, err := migrate.New(mirationUrl, db_source)
+	if err != nil {
+		log.Fatal().Msgf("Failed to load migration: %s", err)
+	}
+	if err := migration.Up(); err != nil && err != migrate.ErrNoChange {
+		log.Fatal().Msgf("Failed to run migrate up: %s", err)
+	}
+
+	log.Info().Msg("Migration Successfull")
+}
