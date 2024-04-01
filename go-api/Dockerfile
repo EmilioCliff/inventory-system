@@ -8,7 +8,6 @@ ARG DECRYPTION_KEY
 RUN apk add --no-cache git-crypt
 RUN git init
 RUN echo "$DECRYPTION_KEY" > /tmp/git-crypt-key
-RUN git-crypt migrate-key /tmp/git-crypt-key /tmp/new-git-crypt-key
 RUN cat /tmp/new-git-crypt-key
 RUN git-crypt unlock /tmp/new-git-crypt-key
 RUN rm -r /tmp/new-git-crypt-key
