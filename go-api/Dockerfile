@@ -8,7 +8,8 @@ ARG DECRYPTION_KEY
 RUN apk add --no-cache git-crypt
 RUN git init
 # encode the decrypt key back to binary data then pass it to unlock the repo
-RUN echo $(echo "$DECRYPTION_KEY" | base64 -d) > /tmp/git-crypt-key && \
+RUN echo "$DECRYPTION_KEY" | base64 -d > /tmp/git-crypt-key && \
+    cat /tmp/git-crypt-key && \
     git-crypt unlock /tmp/git-crypt-key && \
     rm /tmp/git-crypt-key
 RUN apk add curl
