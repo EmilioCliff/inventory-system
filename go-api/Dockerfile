@@ -21,6 +21,7 @@ COPY --from=builder /app/db/migration ./migration
 COPY --from=builder /app/db/sqlc/Kokomed-Logo.png .
 COPY --from=builder /app/start.sh .
 COPY --from=builder /app/app.env .
+RUN echo /app/app.env
 
 EXPOSE 8080
 CMD ["/app/main"]
