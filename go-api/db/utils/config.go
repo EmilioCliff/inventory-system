@@ -31,7 +31,7 @@ type Config struct {
 func ReadConfig(path string) (config Config, err error) {
 
 	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
+	viper.SetConfigName("decrypted_app")
 	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()

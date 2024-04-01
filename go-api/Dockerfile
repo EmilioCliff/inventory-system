@@ -10,7 +10,7 @@ RUN git-crypt unlock git-crypt-key
 RUN rm git-crypt-key
 
 RUN mkdir /decrypted
-RUN cp -r /app/app.env /app/decrypted
+RUN cp -r /app/app.env /app/decrypted_app.env
 
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
@@ -21,7 +21,7 @@ FROM alpine:3.19
 WORKDIR /app
 COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
-COPY --from=builder /app/decrypted/app.env .
+COPY --from=builder /app/decrypted_app.env .
 COPY db/migration ./migration
 COPY db/sqlc/Kokomed-Logo.png .
 COPY start.sh .
