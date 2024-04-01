@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/EmilioCliff/inventory-system/api"
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -18,18 +19,18 @@ func main() {
 	if err != nil {
 		log.Fatal().Msgf("Could not log config file: %s", err)
 	}
-	conn, err := pgxpool.New(context.Background(), config.DB_SOURCE)
+	conn, err := pgxpool.New(context.Background(), os.Getenv("DB_SOURCE"))
 	if err != nil {
 		log.Fatal().Msgf("Couldnt connect to db: %s", err)
 	}
 
-	emailSender := utils.NewGmailSender(config.EMAIL_SENDER_NAME, config.EMAIL_SENDER_ADDRESS, config.EMAIL_SENDER_PASSWORD)
+	emailSender := utils.NewGmailSender(os.Getenv("EMAIL_SENDER_NAME"), os.Getenv("EMAIL_SENDER_ADDRESS"), os.Getenv("EMAIL_SENDER_PASSWORD"))
 
 	store := db.NewStore(conn)
 
 	redisOpt := asynq.RedisClientOpt{
-		Addr:     config.REDIS_ADDRESS,
-		Password: config.REDIS_PASSWORD,
+		Addr:     os.Getenv("REDIS_ADDRESS"),
+		Password: os.Getenv("REDIS_PASSWORD"),
 	}
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
@@ -42,8 +43,8 @@ func main() {
 	fmt.Println(accessToken)
 
 	go runRedisTaskProcessor(redisOpt, *store, *emailSender, config, taskDistributor)
-	err = server.Start(config.SERVER_ADDRESS)
-	log.Info().Msgf("starting server at port: %s", config.SERVER_ADDRESS)
+	err = server.Start(os.Getenv("SERVER_ADDRESS"))
+	log.Info().Msgf("starting server at port: %s", os.Getenv("SERVER_ADDRESS"))
 	if err != nil {
 		log.Fatal().Msgf("Couldnot start server: %s", err)
 	}
