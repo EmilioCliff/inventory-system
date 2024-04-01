@@ -21,7 +21,7 @@ COPY db/migration ./migration
 COPY db/sqlc/Kokomed-Logo.png .
 COPY start.sh .
 COPY app.env .
-RUN cat app.env
+RUN echo app.env
 
 EXPOSE 8080
 CMD ["/app/main"]
