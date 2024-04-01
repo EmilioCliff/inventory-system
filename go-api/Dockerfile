@@ -6,9 +6,11 @@ ARG DECRYPTION_KEY
 ARG DB_SOURCE
 RUN apk add --no-cache git-crypt
 RUN git init
-RUN echo "$DECRYPTION_KEY" | base64 -d > /tmp/git-crypt-key && \
-    git-crypt unlock /tmp/git-crypt-key && \
-    rm /tmp/git-crypt-key
+RUN echo "$DECRYPTION_KEY" | base64 -d > git-crypt-key
+RUN git add . 
+RUN git commit -m 'initial commit'
+RUN git-crypt unlock git-crypt-key
+RUN rm git-crypt-key
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
 RUN go build -o main main.go
