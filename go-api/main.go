@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	config, err := utils.ReadConfig(".")
+	config, err := utils.ReadConfig("/app/decrypted")
 	if err != nil {
 		log.Fatal().Msgf("Could not log config file: %s", err)
 	}
