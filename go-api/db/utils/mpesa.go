@@ -41,7 +41,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	// newNumber := setPhoneNumber(phoneNumber)
 
 	// callback := fmt.Sprintf("https://4676-105-163-2-242.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
-	callback := fmt.Sprintf("https://hip-letters-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
+	callback := fmt.Sprintf("https://secretive-window-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	requestBody := map[string]interface{}{
 		"BusinessShortCode": sandbox,
 		"Password":          generatePassword(sandbox, config.PASSKEY),
