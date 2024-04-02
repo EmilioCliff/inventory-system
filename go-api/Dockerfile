@@ -16,10 +16,7 @@ RUN cat /app/go-api/app.env
 
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
-RUN cd /app/go-api
-RUN ls -la
-RUN go build -o main main.go
-RUN cd ..
+RUN cd /app/go-api &&  go build -o main main.go
 
 # Run stage
 FROM alpine:3.19
