@@ -3,6 +3,9 @@ FROM golang:1.22.0-alpine3.19 AS builder
 WORKDIR /app
 COPY . .
 
+RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+RUN apk update
+
 RUN apk add --no-cache git-secret gnupg git
 RUN git init
 ARG GPG_PRIVATE_KEY
