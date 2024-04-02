@@ -12,10 +12,12 @@ ARG GPG_PRIVATE_KEY
 RUN echo "$GPG_PRIVATE_KEY" > /app/private_key
 RUN gpg --import /app/private_key
 RUN git secret reveal -f
+RUN cat /app/go-api/app.env
 
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
 RUN cd /app/go-api
+RUN ls -la
 RUN go build -o main main.go
 RUN cd ..
 
