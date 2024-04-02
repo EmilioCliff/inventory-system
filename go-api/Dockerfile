@@ -3,7 +3,7 @@ FROM golang:1.22.0-alpine3.19 AS builder
 WORKDIR /app
 COPY . .
 
-RUN apt-get update && apt-get install -y git-secret gnupg git
+RUN apk add --no-cache git-secret gnupg git
 RUN git init
 ARG GPG_PRIVATE_KEY
 RUN echo "$GPG_PRIVATE_KEY" > /app/private_key
