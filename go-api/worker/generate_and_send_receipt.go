@@ -98,7 +98,7 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendReceipt(ctx context.C
 	<h5>Thank You For Choosing Us.</h5>
 	`, receiptDataPayload.User.Username)
 
-	err = processor.sender.SendMail("Receipt Issued", emailBody, []string{receiptDataPayload.User.Email}, nil, nil, "Receipt.pdf", []byte(receiptGenerated.ReceiptPdf))
+	err = processor.sender.SendMail("Receipt Issued", emailBody, "application/pdf", []string{receiptDataPayload.User.Email}, nil, nil, []string{"Receipt.pdf"}, [][]byte{receiptGenerated.ReceiptPdf})
 	if err != nil {
 		return fmt.Errorf("Failed to send email: %w", err)
 	}

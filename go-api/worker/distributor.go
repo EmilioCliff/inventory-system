@@ -37,6 +37,11 @@ type TaskDistributor interface {
 		payload ProcessMpesaCallbackPayload,
 		opts ...asynq.Option,
 	) error
+	DistributeTakeAndSendDBsnapshots(
+		ctx context.Context,
+		word string,
+		opts ...asynq.Option,
+	) error
 }
 
 type RedisTaskDistributor struct {

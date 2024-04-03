@@ -13,6 +13,7 @@ import (
 const (
 	QueueCritical = "critical"
 	QueueDefault  = "default"
+	QueueLow      = "low"
 )
 
 type TaskProcessor interface {
@@ -23,6 +24,7 @@ type TaskProcessor interface {
 	ProcessSendResetPasswordEmail(ctx context.Context, task *asynq.Task) error
 	ProcessSendSTK(ctx context.Context, task *asynq.Task) error
 	ProcessMpesaCallback(ctx context.Context, task *asynq.Task) error
+	ProcessTakeAndSendDBsnapshots(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
@@ -39,6 +41,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 		Queues: map[string]int{
 			QueueCritical: 10,
 			QueueDefault:  5,
+			QueueLow:      2,
 		},
 		RetryDelayFunc: CustomRetryDelayFunc,
 	})
@@ -67,6 +70,7 @@ func (processor *RedisTaskProcessor) Start() error {
 	mux.HandleFunc(GenerateReceiptAndSendEmailTask, processor.ProcessGenerateAndSendReceipt)
 	mux.HandleFunc(SendSTKTask, processor.ProcessSendSTK)
 	mux.HandleFunc(ProcessMpesaCallbackTask, processor.ProcessMpesaCallback)
+	mux.HandleFunc(TakeAndSendDBsnpashotsTask, processor.ProcessTakeAndSendDBsnapshots)
 
 	return processor.server.Start(mux)
 }

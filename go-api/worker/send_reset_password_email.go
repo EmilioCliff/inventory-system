@@ -70,7 +70,7 @@ func (processor *RedisTaskProcessor) ProcessSendResetPasswordEmail(ctx context.C
 	<h5>The link is valid for 10 Minutes</h5>
 `, user.Username, resetPasswordLink)
 
-	err = processor.sender.SendMail("Reset Password", emailBody, []string{user.Email}, nil, nil, "", nil)
+	err = processor.sender.SendMail("Reset Password", emailBody, "application/pdf", []string{user.Email}, nil, nil, nil, nil)
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/EmilioCliff/inventory-system/api"
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -30,10 +31,9 @@ func main() {
 	emailSender := utils.NewGmailSender(config.EMAIL_SENDER_NAME, config.EMAIL_SENDER_ADDRESS, config.EMAIL_SENDER_PASSWORD)
 
 	store := db.NewStore(conn)
-
 	redisOpt := asynq.RedisClientOpt{
-		Addr:     config.REDIS_ADDRESS,
-		Password: config.REDIS_PASSWORD,
+		Addr: config.REDIS_ADDRESS,
+		// Password: config.REDIS_PASSWORD,
 	}
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
@@ -60,6 +60,15 @@ func runRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 	err := taskProcessor.Start()
 	if err != nil {
 		log.Fatal().Msgf("could not start task processor: %s", err)
+	}
+	ctx := context.Background()
+	opts := []asynq.Option{
+		asynq.MaxRetry(2),
+		asynq.ProcessIn(30 * time.Second),
+		asynq.Queue(worker.QueueLow),
+	}
+	if err := distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...); err != nil {
+		log.Fatal().Msgf("Failed to distribute task: %s", err)
 	}
 }
 

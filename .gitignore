@@ -3,3 +3,4 @@ some.txt
 app.env
 .gitsecret/keys/random_seed
 !*.secret
+snapshots/*.sql

@@ -26,6 +26,8 @@ type Config struct {
 	REDIS_ADDRESS_DEVELOPMENT string        `mapstructure:"REDIS_ADDRESS_DEVELOPMENT"`
 	REDIS_URI                 string        `mapstructure:"REDIS_URI"`
 	REDIS_PASSWORD            string        `mapstructure:"REDIS_PASSWORD"`
+	POSTGRES_SNAPSHOTS        string        `mapstructure:"POSTGRES_SNAPSHOTS"`
+	HOST_SNAPSHOTS            string        `mapstructure:"HOST_SNAPSHOTS"`
 }
 
 func ReadConfig(path string) (config Config, err error) {

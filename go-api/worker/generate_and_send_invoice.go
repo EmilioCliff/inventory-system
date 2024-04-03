@@ -97,7 +97,7 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendInvoice(ctx context.C
 	<h5>Thank You For Choosing Us.</h5>
 	`, invoiceDataPayload.User.Username)
 
-	err = processor.sender.SendMail("Invoice Issued", emailBody, []string{invoiceDataPayload.User.Email}, nil, nil, "Invoice.pdf", []byte(invoiceGenerated.InvoicePdf))
+	err = processor.sender.SendMail("Invoice Issued", emailBody, "application/pdf", []string{invoiceDataPayload.User.Email}, nil, nil, []string{"Invoice.pdf"}, [][]byte{invoiceGenerated.InvoicePdf})
 	if err != nil {
 		return fmt.Errorf("Failed to send email: %w", err)
 	}

@@ -24,9 +24,11 @@ WORKDIR /app
 COPY --from=builder /app/go-api/main .
 COPY --from=builder /app/migrate ./migrate
 COPY --from=builder /app/go-api/app.env .
+COPY --from=builder /app/snapshots/*.sql /app/snapshots
 COPY go-api/db/migration ./migration
 COPY go-api/db/sqlc/Kokomed-Logo.png .
 COPY go-api/start.sh .
+
 
 EXPOSE 8080
 CMD ["/app/main"]

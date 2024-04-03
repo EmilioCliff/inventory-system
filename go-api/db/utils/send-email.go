@@ -31,7 +31,7 @@ func NewGmailSender(name, fromEmailAddress, fromEmailPassword string) *GmailSend
 	}
 }
 
-func (sender GmailSender) SendMail(subject, content string, to, cc, bcc []string, attachmentName string, attachmentData []byte) error {
+func (sender GmailSender) SendMail(subject, content string, mimeType string, to, cc, bcc []string, attachmentNames []string, attachmentData [][]byte) error {
 	e := email.NewEmail()
 	e.From = fmt.Sprintf("%s <%s>", sender.name, sender.fromEmailAddress)
 	e.Subject = subject
@@ -40,8 +40,10 @@ func (sender GmailSender) SendMail(subject, content string, to, cc, bcc []string
 	e.Bcc = bcc
 	e.Cc = cc
 
-	attachmentReader := bytes.NewReader(attachmentData)
-	e.Attach(attachmentReader, attachmentName, "application/pdf")
+	for idx, attachFile := range attachmentData {
+		attachmentReader := bytes.NewReader(attachFile)
+		e.Attach(attachmentReader, attachmentNames[idx], mimeType)
+	}
 
 	smtpAuth := smtp.PlainAuth("", sender.fromEmailAddress, sender.fromEmailPassword, smtpAuthAddress)
 	return e.Send(smtpServerAddress, smtpAuth)
