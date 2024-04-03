@@ -77,8 +77,8 @@ func generateInvoice(data [][]string, user map[string]string) ([]byte, error) {
 
 	imagePath := filepath.Join(currentDir, "Kokomed-Logo.png")
 
-	pdf.SetXY(-(marginX + 60), marginY+20)
-	pdf.ImageOptions(imagePath, -20, 0, 60, 50, false, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
+	pdf.SetXY(-(marginX + 110), marginY+40)
+	pdf.ImageOptions(imagePath, -40, -(marginY - 10), 120, 110, false, fpdf.ImageOptions{ImageType: "PNG", ReadDpi: true}, 0, "")
 
 	pdf.SetXY(marginX, marginY-15)
 	pdf.SetFont("Arial", "B", 32)
