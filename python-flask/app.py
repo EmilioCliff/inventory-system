@@ -223,6 +223,7 @@ def login():
         elif rsp.status_code == 404:
             flash("No user with this email found")
         else:
+            print(user_response['error'])
             flash("No user found")
             # return render_template('failed.html', error_code=rsp.status_code)
     return render_template("login.html")
