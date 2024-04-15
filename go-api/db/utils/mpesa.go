@@ -38,9 +38,8 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 		return transactionID, err
 	}
 
-	// newNumber := setPhoneNumber(phoneNumber)
+	newNumber := setPhoneNumber(phoneNumber)
 
-	// callback := fmt.Sprintf("https://4676-105-163-2-242.ngrok-free.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	callback := fmt.Sprintf("https://secretive-window-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	requestBody := map[string]interface{}{
 		"BusinessShortCode": sandbox,
@@ -48,9 +47,9 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 		"Timestamp":         time.Now().Format("20060102150405"),
 		"TransactionType":   "CustomerPayBillOnline",
 		"Amount":            amount,
-		"PartyA":            "254718750145",
+		"PartyA":            newNumber,
 		"PartyB":            sandbox,
-		"PhoneNumber":       "254718750145",
+		"PhoneNumber":       newNumber,
 		"CallBackURL":       callback,
 		"AccountReference":  "Cliff Test",
 		"TransactionDesc":   "Pay Bob For Test",
@@ -99,25 +98,6 @@ func setPhoneNumber(phoneNumber string) string {
 	}
 	return phoneNumber
 }
-
-// var accessToken string
-// var expiryTimestamp time.Time
-
-// func getAccessToken(consumerKey, consumerSecret string) (string, error) {
-// 	// if time.Now().Before(expiryTimestamp) {
-// 	// 	return accessToken, nil
-// 	// }
-
-// 	newToken, err := generateAccessToken(consumerKey, consumerSecret)
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	// accessToken = newToken
-// 	// expiryTimestamp = time.Now().Add(3600 * time.Second)
-
-// 	return accessToken, nil
-// }
 
 func generateAccessToken(consumerKey string, consumerSecret string) (string, error) {
 	authString := consumerKey + ":" + consumerSecret
