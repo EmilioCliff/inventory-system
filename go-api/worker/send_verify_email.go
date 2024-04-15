@@ -59,7 +59,7 @@ func (processor *RedisTaskProcessor) ProcessSendVerifyEmail(ctx context.Context,
 	}
 
 	// Use real project ulr below
-	resetPasswordLink := fmt.Sprintf("%v/resetit?token=%v", "http://127.0.0.1:5000", accessToken) // URL + TOKEN for passwordreset
+	resetPasswordLink := fmt.Sprintf("%v/resetit?token=%v", processor.config.PUBLIC_URL, accessToken) // URL + TOKEN for passwordreset
 	emailBody := fmt.Sprintf(`
 	<h1>Hello %s</h1>
 	<p>A new account has been created for the Kokomed Supplies System. Please create your Password and Login to check it out</p>
