@@ -32,7 +32,7 @@ func main() {
 
 	store := db.NewStore(conn)
 	redisOpt := asynq.RedisClientOpt{
-		Addr:     config.REDIS_ADDRESS_DEVELOPMENT,
+		Addr:     config.REDIS_URI,
 		Password: config.REDIS_PASSWORD,
 	}
 
