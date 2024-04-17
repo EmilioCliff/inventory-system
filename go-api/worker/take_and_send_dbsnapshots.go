@@ -47,7 +47,6 @@ func (processor *RedisTaskProcessor) ProcessTakeAndSendDBsnapshots(ctx context.C
 	cmd2 := exec.Command("docker", "exec", "postgres3", "/bin/bash", "-c", fmt.Sprintf("pg_dump -U root -d inventorydb -f %s%s --create", processor.config.POSTGRES_SNAPSHOTS, snapshotDataAndSchemaFilename))
 	cmd3 := exec.Command("docker", "cp", fmt.Sprintf("postgres3:%s%s", processor.config.POSTGRES_SNAPSHOTS, snapshotSchemaFilename), fmt.Sprintf("%s", processor.config.HOST_SNAPSHOTS))
 	cmd4 := exec.Command("docker", "cp", fmt.Sprintf("postgres3:%s%s", processor.config.POSTGRES_SNAPSHOTS, snapshotDataAndSchemaFilename), fmt.Sprintf("%s", processor.config.HOST_SNAPSHOTS))
-	// cmd5 := exec.Command("")
 
 	if err := cmd1.Run(); err != nil {
 		return fmt.Errorf("failed to dump schema snapshot: %w", err)

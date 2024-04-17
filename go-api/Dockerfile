@@ -19,19 +19,19 @@ RUN git secret cat go-api/app.env
 # install migrate
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
-RUN cd /app/go-api &&  go build -o main main.go
+RUN go build -o main main.go
 
 # Run stage
 FROM alpine:3.19
 WORKDIR /app
-COPY --from=builder /app/go-api/main .
+COPY --from=builder /app/main .
 COPY --from=builder /app/migrate ./migrate
-COPY --from=builder /app/go-api/app.env .
+COPY --from=builder /app/app.env .
 RUN cat ./app.env
 COPY --from=builder /app/snapshots/*.sql /app/snapshots
-COPY go-api/db/migration ./migration
-COPY go-api/db/sqlc/Kokomed-Logo.png .
-COPY go-api/start.sh .
+COPY db/migration ./migration
+COPY db/sqlc/Kokomed-Logo.png .
+COPY start.sh .
 
 
 EXPOSE 8080
