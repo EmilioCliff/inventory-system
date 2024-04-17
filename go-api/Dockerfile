@@ -6,6 +6,7 @@ COPY . .
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 RUN apk update
 
+# install git-secret and reveal the hide files
 RUN apk add --no-cache git-secret gnupg git
 RUN git init
 ARG GPG_KEY
@@ -15,6 +16,7 @@ RUN rm -r /app/gpg_key
 RUN git secret reveal -f
 RUN git secret cat go-api/app.env
 
+# install migrate
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
 RUN cd /app/go-api &&  go build -o main main.go
