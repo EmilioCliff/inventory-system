@@ -28,6 +28,7 @@ COPY --from=builder /app/snapshots/*.sql /app/snapshots
 COPY go-api/db/migration ./migration
 COPY go-api/db/sqlc/Kokomed-Logo.png .
 COPY go-api/start.sh .
+RUN git-secret cat app/app.env
 
 
 EXPOSE 8080
