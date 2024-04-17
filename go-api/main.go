@@ -43,8 +43,8 @@ func main() {
 	fmt.Println(accessToken)
 
 	go runRedisTaskProcessor(redisOpt, *store, *emailSender, config, taskDistributor)
-	err = server.Start(config.SERVER_ADDRESS)
 	log.Info().Msgf("starting server at port: %s", config.SERVER_ADDRESS)
+	err = server.Start(config.SERVER_ADDRESS)
 	if err != nil {
 		log.Fatal().Msgf("Couldnot start server: %s", err)
 	}
