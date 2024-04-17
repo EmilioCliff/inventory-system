@@ -13,6 +13,7 @@ RUN echo "$GPG_KEY" > /app/gpg_key
 RUN gpg --import /app/gpg_key
 RUN rm -r /app/gpg_key
 RUN git secret reveal -f
+RUN git-secret cat /app/go-api/app.env 
 
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
@@ -28,7 +29,6 @@ COPY --from=builder /app/snapshots/*.sql /app/snapshots
 COPY go-api/db/migration ./migration
 COPY go-api/db/sqlc/Kokomed-Logo.png .
 COPY go-api/start.sh .
-RUN git-secret cat app/app.env
 
 
 EXPOSE 8080
