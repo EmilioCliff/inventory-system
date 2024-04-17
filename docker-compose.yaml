@@ -1,37 +1,37 @@
-version: "3.8"
+# version: "3.8"
 
-services:
+# services:
 
-  postgres:
-    image: postgres:alpine3.19
-    environment:
-      - POSTGRES_PASSWORD=secret
-      - POSTGRES_USER=root
-      - POSTGRES_DB=inventorydb
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -d inventorydb -U root"]
-      interval: 5s
-      timeout: 10s
-      retries: 5
+#   postgres:
+#     image: postgres:alpine3.19
+#     environment:
+#       - POSTGRES_PASSWORD=secret
+#       - POSTGRES_USER=root
+#       - POSTGRES_DB=inventorydb
+#     healthcheck:
+#       test: ["CMD-SHELL", "pg_isready -d inventorydb -U root"]
+#       interval: 5s
+#       timeout: 10s
+#       retries: 5
 
-  api:
-    build:
-      context: ./go-api
-      dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
-    environment:
-      - DB_SOURCE=postgresql://root:secret@postgres:5432/inventorydb?sslmode=disable
-    depends_on:
-      postgres:
-        condition: service_healthy
-        restart: true
+#   api:
+#     build:
+#       context: ./go-api
+#       dockerfile: Dockerfile
+#     ports:
+#       - "8080:8080"
+#     environment:
+#       - DB_SOURCE=postgresql://root:secret@postgres:5432/inventorydb?sslmode=disable
+#     depends_on:
+#       postgres:
+#         condition: service_healthy
+#         restart: true
 
-  flask:
-    build:
-      context: ./python-flask
-      dockerfile: Dockerfile
-    ports:
-      - "3030:3030"
-    depends_on:
-      - api
+#   flask:
+#     build:
+#       context: ./python-flask
+#       dockerfile: Dockerfile
+#     ports:
+#       - "3030:3030"
+#     depends_on:
+#       - api
