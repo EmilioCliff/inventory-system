@@ -13,7 +13,7 @@ RUN echo "$GPG_KEY" > /app/gpg_key
 RUN gpg --import /app/gpg_key
 RUN rm -r /app/gpg_key
 RUN git secret reveal -f
-RUN git-secret cat /app/go-api/app.env 
+RUN git secret cat /app/go-api/app.env 
 
 RUN apk add curl
 RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
