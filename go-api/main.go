@@ -19,7 +19,6 @@ func main() {
 	if err != nil {
 		log.Fatal().Msgf("Could not log config file: %s", err)
 	}
-	log.Info().Msg("app.env decrypted")
 	conn, err := pgxpool.New(context.Background(), config.DB_SOURCE_DEVELOPMENT)
 	if err != nil {
 		log.Fatal().Msgf("Couldnt connect to db: %s", err)
@@ -34,6 +33,7 @@ func main() {
 	}
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
+
 	server, err := api.NewServer(config, store, *emailSender, taskDistributor)
 	if err != nil {
 		log.Fatal().Msgf("Couldnt create new server: %s", err)
