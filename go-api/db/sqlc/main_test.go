@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"log"
-	"os"
 	"testing"
 
 	"github.com/EmilioCliff/inventory-system/db/utils"
@@ -18,12 +17,12 @@ func TestMain(m *testing.M) {
 	if err != nil {
 		log.Fatal("Could not log config")
 	}
-	testConnPool, err = pgxpool.New(context.Background(), config.DB_SOURCE_DEVELOPMENT)
+	testConnPool, err = pgxpool.New(context.Background(), config.DB_SOURCE)
 	if err != nil {
 		log.Fatal("Couldnot connect to db: ", err)
 	}
 
 	testStore = New(testConnPool)
 
-	os.Exit(m.Run())
+	// os.Exit(m.Run())
 }
