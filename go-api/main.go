@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/EmilioCliff/inventory-system/api"
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -58,15 +59,15 @@ func runRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 	if err != nil {
 		log.Fatal().Msgf("could not start task processor: %s", err)
 	}
-	// ctx := context.Background()
-	// opts := []asynq.Option{
-	// 	asynq.MaxRetry(2),
-	// 	asynq.ProcessIn(30 * time.Second),
-	// 	asynq.Queue(worker.QueueLow),
-	// }
-	// if err := distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...); err != nil {
-	// 	log.Fatal().Msgf("Failed to distribute task: %s", err)
-	// }
+	ctx := context.Background()
+	opts := []asynq.Option{
+		asynq.MaxRetry(2),
+		asynq.ProcessIn(30 * time.Second),
+		asynq.Queue(worker.QueueLow),
+	}
+	if err := distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...); err != nil {
+		log.Fatal().Msgf("Failed to distribute task: %s", err)
+	}
 }
 
 func runMigration(mirationUrl string, db_source string) {
