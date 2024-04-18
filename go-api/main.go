@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"time"
+	"os"
 
 	"github.com/EmilioCliff/inventory-system/api"
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -43,9 +43,10 @@ func main() {
 	accessToken, err := server.GeneratePythonToken("pythonApp")
 	fmt.Println(accessToken)
 
+	port := os.Getenv("PORT")
 	go runRedisTaskProcessor(redisOpt, *store, *emailSender, config, taskDistributor)
 	log.Info().Msgf("starting server at port: %s", config.SERVER_ADDRESS)
-	err = server.Start(config.SERVER_ADDRESS)
+	err = server.Start(fmt.Sprintf("0.0.0.0:%s", port))
 	if err != nil {
 		log.Fatal().Msgf("Couldnot start server: %s", err)
 	}
@@ -59,15 +60,15 @@ func runRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 	if err != nil {
 		log.Fatal().Msgf("could not start task processor: %s", err)
 	}
-	ctx := context.Background()
-	opts := []asynq.Option{
-		asynq.MaxRetry(2),
-		asynq.ProcessIn(30 * time.Second),
-		asynq.Queue(worker.QueueLow),
-	}
-	if err := distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...); err != nil {
-		log.Fatal().Msgf("Failed to distribute task: %s", err)
-	}
+	// ctx := context.Background()
+	// opts := []asynq.Option{
+	// 	asynq.MaxRetry(2),
+	// 	asynq.ProcessIn(30 * time.Second),
+	// 	asynq.Queue(worker.QueueLow),
+	// }
+	// if err := distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...); err != nil {
+	// 	log.Fatal().Msgf("Failed to distribute task: %s", err)
+	// }
 }
 
 func runMigration(mirationUrl string, db_source string) {
