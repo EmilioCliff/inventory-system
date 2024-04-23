@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
-	"github.com/EmilioCliff/inventory-system/db/utils"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )
@@ -48,19 +48,22 @@ func (processor *RedisTaskProcessor) ProcessSendSTK(ctx context.Context, task *a
 		return fmt.Errorf("Failed to unmarshal send_stk payload: %w", err)
 	}
 
-	trasactionID, err := utils.SendSTK(sendSTKPayload.Amount, sendSTKPayload.User.UserID, sendSTKPayload.User.PhoneNumber)
-	if err != nil {
-		return fmt.Errorf("Failed to send stk : %w", err)
-	}
+	// trasactionID, err := utils.SendSTK(sendSTKPayload.Amount, sendSTKPayload.User.UserID, sendSTKPayload.User.PhoneNumber)
+	// if err != nil {
+	// 	return fmt.Errorf("Failed to send stk : %w", err)
+	// }
+	trasactionID := time.Now().Format("20060102150405")
 	intAmount, err := strconv.ParseInt(sendSTKPayload.Amount, 0, 64)
 	if err != nil {
 		return fmt.Errorf("Failed to parse amount to int64: %w", err)
 	}
 
 	transaction, err := processor.store.CreateTransaction(ctx, db.CreateTransactionParams{
-		TransactionID: trasactionID,
-		Amount:        int32(intAmount),
-		DataSold:      sendSTKPayload.TransactionData,
+		TransactionID:     trasactionID,
+		TransactionUserID: int32(sendSTKPayload.User.UserID),
+		Amount:            int32(intAmount),
+		PhoneNumber:       sendSTKPayload.User.PhoneNumber,
+		DataSold:          sendSTKPayload.TransactionData,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create new transactio: %w", err)

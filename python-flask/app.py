@@ -1,8 +1,6 @@
 from flask import Flask, abort, render_template, redirect, url_for, flash, request, session, send_file
 from flask_bootstrap import Bootstrap5
-from forms import CreateUserForm, CreateProductForm, EditProductForm, ChangePasswordForm, ResetItForm, ResetPasswordForm, AddAdminStockQuantity, LoginForm, ManageUserForm
-# import smtplib
-# import os
+from forms import ChangePasswordForm
 import requests
 import base64
 from io import BytesIO
@@ -13,9 +11,9 @@ HEADERS={
     "Authorization": "Bearer "
 }
 
-# BASE_URL="http://0.0.0.0:8080" # When Testing
+BASE_URL="http://0.0.0.0:8080" # When Testing
 # BASE_URL = "http://inventory-system-api-1:8080" When using Docker Compose
-BASE_URL = "http://secretive-window.railway.internal:8080"  #  Production
+# BASE_URL = "http://secretive-window.railway.internal:8080"  #  Production
    
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "32e234353t4rffbfbfgxx"
@@ -476,7 +474,33 @@ def reduce_client_stock(id):
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     return render_template("reduce_client_stock.html")
 
-# "'user.html', user=rsp.json(), user_id=session['user_id'], ct='user', products=product_reponse.json()"
+@app.route("/transactions")
+def getAllTransactions():
+    return render_template("transactions.html")
+
+@app.route("/transactions/successfull")
+def getSuccessfulTransactions():
+    return render_template("transactions.html")
+
+@app.route("/transactions/failed")
+def getFailedTransactions():
+    return render_template("transactions.html")
+
+@app.route("/transactions/users/<int:user_id>", methods=['POST', 'GET'])
+def getUserAllTransactions(user_id):
+    return render_template("transactions.html")
+
+@app.route("/transactions/users/successful/<int:user_id>", methods=['POST', 'GET'])
+def getUserSuccessfulTransactions(user_id):
+    return render_template("transactions.html")
+
+@app.route("/transactions/users/failed/<int:user_id>", methods=['POST', 'GET'])
+def getUserFailedTransactions(user_id):
+    return render_template("transactions.html")
+
+@app.route("/transactions/<transaction_number>", methods=['POST', 'GET'])
+def getTransaction(transaction_number):
+    return render_template("transactions.html")
 
 @app.route("/download/invoice/<string:id_param>", methods=['POST', 'GET'])
 def invoiceDownload(id_param):

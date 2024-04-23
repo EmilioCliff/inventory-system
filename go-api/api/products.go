@@ -272,8 +272,3 @@ func (server *Server) searchProduct(ctx *gin.Context) {
 	return
 
 }
-
-// [
-// 	{"productID":1,"productName":"Test Product 1","productQuantity":75},
-// 	{"productID":2,"productName":"Test Product 2","productQuantity":75}
-// ]

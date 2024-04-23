@@ -144,26 +144,33 @@ func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 	pdf.Cell(40, lineHeight, user["receiptDate"])
 	pdf.Ln(lineHeight * 4)
 
-	const colNum = 5
-	headers := [colNum]string{"No", "Product", "Quantity", "Unit Price (Ksh)", "Total Price (Ksh)"}
-	colW := [colNum]float64{75.0, 25.0, 40.0, 40.0}
-
+	// Draw the table
 	pdf.SetX(marginX)
+	lineHt := 10.0
+	const colNumber = 5
+	header := [colNumber]string{"No", "Description", "Quantity", "Unit Price (Ksh)", "Price (Ksh)"}
+	colWidth := [colNumber]float64{10.0, 75.0, 25.0, 40.0, 40.0}
+
+	// Headers
 	pdf.SetFontStyle("B")
 	pdf.SetFillColor(200, 200, 200)
-	for i := 0; i < colNum; i++ {
-		pdf.CellFormat(colW[i], 10, headers[i], "", 0, "CM", true, 0, "")
+	for colJ := 0; colJ < colNumber; colJ++ {
+		pdf.CellFormat(colWidth[colJ], lineHt, header[colJ], "1", 0, "CM", true, 0, "")
 	}
 
 	pdf.Ln(-1)
 	pdf.SetFillColor(255, 255, 255)
 
+	// Table data
 	pdf.SetFontStyle("")
 	subtotal := 0.0
 
 	for rowJ := 0; rowJ < len(data); rowJ++ {
 		val := data[rowJ]
 		if len(val) == 3 {
+			// Column 1: Unit
+			// Column 2: Description
+			// Column 3: Price per unit
 			unit, _ := strconv.Atoi(val[2])
 			desc := val[1]
 			quantity, _ := strconv.ParseFloat(val[2], 64)
@@ -171,11 +178,11 @@ func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 			unitPrice := math.Round((totalBill/quantity)*100) / 100
 			subtotal += totalBill
 
-			pdf.CellFormat(colW[0], 10, fmt.Sprintf("%d", rowJ+1), "", 0, "CM", true, 0, "")       // No
-			pdf.CellFormat(colW[0], 10, desc, "B", 0, "LM", true, 0, "")                           // Description
-			pdf.CellFormat(colW[1], 10, fmt.Sprintf("%d", unit), "B", 0, "CM", true, 0, "")        // Quantity
-			pdf.CellFormat(colW[2], 10, fmt.Sprintf("%.2f", unitPrice), "B", 0, "CM", true, 0, "") // Unit Price
-			pdf.CellFormat(colW[3], 10, fmt.Sprintf("%.2f", totalBill), "B", 0, "CM", true, 0, "") // Total Bill
+			pdf.CellFormat(colWidth[0], lineHt, fmt.Sprintf("%d", rowJ+1), "1", 0, "CM", true, 0, "")      // No
+			pdf.CellFormat(colWidth[1], lineHt, desc, "1", 0, "LM", true, 0, "")                           // Description
+			pdf.CellFormat(colWidth[2], lineHt, fmt.Sprintf("%d", unit), "1", 0, "CM", true, 0, "")        // Quantity
+			pdf.CellFormat(colWidth[3], lineHt, fmt.Sprintf("%.2f", unitPrice), "1", 0, "CM", true, 0, "") // Unit Price
+			pdf.CellFormat(colWidth[4], lineHt, fmt.Sprintf("%.2f", totalBill), "1", 0, "CM", true, 0, "") // Total Bill
 			pdf.Ln(-1)
 		}
 	}
@@ -184,18 +191,71 @@ func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 	pdf.SetFontStyle("B")
 	leftIndent := 0.0
 	for i := 0; i < 3; i++ {
-		leftIndent += colW[i]
+		leftIndent += colWidth[i]
 	}
 	pdf.SetX(marginX + leftIndent)
-	pdf.CellFormat(colW[2], 10, "Subtotal", "B", 0, "CM", true, 0, "")
-	pdf.CellFormat(colW[3], 10, fmt.Sprintf("%.2f", subtotal), "B", 0, "CM", true, 0, "")
+	pdf.CellFormat(colWidth[3], lineHt, "Subtotal", "1", 0, "CM", true, 0, "")
+	pdf.CellFormat(colWidth[4], lineHt, fmt.Sprintf("%.2f", subtotal), "1", 0, "CM", true, 0, "")
 	pdf.Ln(-1)
 
 	grandTotal := subtotal
 	pdf.SetX(marginX + leftIndent)
-	pdf.CellFormat(colW[2], 10, "Grand total", "B", 0, "CM", true, 0, "")
-	pdf.CellFormat(colW[3], 10, fmt.Sprintf("%.2f", grandTotal), "B", 0, "CM", true, 0, "")
+	pdf.CellFormat(colWidth[3], lineHt, "Grand total", "1", 0, "CM", true, 0, "")
+	pdf.CellFormat(colWidth[4], lineHt, fmt.Sprintf("%.2f", grandTotal), "1", 0, "CM", true, 0, "")
 	pdf.Ln(-1)
+
+	// const colNum = 5
+	// headers := [colNum]string{"No", "Product", "Quantity", "Unit Price (Ksh)", "Total Price (Ksh)"}
+	// colW := [colNum]float64{75.0, 25.0, 40.0, 40.0}
+
+	// pdf.SetX(marginX)
+	// pdf.SetFontStyle("B")
+	// pdf.SetFillColor(200, 200, 200)
+	// for i := 0; i < colNum; i++ {
+	// 	pdf.CellFormat(colW[i], 10, headers[i], "", 0, "CM", true, 0, "")
+	// }
+
+	// pdf.Ln(-1)
+	// pdf.SetFillColor(255, 255, 255)
+
+	// pdf.SetFontStyle("")
+	// subtotal := 0.0
+
+	// for rowJ := 0; rowJ < len(data); rowJ++ {
+	// 	val := data[rowJ]
+	// 	if len(val) == 3 {
+	// 		unit, _ := strconv.Atoi(val[2])
+	// 		desc := val[1]
+	// 		quantity, _ := strconv.ParseFloat(val[2], 64)
+	// 		totalBill, _ := strconv.ParseFloat(val[0], 64)
+	// 		unitPrice := math.Round((totalBill/quantity)*100) / 100
+	// 		subtotal += totalBill
+
+	// 		pdf.CellFormat(colW[0], 10, fmt.Sprintf("%d", rowJ+1), "", 0, "CM", true, 0, "")       // No
+	// 		pdf.CellFormat(colW[0], 10, desc, "B", 0, "LM", true, 0, "")                           // Description
+	// 		pdf.CellFormat(colW[1], 10, fmt.Sprintf("%d", unit), "B", 0, "CM", true, 0, "")        // Quantity
+	// 		pdf.CellFormat(colW[2], 10, fmt.Sprintf("%.2f", unitPrice), "B", 0, "CM", true, 0, "") // Unit Price
+	// 		pdf.CellFormat(colW[3], 10, fmt.Sprintf("%.2f", totalBill), "B", 0, "CM", true, 0, "") // Total Bill
+	// 		pdf.Ln(-1)
+	// 	}
+	// }
+
+	// // Calculate the subtotal
+	// pdf.SetFontStyle("B")
+	// leftIndent := 0.0
+	// for i := 0; i < 3; i++ {
+	// 	leftIndent += colW[i]
+	// }
+	// pdf.SetX(marginX + leftIndent)
+	// pdf.CellFormat(colW[2], 10, "Subtotal", "B", 0, "CM", true, 0, "")
+	// pdf.CellFormat(colW[3], 10, fmt.Sprintf("%.2f", subtotal), "B", 0, "CM", true, 0, "")
+	// pdf.Ln(-1)
+
+	// grandTotal := subtotal
+	// pdf.SetX(marginX + leftIndent)
+	// pdf.CellFormat(colW[2], 10, "Grand total", "B", 0, "CM", true, 0, "")
+	// pdf.CellFormat(colW[3], 10, fmt.Sprintf("%.2f", grandTotal), "B", 0, "CM", true, 0, "")
+	// pdf.Ln(-1)
 
 	var buffer bytes.Buffer
 	if err := pdf.Output(&buffer); err != nil {

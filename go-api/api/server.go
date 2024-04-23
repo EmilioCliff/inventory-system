@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	PageSize = 10
+	PageSize = 2 // return page size to 10
 )
 
 type Server struct {
@@ -78,6 +78,14 @@ func (server *Server) setRoutes() {
 
 	auth.GET("/receipts/admin", server.listReceipts)
 	auth.GET("/receipts/:id", server.getReceipt)
+
+	auth.GET("/transactions/all", server.allTransactions)
+	auth.GET("/transactions/successfull", server.succussfulTransactions)
+	auth.GET("/transactions/failed", server.failedTransactions)
+	auth.GET("/user/transactions/all/:id", server.getUsersTransactions)
+	auth.GET("/user/transactions/successful/:id", server.getUserSuccessfulTransaction)
+	auth.GET("/user/transactions/failed/:id", server.getUserFailedTransaction)
+	auth.GET("/user/transactions/:id", server.getUserTransaction)
 
 	server.router = router
 }

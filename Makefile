@@ -1,6 +1,9 @@
 postgres:
 	docker run --name postgres3 -e POSTGRES_PASSWORD=secret -e POSTGRES_USER=root -p 5432:5432 -d postgres:alpine3.19
 
+createMigrate:
+	migrate create -ext sql -dir go-api/db/migration -seq transaction_column
+
 migrateup:
 	migrate -path go-api/db/migration -database "$(DB_SOURCE_DEVELOPMENT)" -verbose up
 
