@@ -3,6 +3,11 @@ SELECT * FROM products
 WHERE product_id = $1 
 LIMIT 1;
 
+-- name: GetProductByProductName :one
+SELECT * FROM products
+WHERE product_name = $1 
+LIMIT 1;
+
 -- name: GetProductForUpdate :one
 SELECT * FROM products
 WHERE product_id = $1 LIMIT 1
@@ -39,8 +44,8 @@ DELETE FROM products
 WHERE product_id = $1;
 
 -- name: SearchILikeProducts :many
-SELECT * FROM products
-WHERE product_name ILIKE $1;
+SELECT product_name FROM products
+WHERE LOWER(product_name) LIKE LOWER('%' || $1 || '%');
 
 -- name: CountProducts :one
 SELECT COUNT(*) FROM products;

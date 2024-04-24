@@ -19,6 +19,8 @@ func main() {
 	if err != nil {
 		log.Fatal().Msgf("Could not log config file: %s", err)
 	}
+
+	// runMigration(config.MIGRATION_SOURCE, config.DB_SOURCE_DEVELOPMENT)
 	conn, err := pgxpool.New(context.Background(), config.DB_SOURCE_DEVELOPMENT)
 	if err != nil {
 		log.Fatal().Msgf("Couldnt connect to db: %s", err)

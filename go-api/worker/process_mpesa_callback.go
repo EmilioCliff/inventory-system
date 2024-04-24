@@ -81,12 +81,23 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 		return fmt.Errorf("failed to parse mpesa callback body: stkCallback field is not a map[string]interface{}")
 	}
 
+	rstDescription, ok := stkCallbackValue["ResultDesc"].(string)
+	if !ok {
+		return fmt.Errorf("failed to parse mpesa metaData: metaData field is not a map[string]interface{}")
+	}
+
 	if len(stkCallbackValue) != 5 {
 		// ("No CallbackMetadata in the response: %w", asynq.SkipRetry)
 		issue, ok := stkCallbackValue["ResultDesc"].(string)
 		if !ok {
 			return fmt.Errorf("failed to parse mpesa metaData: metaData field is not a map[string]interface{}")
 		}
+
+		processor.store.UpdateResultDescription(ctx, db.UpdateResultDescriptionParams{
+			TransactionID:     transaction.TransactionID,
+			ResultDescription: rstDescription,
+		})
+
 		log.Error().
 			Str("type", task.Type()).
 			Bytes("body", task.Payload()).
@@ -143,6 +154,7 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 		TransactionID:      transaction.TransactionID,
 		MpesaReceiptNumber: mpesaReceiptNumber,
 		PhoneNumber:        phoneNumber,
+		ResultDescription:  rstDescription,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to update transaction: %w", err)

@@ -327,7 +327,8 @@ def search_users():
     if request.method == 'POST':
         query = request.form.get('search')
         listUsersUrl = f"{BASE_URL}/search/users"
-    rsp = requests.get(url=listUsersUrl, json={"search_word": query}, headers={"Authorization": f"Bearer {session['token']}"})
+        params = {"search_word": query}
+    rsp = requests.get(url=listUsersUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -341,7 +342,8 @@ def search_products():
     if request.method == 'POST':
         query = request.form.get('search')
         listUsersUrl = f"{BASE_URL}/search/products"
-    rsp = requests.get(url=listUsersUrl, json={"search_word": query}, headers={"Authorization": f"Bearer {session['token']}"})
+        params = {"search_word": query}
+    rsp = requests.get(url=listUsersUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try aain server error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -476,31 +478,52 @@ def reduce_client_stock(id):
 
 @app.route("/transactions")
 def getAllTransactions():
-    return render_template("transactions.html")
+    params = {'page_id': request.args.get('page_id', 1)}
+    url = f"{BASE_URL}/transactions/all"
+    rsp = requests.get(url, params=params, headers={"Authorization": f"Bearer {session['token']}"})
+    return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action="all_transactions")
 
 @app.route("/transactions/successfull")
 def getSuccessfulTransactions():
-    return render_template("transactions.html")
+    params = {'page_id': request.args.get('page_id', 1)}
+    url = f"{BASE_URL}/transactions/successfull"
+    rsp = requests.get(url, params=params, headers={"Authorization": f"Bearer {session['token']}"})
+    return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action="successful_transactions")
 
 @app.route("/transactions/failed")
 def getFailedTransactions():
-    return render_template("transactions.html")
+    params = {'page_id': request.args.get('page_id', 1)}
+    url = f"{BASE_URL}/transactions/failed"
+    rsp = requests.get(url, params=params, headers={"Authorization": f"Bearer {session['token']}"})
+    return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action="failed_transactions")
 
-@app.route("/transactions/users/<int:user_id>", methods=['POST', 'GET'])
+@app.route("/transactions/users/<int:user_id>")
 def getUserAllTransactions(user_id):
-    return render_template("transactions.html")
+    params = {'page_id': request.args.get('page_id', 1)}
+    url = f"{BASE_URL}/user/transactions/all/{user_id}"
+    rsp = requests.get(url, params=params, headers={"Authorization": f"Bearer {session['token']}"})
+    return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action="user_all_transactions")
 
-@app.route("/transactions/users/successful/<int:user_id>", methods=['POST', 'GET'])
+@app.route("/transactions/users/successful/<int:user_id>")
 def getUserSuccessfulTransactions(user_id):
-    return render_template("transactions.html")
+    params = {'page_id': request.args.get('page_id', 1)}
+    url = f"{BASE_URL}/user/transactions/successful/{user_id}"
+    rsp = requests.get(url, params=params, headers={"Authorization": f"Bearer {session['token']}"})
+    return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action="user_successful_transactions")
 
-@app.route("/transactions/users/failed/<int:user_id>", methods=['POST', 'GET'])
+@app.route("/transactions/users/failed/<int:user_id>")
 def getUserFailedTransactions(user_id):
-    return render_template("transactions.html")
+    params = {'page_id': request.args.get('page_id', 1)}
+    url = f"{BASE_URL}/user/transactions/failed/{user_id}"
+    rsp = requests.get(url, params=params, headers={"Authorization": f"Bearer {session['token']}"})
+    return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action="user_failed_transactions")
 
-@app.route("/transactions/<transaction_number>", methods=['POST', 'GET'])
-def getTransaction(transaction_number):
-    return render_template("transactions.html")
+# @app.route("/transactions/<transaction_number>", methods=['POST', 'GET'])
+# def getTransaction(transaction_number):
+#     params = {'page_id': request.args.get('page_id', 1)}
+#     url = f"{BASE_URL}/transactions/all"
+#     rsp = requests.get(url, params=params, headers={"Authorization": f"Bearer {session['token']}"})
+#     return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action="all_transactions")
 
 @app.route("/download/invoice/<string:id_param>", methods=['POST', 'GET'])
 def invoiceDownload(id_param):

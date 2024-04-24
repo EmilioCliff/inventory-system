@@ -6,6 +6,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const reduceButton = document.getElementById('reduceClientStock');
   const viewReceiptBtns = document.querySelectorAll('#viewReceipt');
   const viewInvoiceBtns = document.querySelectorAll('#viewInvoice');
+  const viewTransactionBtns = document.querySelectorAll('#viewTransaction');
+  const viewUserTransactionBtns = document.querySelectorAll('#viewUserTransaction');
 
   const overlay_create = document.getElementById('overlay_create');
   const overlay_product = document.getElementById('overlay_product');
@@ -14,6 +16,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const overlay_recudeClientStock = document.getElementById('reduceClientStockOverlay');
   const overlay_viewReceipts = document.querySelectorAll('#overlay_receiptview');
   const overlay_viewInvoices = document.querySelectorAll('#overlay_invoiceview');
+  const overlay_viewTransaction = document.querySelectorAll('#overlay_transactionview');
+  const overlay_viewUserTransaction = document.querySelectorAll('#overlay_transactionuserview');
 
   const popupFormCreate = document.getElementById('popupFormCreate');
   const popupFormProduct = document.getElementById('popupFormProduct');
@@ -22,6 +26,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const popupFormReduceClientStock = document.getElementById('popupformreduceClientStock');
   const popupFormReceiptView = document.querySelectorAll('#popupFormReceiptView');
   const popupFormInvoiceView = document.querySelectorAll('#popupFormInvoiceView');
+  const popupFormTransactionView = document.querySelectorAll('#popupFormTransactionView');
+  const popupFormUserTransactionView = document.querySelectorAll('#popupFormUserTransactionView');
 
   const deleteButton = document.querySelector('.delete-button');
   const overlay_delete = document.getElementById('overlay_delete');
@@ -31,6 +37,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const reduceClientStockCloseBtn = document.getElementById('close-buttonReduce');
   const receiptViewCloseBtns = document.querySelectorAll('#receiptViewCloseBtn');
   const invoiceViewCloseBtns = document.querySelectorAll('#invoiceViewCloseBtn');
+  const transactionViewCloseBtns = document.querySelectorAll('#transactionViewCloseBtn');
+  const transactionViewUserCloseBtns = document.querySelectorAll('#transactionViewUserCloseBtn');
 
   const editButton = document.getElementById('editButton');
   const overlay_edit = document.getElementById('overlayedit');
@@ -48,6 +56,34 @@ invoiceViewCloseBtns.forEach((invoiceViewCloseBtn, index) => {
     overlay_viewInvoices[index].style.display = 'none';
     popupFormInvoiceView[index].style.display = 'none';
   });
+});
+
+viewTransactionBtns.forEach((viewTransactionBtn, index) => {
+  viewTransactionBtn.addEventListener('click', function() {
+      overlay_viewTransaction[index].style.display = 'block';
+      popupFormTransactionView[index].style.display = 'block';
+  });
+});
+
+transactionViewCloseBtns.forEach((transactionViewCloseBtn, index) => {
+  transactionViewCloseBtn.addEventListener('click', function() {
+    overlay_viewTransaction[index].style.display = 'none';
+    popupFormTransactionView[index].style.display = 'none';
+});
+});
+
+viewUserTransactionBtns.forEach((viewUserTransactionBtn, index) => {
+  viewUserTransactionBtn.addEventListener('click', function() {
+      overlay_viewUserTransaction[index].style.display = 'block';
+      popupFormUserTransactionView[index].style.display = 'block';
+  });
+});
+
+transactionViewUserCloseBtns.forEach((transactionViewUserCloseBtn, index) => {
+  transactionViewUserCloseBtn.addEventListener('click', function() {
+    overlay_viewUserTransaction[index].style.display = 'none';
+    popupFormUserTransactionView[index].style.display = 'none';
+});
 });
 
   viewReceiptBtns.forEach((viewReceiptBtn, index) => {

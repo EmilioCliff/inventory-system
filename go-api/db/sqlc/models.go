@@ -44,6 +44,7 @@ type Transaction struct {
 	DataSold           []byte    `json:"data_sold"`
 	PhoneNumber        string    `json:"phone_number"`
 	MpesaReceiptNumber string    `json:"mpesa_receipt_number"`
+	ResultDescription  string    `json:"result_description"`
 	CreatedAt          time.Time `json:"created_at"`
 }
 

@@ -96,6 +96,7 @@
     <!-- change to 1 -->
     {% if user_id == 1 %}
     {% if user.id != 1 %}
+    <a href="{{ url_for('getUserAllTransactions', user_id=user.id) }}" class="btn btn-outline-primary" id="addClientStockBtn">User Transactions</a>
     <a href="#" class="btn btn-outline-primary" id="addClientStockBtn">Add User Stock
         <div class="overlay" id="addClientStockOverlay">
             <div class="form-container p-1" id="popupformAddClientStock">

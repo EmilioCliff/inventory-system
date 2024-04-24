@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countProducts = `-- name: CountProducts :one
@@ -66,6 +68,25 @@ LIMIT 1
 
 func (q *Queries) GetProduct(ctx context.Context, productID int64) (Product, error) {
 	row := q.db.QueryRow(ctx, getProduct, productID)
+	var i Product
+	err := row.Scan(
+		&i.ProductID,
+		&i.ProductName,
+		&i.UnitPrice,
+		&i.Packsize,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getProductByProductName = `-- name: GetProductByProductName :one
+SELECT product_id, product_name, unit_price, packsize, created_at FROM products
+WHERE product_name = $1 
+LIMIT 1
+`
+
+func (q *Queries) GetProductByProductName(ctx context.Context, productName string) (Product, error) {
+	row := q.db.QueryRow(ctx, getProductByProductName, productName)
 	var i Product
 	err := row.Scan(
 		&i.ProductID,
@@ -166,29 +187,23 @@ func (q *Queries) ListProduct(ctx context.Context, arg ListProductParams) ([]Pro
 }
 
 const searchILikeProducts = `-- name: SearchILikeProducts :many
-SELECT product_id, product_name, unit_price, packsize, created_at FROM products
-WHERE product_name ILIKE $1
+SELECT product_name FROM products
+WHERE LOWER(product_name) LIKE LOWER('%' || $1 || '%')
 `
 
-func (q *Queries) SearchILikeProducts(ctx context.Context, productName string) ([]Product, error) {
-	rows, err := q.db.Query(ctx, searchILikeProducts, productName)
+func (q *Queries) SearchILikeProducts(ctx context.Context, dollar_1 pgtype.Text) ([]string, error) {
+	rows, err := q.db.Query(ctx, searchILikeProducts, dollar_1)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []Product{}
+	items := []string{}
 	for rows.Next() {
-		var i Product
-		if err := rows.Scan(
-			&i.ProductID,
-			&i.ProductName,
-			&i.UnitPrice,
-			&i.Packsize,
-			&i.CreatedAt,
-		); err != nil {
+		var product_name string
+		if err := rows.Scan(&product_name); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+		items = append(items, product_name)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -7,6 +7,7 @@ import (
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 	_ "github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -252,23 +253,153 @@ func (server *Server) getUserProducts(ctx *gin.Context) {
 }
 
 type searchProduct struct {
-	SearchWord string `json:"search_word" binding:"required"`
+	SearchWord string `form:"search_word" binding:"required"`
 }
 
 func (server *Server) searchProduct(ctx *gin.Context) {
 	var req searchProduct
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	rst, err := server.store.SearchILikeProducts(ctx, req.SearchWord)
+	var pgQuery pgtype.Text
+	if err := pgQuery.Scan(req.SearchWord); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rst, err := server.store.SearchILikeProducts(ctx, pgQuery)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
 	ctx.JSON(http.StatusOK, rst)
 	return
+}
 
+type searchAllRequest struct {
+	PageID        int32  `form:"page_id" binding:"required"`
+	SearchQuery   string `form:"search_query" binding:"required"`
+	SearchContext string `form:"search_context" binding:"required"`
+}
+
+func (server *Server) searchAll(ctx *gin.Context) {
+	var req searchAllRequest
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	context := req.SearchContext
+	switch context {
+	case "user":
+		user, err := server.store.GetUserByUsename(ctx, req.SearchQuery)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, errorResponse(err))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		resp, _ := newUserResponse(user)
+		ctx.JSON(http.StatusOK, resp)
+
+	case "product":
+		product, err := server.store.GetProductByProductName(ctx, req.SearchQuery)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, errorResponse(err))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		ctx.JSON(http.StatusOK, product)
+
+	case "receipts":
+		receipts, err := server.store.GetUserReceiptsByUsername(ctx, db.GetUserReceiptsByUsernameParams{
+			UserReceiptUsername: req.SearchQuery,
+			Limit:               PageSize,
+			Offset:              (req.PageID - 1) * PageSize,
+		})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		var rsp []receiptResponse
+		for _, receipt := range receipts {
+			updatedReceipt, _ := newReceiptResponse(receipt)
+			rsp = append(rsp, updatedReceipt)
+		}
+
+		totalReceipt, err := server.store.CountUserReceiptsByUsername(ctx, req.SearchQuery)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		totalPages := totalReceipt / int64(PageSize)
+		if totalReceipt%int64(PageSize) != 0 {
+			totalPages++
+		}
+
+		newRsp := listReceiptResponse{
+			Data: rsp,
+			Metadata: PaginationMetadata{
+				CurrentPage: req.PageID,
+				TotalPages:  int32(totalPages),
+				TotalData:   int32(totalReceipt),
+			},
+		}
+
+		ctx.JSON(http.StatusOK, newRsp)
+
+	case "invoices":
+		invoices, err := server.store.GetUserInvoicesByUsername(ctx, db.GetUserInvoicesByUsernameParams{
+			UserInvoiceUsername: req.SearchQuery,
+			Limit:               PageSize,
+			Offset:              (req.PageID - 1) * PageSize,
+		})
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		var returnInvoices []invoiceResponse
+		for _, invoice := range invoices {
+			updatedInvoice, _ := newInvoiceResponse(invoice)
+			returnInvoices = append(returnInvoices, updatedInvoice)
+		}
+
+		totalInvoice, err := server.store.CountUserInvoicesByUsername(ctx, req.SearchQuery)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		totalPages := totalInvoice / int64(PageSize)
+		if totalInvoice%int64(PageSize) != 0 {
+			totalPages++
+		}
+
+		rsp := listInvoiceResponse{
+			Data: returnInvoices,
+			Metadata: PaginationMetadata{
+				CurrentPage: int32(req.PageID),
+				TotalPages:  int32(totalPages),
+				TotalData:   int32(totalInvoice),
+			},
+		}
+
+		ctx.JSON(http.StatusOK, rsp)
+	}
+
+	return
 }

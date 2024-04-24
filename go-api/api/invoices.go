@@ -7,6 +7,7 @@ import (
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func newInvoiceResponse(invoice db.Invoice) (invoiceResponse, error) {
@@ -182,5 +183,57 @@ func (server *Server) getInvoice(ctx *gin.Context) {
 	rsp, _ := newInvoiceResponse(invoice)
 
 	ctx.JSON(http.StatusOK, rsp)
+	return
+}
+
+type searchInvoice struct {
+	SearchWord string `form:"search_word" binding:"required"`
+}
+
+func (server *Server) searchInvoice(ctx *gin.Context) {
+	var req searchInvoice
+
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	var pgQuery pgtype.Text
+	if err := pgQuery.Scan(req.SearchWord); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rst, err := server.store.SearchILikeInvoices(ctx, pgQuery)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, rst)
+	return
+}
+
+func (server *Server) searchUserInvoice(ctx *gin.Context) {
+	var req searchInvoice
+
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	var pgQuery pgtype.Text
+	if err := pgQuery.Scan(req.SearchWord); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rst, err := server.store.SearchUserInvoices(ctx, pgQuery)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, rst)
 	return
 }

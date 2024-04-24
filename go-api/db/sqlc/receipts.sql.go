@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countReceipts = `-- name: CountReceipts :one
@@ -27,6 +29,18 @@ WHERE user_receipt_id = $1
 
 func (q *Queries) CountUserReceiptsByID(ctx context.Context, userReceiptID int32) (int64, error) {
 	row := q.db.QueryRow(ctx, countUserReceiptsByID, userReceiptID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countUserReceiptsByUsername = `-- name: CountUserReceiptsByUsername :one
+SELECT COUNT(*) FROM receipts
+WHERE user_receipt_username= $1
+`
+
+func (q *Queries) CountUserReceiptsByUsername(ctx context.Context, userReceiptUsername string) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserReceiptsByUsername, userReceiptUsername)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -158,10 +172,18 @@ const getUserReceiptsByUsername = `-- name: GetUserReceiptsByUsername :many
 SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
 WHERE user_receipt_username = $1
 ORDER BY created_at DESC
+LIMIT $2
+OFFSET $3
 `
 
-func (q *Queries) GetUserReceiptsByUsername(ctx context.Context, userReceiptUsername string) ([]Receipt, error) {
-	rows, err := q.db.Query(ctx, getUserReceiptsByUsername, userReceiptUsername)
+type GetUserReceiptsByUsernameParams struct {
+	UserReceiptUsername string `json:"user_receipt_username"`
+	Limit               int32  `json:"limit"`
+	Offset              int32  `json:"offset"`
+}
+
+func (q *Queries) GetUserReceiptsByUsername(ctx context.Context, arg GetUserReceiptsByUsernameParams) ([]Receipt, error) {
+	rows, err := q.db.Query(ctx, getUserReceiptsByUsername, arg.UserReceiptUsername, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -221,6 +243,56 @@ func (q *Queries) ListReceipts(ctx context.Context, arg ListReceiptsParams) ([]R
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchILikeReceipts = `-- name: SearchILikeReceipts :many
+SELECT receipt_number FROM receipts
+WHERE LOWER(receipt_number) LIKE LOWER('%' || $1 || '%')
+`
+
+func (q *Queries) SearchILikeReceipts(ctx context.Context, dollar_1 pgtype.Text) ([]string, error) {
+	rows, err := q.db.Query(ctx, searchILikeReceipts, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var receipt_number string
+		if err := rows.Scan(&receipt_number); err != nil {
+			return nil, err
+		}
+		items = append(items, receipt_number)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchUserReceipts = `-- name: SearchUserReceipts :many
+SELECT user_receipt_username FROM receipts
+WHERE LOWER(user_receipt_username) LIKE LOWER('%' || $1 || '%')
+`
+
+func (q *Queries) SearchUserReceipts(ctx context.Context, dollar_1 pgtype.Text) ([]string, error) {
+	rows, err := q.db.Query(ctx, searchUserReceipts, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var user_receipt_username string
+		if err := rows.Scan(&user_receipt_username); err != nil {
+			return nil, err
+		}
+		items = append(items, user_receipt_username)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countInvoices = `-- name: CountInvoices :one
@@ -27,6 +29,18 @@ WHERE user_invoice_id = $1
 
 func (q *Queries) CountUserInvoicesByID(ctx context.Context, userInvoiceID int32) (int64, error) {
 	row := q.db.QueryRow(ctx, countUserInvoicesByID, userInvoiceID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countUserInvoicesByUsername = `-- name: CountUserInvoicesByUsername :one
+SELECT COUNT(*) FROM invoices
+WHERE user_invoice_username = $1
+`
+
+func (q *Queries) CountUserInvoicesByUsername(ctx context.Context, userInvoiceUsername string) (int64, error) {
+	row := q.db.QueryRow(ctx, countUserInvoicesByUsername, userInvoiceUsername)
 	var count int64
 	err := row.Scan(&count)
 	return count, err
@@ -158,10 +172,18 @@ const getUserInvoicesByUsername = `-- name: GetUserInvoicesByUsername :many
 SELECT invoice_id, invoice_number, user_invoice_id, user_invoice_username, invoice_data, invoice_pdf, created_at FROM invoices
 WHERE user_invoice_username = $1
 ORDER BY created_at DESC
+LIMIT $2
+OFFSET $3
 `
 
-func (q *Queries) GetUserInvoicesByUsername(ctx context.Context, userInvoiceUsername string) ([]Invoice, error) {
-	rows, err := q.db.Query(ctx, getUserInvoicesByUsername, userInvoiceUsername)
+type GetUserInvoicesByUsernameParams struct {
+	UserInvoiceUsername string `json:"user_invoice_username"`
+	Limit               int32  `json:"limit"`
+	Offset              int32  `json:"offset"`
+}
+
+func (q *Queries) GetUserInvoicesByUsername(ctx context.Context, arg GetUserInvoicesByUsernameParams) ([]Invoice, error) {
+	rows, err := q.db.Query(ctx, getUserInvoicesByUsername, arg.UserInvoiceUsername, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
@@ -221,6 +243,56 @@ func (q *Queries) ListInvoices(ctx context.Context, arg ListInvoicesParams) ([]I
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchILikeInvoices = `-- name: SearchILikeInvoices :many
+SELECT invoice_number FROM invoices
+WHERE LOWER(invoice_number) LIKE LOWER('%' || $1 || '%')
+`
+
+func (q *Queries) SearchILikeInvoices(ctx context.Context, dollar_1 pgtype.Text) ([]string, error) {
+	rows, err := q.db.Query(ctx, searchILikeInvoices, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var invoice_number string
+		if err := rows.Scan(&invoice_number); err != nil {
+			return nil, err
+		}
+		items = append(items, invoice_number)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const searchUserInvoices = `-- name: SearchUserInvoices :many
+SELECT user_invoice_username FROM invoices
+WHERE LOWER(user_invoice_username) LIKE LOWER('%' || $1 || '%')
+`
+
+func (q *Queries) SearchUserInvoices(ctx context.Context, dollar_1 pgtype.Text) ([]string, error) {
+	rows, err := q.db.Query(ctx, searchUserInvoices, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var user_invoice_username string
+		if err := rows.Scan(&user_invoice_username); err != nil {
+			return nil, err
+		}
+		items = append(items, user_invoice_username)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

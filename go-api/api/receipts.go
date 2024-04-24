@@ -7,6 +7,7 @@ import (
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 func newReceiptResponse(receipt db.Receipt) (receiptResponse, error) {
@@ -184,5 +185,57 @@ func (server *Server) getReceipt(ctx *gin.Context) {
 	rsp, _ := newReceiptResponse(receipt)
 
 	ctx.JSON(http.StatusOK, rsp)
+	return
+}
+
+type searchReceipt struct {
+	SearchWord string `form:"search_word" binding:"required"`
+}
+
+func (server *Server) searchReceipt(ctx *gin.Context) {
+	var req searchReceipt
+
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	var pgQuery pgtype.Text
+	if err := pgQuery.Scan(req.SearchWord); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rst, err := server.store.SearchILikeReceipts(ctx, pgQuery)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, rst)
+	return
+}
+
+func (server *Server) searchUserReceipt(ctx *gin.Context) {
+	var req searchReceipt
+
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	var pgQuery pgtype.Text
+	if err := pgQuery.Scan(req.SearchWord); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rst, err := server.store.SearchUserReceipts(ctx, pgQuery)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, rst)
 	return
 }

@@ -16,6 +16,7 @@ import (
 	"github.com/EmilioCliff/inventory-system/worker"
 	"github.com/gin-gonic/gin"
 	"github.com/hibiken/asynq"
+	"github.com/jackc/pgx/v5/pgtype"
 	// "google.golang.org/appengine/log"
 )
 
@@ -222,6 +223,7 @@ func (server *Server) getUser(ctx *gin.Context) {
 	resp, _ := newUserResponse(user)
 
 	ctx.JSON(http.StatusOK, resp)
+	return
 }
 
 type DeleteUSerRequest struct {
@@ -480,30 +482,31 @@ func (server *Server) addAdminStock(ctx *gin.Context) {
 }
 
 type searchUser struct {
-	SearchWord string `json:"search_word" binding:"required"`
+	SearchWord string `form:"search_word" binding:"required"`
 }
 
-func (server *Server) searchUsers(ctx *gin.Context) {
+func (server *Server) searchUser(ctx *gin.Context) {
 	var req searchUser
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	rst, err := server.store.SearchILikeUsers(ctx, req.SearchWord)
-	if err != nil {
+	var pgQuery pgtype.Text
+	if err := pgQuery.Scan(req.SearchWord); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
-	// var updateUser []userResponse
-	// for _, user := range rst {
-	// 	us, _ := newUserResponse(user)
-	// 	updateUser = append(updateUser, us)
-	// }
+	rst, err := server.store.SearchILikeUsers(ctx, pgQuery)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, rst)
 	return
-
 }
 
 type addClientStockURIRequest struct {

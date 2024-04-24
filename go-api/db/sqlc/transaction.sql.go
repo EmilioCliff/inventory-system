@@ -7,12 +7,14 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const allUserTransactions = `-- name: AllUserTransactions :many
-SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at FROM transactions
+SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at FROM transactions
 WHERE transaction_user_id = $1
-ORDER BY created_at
+ORDER BY created_at DESC
 LIMIT $2
 OFFSET $3
 `
@@ -40,6 +42,7 @@ func (q *Queries) AllUserTransactions(ctx context.Context, arg AllUserTransactio
 			&i.DataSold,
 			&i.PhoneNumber,
 			&i.MpesaReceiptNumber,
+			&i.ResultDescription,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -56,7 +59,7 @@ const changeStatus = `-- name: ChangeStatus :one
 UPDATE transactions
     set status = $2
 WHERE transaction_id = $1
-RETURNING transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at
+RETURNING transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at
 `
 
 type ChangeStatusParams struct {
@@ -75,6 +78,7 @@ func (q *Queries) ChangeStatus(ctx context.Context, arg ChangeStatusParams) (Tra
 		&i.DataSold,
 		&i.PhoneNumber,
 		&i.MpesaReceiptNumber,
+		&i.ResultDescription,
 		&i.CreatedAt,
 	)
 	return i, err
@@ -155,11 +159,11 @@ func (q *Queries) CountTransactions(ctx context.Context) (int64, error) {
 
 const createTransaction = `-- name: CreateTransaction :one
 INSERT INTO transactions (
-    transaction_id, amount, data_sold, phone_number, transaction_user_id
+    transaction_id, amount, data_sold, phone_number, transaction_user_id, result_description
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5, $6
 )
-RETURNING transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at
+RETURNING transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at
 `
 
 type CreateTransactionParams struct {
@@ -168,6 +172,7 @@ type CreateTransactionParams struct {
 	DataSold          []byte `json:"data_sold"`
 	PhoneNumber       string `json:"phone_number"`
 	TransactionUserID int32  `json:"transaction_user_id"`
+	ResultDescription string `json:"result_description"`
 }
 
 func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionParams) (Transaction, error) {
@@ -177,6 +182,7 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 		arg.DataSold,
 		arg.PhoneNumber,
 		arg.TransactionUserID,
+		arg.ResultDescription,
 	)
 	var i Transaction
 	err := row.Scan(
@@ -187,15 +193,16 @@ func (q *Queries) CreateTransaction(ctx context.Context, arg CreateTransactionPa
 		&i.DataSold,
 		&i.PhoneNumber,
 		&i.MpesaReceiptNumber,
+		&i.ResultDescription,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const failedTransactions = `-- name: FailedTransactions :many
-SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at FROM transactions
+SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at FROM transactions
 WHERE status = false
-ORDER BY created_at
+ORDER BY created_at DESC
 LIMIT $1
 OFFSET $2
 `
@@ -222,6 +229,7 @@ func (q *Queries) FailedTransactions(ctx context.Context, arg FailedTransactions
 			&i.DataSold,
 			&i.PhoneNumber,
 			&i.MpesaReceiptNumber,
+			&i.ResultDescription,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -235,10 +243,10 @@ func (q *Queries) FailedTransactions(ctx context.Context, arg FailedTransactions
 }
 
 const failedUserTransactions = `-- name: FailedUserTransactions :many
-SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at FROM transactions
+SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at FROM transactions
 WHERE transaction_user_id = $1
 AND status = false
-ORDER BY created_at
+ORDER BY created_at DESC
 LIMIT $2
 OFFSET $3
 `
@@ -266,6 +274,7 @@ func (q *Queries) FailedUserTransactions(ctx context.Context, arg FailedUserTran
 			&i.DataSold,
 			&i.PhoneNumber,
 			&i.MpesaReceiptNumber,
+			&i.ResultDescription,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -279,7 +288,7 @@ func (q *Queries) FailedUserTransactions(ctx context.Context, arg FailedUserTran
 }
 
 const getTransaction = `-- name: GetTransaction :one
-SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at FROM transactions
+SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at FROM transactions
 WHERE transaction_id = $1 
 LIMIT 1
 `
@@ -295,13 +304,14 @@ func (q *Queries) GetTransaction(ctx context.Context, transactionID string) (Tra
 		&i.DataSold,
 		&i.PhoneNumber,
 		&i.MpesaReceiptNumber,
+		&i.ResultDescription,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const getUserTransaction = `-- name: GetUserTransaction :one
-SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at FROM transactions
+SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at FROM transactions
 WHERE transaction_user_id = $1 
 LIMIT 1
 `
@@ -317,14 +327,15 @@ func (q *Queries) GetUserTransaction(ctx context.Context, transactionUserID int3
 		&i.DataSold,
 		&i.PhoneNumber,
 		&i.MpesaReceiptNumber,
+		&i.ResultDescription,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
 const listTransactions = `-- name: ListTransactions :many
-SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at FROM transactions
-ORDER BY created_at
+SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at FROM transactions
+ORDER BY created_at DESC
 LIMIT $1
 OFFSET $2
 `
@@ -351,6 +362,7 @@ func (q *Queries) ListTransactions(ctx context.Context, arg ListTransactionsPara
 			&i.DataSold,
 			&i.PhoneNumber,
 			&i.MpesaReceiptNumber,
+			&i.ResultDescription,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -363,10 +375,35 @@ func (q *Queries) ListTransactions(ctx context.Context, arg ListTransactionsPara
 	return items, nil
 }
 
+const searchILikeTransactions = `-- name: SearchILikeTransactions :many
+SELECT transaction_id FROM transactions
+WHERE LOWER(transaction_id) LIKE LOWER('%' || $1 || '%')
+`
+
+func (q *Queries) SearchILikeTransactions(ctx context.Context, dollar_1 pgtype.Text) ([]string, error) {
+	rows, err := q.db.Query(ctx, searchILikeTransactions, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var transaction_id string
+		if err := rows.Scan(&transaction_id); err != nil {
+			return nil, err
+		}
+		items = append(items, transaction_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const successTransactions = `-- name: SuccessTransactions :many
-SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at FROM transactions
+SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at FROM transactions
 WHERE status = true
-ORDER BY created_at
+ORDER BY created_at DESC
 LIMIT $1
 OFFSET $2
 `
@@ -393,6 +430,7 @@ func (q *Queries) SuccessTransactions(ctx context.Context, arg SuccessTransactio
 			&i.DataSold,
 			&i.PhoneNumber,
 			&i.MpesaReceiptNumber,
+			&i.ResultDescription,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -406,10 +444,10 @@ func (q *Queries) SuccessTransactions(ctx context.Context, arg SuccessTransactio
 }
 
 const successUserTransactions = `-- name: SuccessUserTransactions :many
-SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at FROM transactions
+SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at FROM transactions
 WHERE transaction_user_id = $1
 AND status = true
-ORDER BY created_at
+ORDER BY created_at DESC
 LIMIT $2
 OFFSET $3
 `
@@ -437,6 +475,7 @@ func (q *Queries) SuccessUserTransactions(ctx context.Context, arg SuccessUserTr
 			&i.DataSold,
 			&i.PhoneNumber,
 			&i.MpesaReceiptNumber,
+			&i.ResultDescription,
 			&i.CreatedAt,
 		); err != nil {
 			return nil, err
@@ -449,22 +488,20 @@ func (q *Queries) SuccessUserTransactions(ctx context.Context, arg SuccessUserTr
 	return items, nil
 }
 
-const updateTransaction = `-- name: UpdateTransaction :one
+const updateResultDescription = `-- name: UpdateResultDescription :one
 UPDATE transactions
-  set mpesa_receipt_number = $3,
-  phone_number = $2
+    set result_description = $2
 WHERE transaction_id = $1
-RETURNING transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, created_at
+RETURNING transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at
 `
 
-type UpdateTransactionParams struct {
-	TransactionID      string `json:"transaction_id"`
-	PhoneNumber        string `json:"phone_number"`
-	MpesaReceiptNumber string `json:"mpesa_receipt_number"`
+type UpdateResultDescriptionParams struct {
+	TransactionID     string `json:"transaction_id"`
+	ResultDescription string `json:"result_description"`
 }
 
-func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error) {
-	row := q.db.QueryRow(ctx, updateTransaction, arg.TransactionID, arg.PhoneNumber, arg.MpesaReceiptNumber)
+func (q *Queries) UpdateResultDescription(ctx context.Context, arg UpdateResultDescriptionParams) (Transaction, error) {
+	row := q.db.QueryRow(ctx, updateResultDescription, arg.TransactionID, arg.ResultDescription)
 	var i Transaction
 	err := row.Scan(
 		&i.TransactionID,
@@ -474,6 +511,45 @@ func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionPa
 		&i.DataSold,
 		&i.PhoneNumber,
 		&i.MpesaReceiptNumber,
+		&i.ResultDescription,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const updateTransaction = `-- name: UpdateTransaction :one
+UPDATE transactions
+  set mpesa_receipt_number = $3,
+  phone_number = $2,
+  result_description = $4
+WHERE transaction_id = $1
+RETURNING transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at
+`
+
+type UpdateTransactionParams struct {
+	TransactionID      string `json:"transaction_id"`
+	PhoneNumber        string `json:"phone_number"`
+	MpesaReceiptNumber string `json:"mpesa_receipt_number"`
+	ResultDescription  string `json:"result_description"`
+}
+
+func (q *Queries) UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error) {
+	row := q.db.QueryRow(ctx, updateTransaction,
+		arg.TransactionID,
+		arg.PhoneNumber,
+		arg.MpesaReceiptNumber,
+		arg.ResultDescription,
+	)
+	var i Transaction
+	err := row.Scan(
+		&i.TransactionID,
+		&i.TransactionUserID,
+		&i.Amount,
+		&i.Status,
+		&i.DataSold,
+		&i.PhoneNumber,
+		&i.MpesaReceiptNumber,
+		&i.ResultDescription,
 		&i.CreatedAt,
 	)
 	return i, err

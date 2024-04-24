@@ -47,7 +47,7 @@ func (server *Server) setRoutes() {
 	router.Use(loggerMiddleware())
 
 	auth := router.Group("/").Use(authMiddleware(server.tokenMaker))
-	auth.GET("users/products/:id", server.getUserProducts)
+	auth.GET("/users/products/:id", server.getUserProducts)
 	auth.GET("/products/", server.listProducts)
 	auth.GET("/allproducts/", server.listAllProducts)
 	auth.GET("/products/:id", server.getProduct)
@@ -70,8 +70,14 @@ func (server *Server) setRoutes() {
 	auth.POST("/users/products/sell/:id", server.reduceClientStock)
 	auth.GET("/users/invoices/:id", server.getUserInvoices)
 	auth.GET("/users/receipts/:id", server.getUserReceipts)
-	auth.GET("/search/users", server.searchUsers)
+
+	auth.GET("/search/users", server.searchUser)
 	auth.GET("/search/products", server.searchProduct)
+	auth.GET("/search/transactions", server.searchTransaction)
+	auth.GET("/search/invoices", server.searchInvoice)
+	auth.GET("/search/receipts", server.searchReceipt)
+	auth.GET("/search/user/invoices", server.searchUserInvoice)
+	auth.GET("/search/user/receipts", server.searchUserReceipt)
 
 	auth.GET("/invoices/admin", server.listInvoices)
 	auth.GET("/invoices/:id", server.getInvoice)

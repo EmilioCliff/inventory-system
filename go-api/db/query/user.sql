@@ -56,9 +56,8 @@ WHERE user_id = $1
 RETURNING *;
 
 -- name: SearchILikeUsers :many
-SELECT username
-FROM users
-WHERE username ILIKE $1;
+SELECT username FROM users
+WHERE LOWER(username) LIKE LOWER('%' || $1 || '%');
 
 -- name: CountUsers :one
 SELECT COUNT(*) FROM users;

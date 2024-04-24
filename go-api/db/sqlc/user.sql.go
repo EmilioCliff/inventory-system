@@ -7,6 +7,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const countUsers = `-- name: CountUsers :one
@@ -206,13 +208,12 @@ func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]User, err
 }
 
 const searchILikeUsers = `-- name: SearchILikeUsers :many
-SELECT username
-FROM users
-WHERE username ILIKE $1
+SELECT username FROM users
+WHERE LOWER(username) LIKE LOWER('%' || $1 || '%')
 `
 
-func (q *Queries) SearchILikeUsers(ctx context.Context, username string) ([]string, error) {
-	rows, err := q.db.Query(ctx, searchILikeUsers, username)
+func (q *Queries) SearchILikeUsers(ctx context.Context, dollar_1 pgtype.Text) ([]string, error) {
+	rows, err := q.db.Query(ctx, searchILikeUsers, dollar_1)
 	if err != nil {
 		return nil, err
 	}

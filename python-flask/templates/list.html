@@ -29,11 +29,22 @@
 <nav class="navbar my-2" style="background-color: #DCF2F1;">
     <div class="container-fluid" style="background-color: #DCF2F1;">
         {% if ct == 'users' %}
-      <form class="d-flex flex-grow-1" role="search">
+        <form class="d-flex flex-grow-1" role="search" action="{{ url_for('search_users') }}" method="POST" autocomplete="off">
+            <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
+            <input type="hidden" id="search-context" value="users">
+        {% elif ct == 'products' %}
+        <form class="d-flex flex-grow-1" role="search" action="{{ url_for('search_products') }}" method="POST" autocomplete="off">
+            <input type="hidden" id="search-context" value="products">
+            <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
+        {% elif ct == 'receipts' %}
+        <form class="d-flex flex-grow-1" role="search" action="{{ url_for('search_receipts') }}" method="POST" autocomplete="off">
+            <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
+            <input type="hidden" id="search-context" value="receipts">
         {% else %}
-        <form class="d-flex flex-grow-1" role="search">
+        <form class="d-flex flex-grow-1" role="search" action="{{ url_for('search_invoices') }}" method="POST" autocomplete="off">
+            <input type="hidden" id="search-context" value="invoices">
+            <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
         {% endif %}
-        <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
         <button class="btn btn-outline-primary" type="submit">Search</button>
       </form>
     </div>
@@ -284,7 +295,7 @@
                 {% endfor %}
             </ul>
             <a href="{{ url_for('invoiceDownload', id_param=data.invoice_number) }}" class="btn btn-success text-uppercase m-2" id="submitButton" style="text-decoration: none;" type="submit">
-                Download Receipt
+                Download Invoice
             </a>
         </div>
     </div>
@@ -301,4 +312,43 @@
     {% endif %}
     {% endif %}
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("search");
+        const dropdown = document.getElementById("dropdown");
+        
+        form.addEventListener("input", async function(event) {
+            const query = searchInput.value;            
+            const searchContext = document.getElementById("search-context").value;
+
+            switch (searchContext) {
+                case "users":
+                    endpoint = "/api/users/search";
+                    break;
+                case "products":
+                    endpoint = "/api/products/search";
+                    break;
+                case "receipts":
+                    endpoint = "/api/receipts/search";
+                    break;
+                default:
+                    endpoint = "/api/default/search";
+                    break;
+            }
+
+            const response = await fetch(`${endpoint}?query=${searchValue}`);
+            const data = await response.json();
+
+            dropdown.innerHTML = "";
+
+            data.results.forEach(result => {
+                const option = document.createElement("option");
+                option.text = result;
+                dropdown.add(option);
+            });
+
+            console.log(data);
+        });
+    });
+</script>
 {% endblock %}

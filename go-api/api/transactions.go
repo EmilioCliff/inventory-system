@@ -4,10 +4,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type listTransactions struct {
@@ -22,47 +22,27 @@ type productDataResponse struct {
 
 type transactionResponse struct {
 	TransactionID      string                `json:"transaction_id"`
-	TransactionOwner   int32                 `json:"transaction_owner"`
+	TransactionOwner   string                `json:"transaction_owner"`
 	PhoneNumber        string                `json:"phone_number"`
 	Amount             int64                 `json:"amount"`
 	MpesaReceiptNumber string                `json:"mpesa_receipt_number"`
+	ResultDescription  string                `json:"result_description"`
 	DataSold           []productDataResponse `json:"data_sold"`
 	Status             bool                  `json:"status"`
-	CreatedAt          time.Time             `json:"created_at"`
+	CreatedAt          string                `json:"created_at"`
 }
 
-func newTransactionResponse(transaction db.Transaction, dataReturn []productDataResponse) (transactionResponse, error) {
-	// var transactionData map[string][]int
-	// if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
-	// 	return transactionResponse{}, err
-	// }
-
-	// var transactionProducts []productDataResponse
-	// for idx, productID := range transactionData["products_id"] {
-	// 	product, err := server.store.GetProduct(ctx, int64(productID))
-	// 	if err != nil {
-	// 		if err == sql.ErrNoRows {
-	// 			return transactionResponse{}, err
-	// 		}
-	// 		return transactionResponse{}, err
-	// 	}
-
-	// 	totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
-	// 	transactionProducts = append(transactionProducts, productDataResponse{
-	// 		Product:  product.ProductName,
-	// 		Quantity: int64(totalAmount),
-	// 	})
-	// }
-
+func newTransactionResponse(transaction db.Transaction, dataReturn []productDataResponse, username string) (transactionResponse, error) {
 	return transactionResponse{
 		TransactionID:      transaction.TransactionID,
-		TransactionOwner:   transaction.TransactionUserID,
+		TransactionOwner:   username,
 		PhoneNumber:        transaction.PhoneNumber,
 		Amount:             int64(transaction.Amount),
 		MpesaReceiptNumber: transaction.MpesaReceiptNumber,
+		ResultDescription:  transaction.ResultDescription,
 		DataSold:           dataReturn,
 		Status:             transaction.Status,
-		CreatedAt:          transaction.CreatedAt,
+		CreatedAt:          transaction.CreatedAt.Format("2006-01-02"),
 	}, nil
 }
 
@@ -105,6 +85,16 @@ func (server *Server) allTransactions(ctx *gin.Context) {
 			return
 		}
 
+		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, errorResponse(err))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
 		var transactionProducts []productDataResponse
 		for idx, productID := range transactionData["products_id"] {
 			product, err := server.store.GetProduct(ctx, int64(productID))
@@ -124,7 +114,7 @@ func (server *Server) allTransactions(ctx *gin.Context) {
 			})
 		}
 
-		newTransaction, err := newTransactionResponse(transaction, transactionProducts)
+		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
@@ -180,6 +170,16 @@ func (server *Server) succussfulTransactions(ctx *gin.Context) {
 			return
 		}
 
+		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, errorResponse(err))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
 		var transactionProducts []productDataResponse
 		for idx, productID := range transactionData["products_id"] {
 			product, err := server.store.GetProduct(ctx, int64(productID))
@@ -199,7 +199,7 @@ func (server *Server) succussfulTransactions(ctx *gin.Context) {
 			})
 		}
 
-		newTransaction, err := newTransactionResponse(transaction, transactionProducts)
+		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
@@ -255,6 +255,16 @@ func (server *Server) failedTransactions(ctx *gin.Context) {
 			return
 		}
 
+		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, errorResponse(err))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
 		var transactionProducts []productDataResponse
 		for idx, productID := range transactionData["products_id"] {
 			product, err := server.store.GetProduct(ctx, int64(productID))
@@ -274,7 +284,7 @@ func (server *Server) failedTransactions(ctx *gin.Context) {
 			})
 		}
 
-		newTransaction, err := newTransactionResponse(transaction, transactionProducts)
+		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
@@ -341,6 +351,16 @@ func (server *Server) getUsersTransactions(ctx *gin.Context) {
 			return
 		}
 
+		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, errorResponse(err))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
 		var transactionProducts []productDataResponse
 		for idx, productID := range transactionData["products_id"] {
 			product, err := server.store.GetProduct(ctx, int64(productID))
@@ -360,7 +380,7 @@ func (server *Server) getUsersTransactions(ctx *gin.Context) {
 			})
 		}
 
-		newTransaction, err := newTransactionResponse(transaction, transactionProducts)
+		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
@@ -423,6 +443,16 @@ func (server *Server) getUserSuccessfulTransaction(ctx *gin.Context) {
 			return
 		}
 
+		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, errorResponse(err))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
 		var transactionProducts []productDataResponse
 		for idx, productID := range transactionData["products_id"] {
 			product, err := server.store.GetProduct(ctx, int64(productID))
@@ -442,7 +472,7 @@ func (server *Server) getUserSuccessfulTransaction(ctx *gin.Context) {
 			})
 		}
 
-		newTransaction, err := newTransactionResponse(transaction, transactionProducts)
+		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
@@ -505,6 +535,16 @@ func (server *Server) getUserFailedTransaction(ctx *gin.Context) {
 			return
 		}
 
+		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
+		if err != nil {
+			if err == sql.ErrNoRows {
+				ctx.JSON(http.StatusNotFound, errorResponse(err))
+				return
+			}
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
 		var transactionProducts []productDataResponse
 		for idx, productID := range transactionData["products_id"] {
 			product, err := server.store.GetProduct(ctx, int64(productID))
@@ -524,7 +564,7 @@ func (server *Server) getUserFailedTransaction(ctx *gin.Context) {
 			})
 		}
 
-		newTransaction, err := newTransactionResponse(transaction, transactionProducts)
+		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
@@ -562,6 +602,16 @@ func (server *Server) getUserTransaction(ctx *gin.Context) {
 		return
 	}
 
+	user, err := server.store.GetUser(ctx, int64(transactions.TransactionUserID))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	var transactionData map[string][]int
 	if err := json.Unmarshal(transactions.DataSold, &transactionData); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -587,12 +637,40 @@ func (server *Server) getUserTransaction(ctx *gin.Context) {
 		})
 	}
 
-	rsp, err := newTransactionResponse(transactions, transactionProducts)
+	rsp, err := newTransactionResponse(transactions, transactionProducts, user.Username)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
 	ctx.JSON(http.StatusOK, rsp)
+	return
+}
+
+type searchTransaction struct {
+	SearchWord string `form:"search_word" binding:"required"`
+}
+
+func (server *Server) searchTransaction(ctx *gin.Context) {
+	var req searchTransaction
+
+	if err := ctx.ShouldBindQuery(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	var pgQuery pgtype.Text
+	if err := pgQuery.Scan(req.SearchWord); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rst, err := server.store.SearchILikeTransactions(ctx, pgQuery)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, rst)
 	return
 }

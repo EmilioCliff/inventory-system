@@ -6,6 +6,8 @@ package db
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Querier interface {
@@ -21,7 +23,9 @@ type Querier interface {
 	CountSuccessfulUserTransactions(ctx context.Context, transactionUserID int32) (int64, error)
 	CountTransactions(ctx context.Context) (int64, error)
 	CountUserInvoicesByID(ctx context.Context, userInvoiceID int32) (int64, error)
+	CountUserInvoicesByUsername(ctx context.Context, userInvoiceUsername string) (int64, error)
 	CountUserReceiptsByID(ctx context.Context, userReceiptID int32) (int64, error)
+	CountUserReceiptsByUsername(ctx context.Context, userReceiptUsername string) (int64, error)
 	CountUsers(ctx context.Context) (int64, error)
 	CreateInvoice(ctx context.Context, arg CreateInvoiceParams) (Invoice, error)
 	CreateProduct(ctx context.Context, arg CreateProductParams) (Product, error)
@@ -35,6 +39,7 @@ type Querier interface {
 	GetInvoice(ctx context.Context, invoiceNumber string) (Invoice, error)
 	GetInvoiceByID(ctx context.Context, invoiceID int64) (Invoice, error)
 	GetProduct(ctx context.Context, productID int64) (Product, error)
+	GetProductByProductName(ctx context.Context, productName string) (Product, error)
 	GetProductForUpdate(ctx context.Context, productID int64) (Product, error)
 	GetReceipt(ctx context.Context, receiptNumber string) (Receipt, error)
 	GetReceiptByID(ctx context.Context, receiptID int64) (Receipt, error)
@@ -44,9 +49,9 @@ type Querier interface {
 	GetUserByUsename(ctx context.Context, username string) (User, error)
 	GetUserForUpdate(ctx context.Context, userID int64) (User, error)
 	GetUserInvoicesByID(ctx context.Context, arg GetUserInvoicesByIDParams) ([]Invoice, error)
-	GetUserInvoicesByUsername(ctx context.Context, userInvoiceUsername string) ([]Invoice, error)
+	GetUserInvoicesByUsername(ctx context.Context, arg GetUserInvoicesByUsernameParams) ([]Invoice, error)
 	GetUserReceiptsByID(ctx context.Context, arg GetUserReceiptsByIDParams) ([]Receipt, error)
-	GetUserReceiptsByUsername(ctx context.Context, userReceiptUsername string) ([]Receipt, error)
+	GetUserReceiptsByUsername(ctx context.Context, arg GetUserReceiptsByUsernameParams) ([]Receipt, error)
 	GetUserTransaction(ctx context.Context, transactionUserID int32) (Transaction, error)
 	ListAllProduct(ctx context.Context) ([]Product, error)
 	ListInvoices(ctx context.Context, arg ListInvoicesParams) ([]Invoice, error)
@@ -54,11 +59,17 @@ type Querier interface {
 	ListReceipts(ctx context.Context, arg ListReceiptsParams) ([]Receipt, error)
 	ListTransactions(ctx context.Context, arg ListTransactionsParams) ([]Transaction, error)
 	ListUser(ctx context.Context, arg ListUserParams) ([]User, error)
-	SearchILikeProducts(ctx context.Context, productName string) ([]Product, error)
-	SearchILikeUsers(ctx context.Context, username string) ([]string, error)
+	SearchILikeInvoices(ctx context.Context, dollar_1 pgtype.Text) ([]string, error)
+	SearchILikeProducts(ctx context.Context, dollar_1 pgtype.Text) ([]string, error)
+	SearchILikeReceipts(ctx context.Context, dollar_1 pgtype.Text) ([]string, error)
+	SearchILikeTransactions(ctx context.Context, dollar_1 pgtype.Text) ([]string, error)
+	SearchILikeUsers(ctx context.Context, dollar_1 pgtype.Text) ([]string, error)
+	SearchUserInvoices(ctx context.Context, dollar_1 pgtype.Text) ([]string, error)
+	SearchUserReceipts(ctx context.Context, dollar_1 pgtype.Text) ([]string, error)
 	SuccessTransactions(ctx context.Context, arg SuccessTransactionsParams) ([]Transaction, error)
 	SuccessUserTransactions(ctx context.Context, arg SuccessUserTransactionsParams) ([]Transaction, error)
 	UpdateProduct(ctx context.Context, arg UpdateProductParams) (Product, error)
+	UpdateResultDescription(ctx context.Context, arg UpdateResultDescriptionParams) (Transaction, error)
 	UpdateTransaction(ctx context.Context, arg UpdateTransactionParams) (Transaction, error)
 	UpdateUserCredentials(ctx context.Context, arg UpdateUserCredentialsParams) (User, error)
 	UpdateUserPasswordFisrtLogin(ctx context.Context, arg UpdateUserPasswordFisrtLoginParams) (User, error)

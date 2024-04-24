@@ -22,7 +22,13 @@ WHERE user_receipt_id = $1;
 -- name: GetUserReceiptsByUsername :many
 SELECT * FROM receipts
 WHERE user_receipt_username = $1
-ORDER BY created_at DESC;
+ORDER BY created_at DESC
+LIMIT $2
+OFFSET $3;
+
+-- name: CountUserReceiptsByUsername :one
+SELECT COUNT(*) FROM receipts
+WHERE user_receipt_username= $1;
 
 -- name: ListReceipts :many
 SELECT * FROM receipts
@@ -37,6 +43,14 @@ INSERT INTO receipts(
   $1, $2, $3, $4, $5
 )
 RETURNING *;
+
+-- name: SearchILikeReceipts :many
+SELECT receipt_number FROM receipts
+WHERE LOWER(receipt_number) LIKE LOWER('%' || $1 || '%');
+
+-- name: SearchUserReceipts :many
+SELECT user_receipt_username FROM receipts
+WHERE LOWER(user_receipt_username) LIKE LOWER('%' || $1 || '%');
 
 -- name: CountReceipts :one
 SELECT COUNT(*) FROM receipts;

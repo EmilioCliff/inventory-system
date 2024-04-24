@@ -21,7 +21,7 @@ const (
 
 var transactionID string
 
-func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
+func SendSTK(amount string, userID int64, phoneNumber string) (string, string, error) {
 	config, err := ReadConfig("../..")
 	if err != nil {
 		log.Fatal("Could not log config file: ", err)
@@ -35,7 +35,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 	accessToken, err := generateAccessToken(consumerKey, consumerSecret)
 	if err != nil {
 		fmt.Println("Error generating access token:", err)
-		return transactionID, err
+		return "", transactionID, err
 	}
 
 	newNumber := setPhoneNumber(phoneNumber)
@@ -57,13 +57,13 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
-		return transactionID, err
+		return "", transactionID, err
 	}
 
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", baseURL+lipaEndpoint, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return transactionID, err
+		return "", transactionID, err
 	}
 
 	req.Header.Set("Authorization", "Bearer "+accessToken)
@@ -71,25 +71,28 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return transactionID, err
+		return "", transactionID, err
 	}
 
 	defer resp.Body.Close()
 
 	responseBody, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return transactionID, err
+		return "", transactionID, err
 	}
 
 	var stkResponseBody map[string]interface{}
 	err = json.Unmarshal(responseBody, &stkResponseBody)
 	if err != nil {
-		return transactionID, err
+		return "", transactionID, err
 	}
 
-	log.Println(stkResponseBody)
+	description, ok := stkResponseBody["ResponseDescription"].(string)
+	if !ok {
+		return "failed to parse mpesa metaData", transactionID, nil
+	}
 
-	return transactionID, nil
+	return description, transactionID, nil
 }
 
 func setPhoneNumber(phoneNumber string) string {

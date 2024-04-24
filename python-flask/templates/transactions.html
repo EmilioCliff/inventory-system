@@ -1,32 +1,186 @@
 {% extends 'index.html' %}
 {% block content %}
-<table class="table table-dark table-striped">
+<div class="d-inline-flex justify-content-start align-items-center">
+    <a href="{{ url_for('dashboard') }}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+        </svg>
+    </a>
+    <p style="flex-grow: 1; text-align: center; align-items: center;">Transactions Overview</p>
+</div>
+{% if data_sent.data is none %}
+<p>No Transactions</p>
+{% else %}
+<table class="table table-dark table-striped table-bordered table-sm">
     <thead>
       <tr>
-        <th scope="col">#</th>
-        <th scope="col">First</th>
-        <th scope="col">Last</th>
-        <th scope="col">Handle</th>
+        <!-- <th scope="col">#</th> -->
+        {% if user_id == 1 %}
+        <th class="text-center" scope="col">USERNAME</th>
+        {% else %}
+        <th class="text-center" scope="col">TRANSACTION NUMBER</th>
+        {% endif %}
+        <th class="text-center" scope="col">AMOUNT</th>
+        <th class="text-center" scope="col">STATUS</th>
+        <th class="text-center" scope="col">CREATED AT</th>
+        <th class="text-center" scope="col">ACTION</th>
       </tr>
     </thead>
-    <tbody>
-      <tr>
-        <th scope="row">1</th>
-        <td>Mark</td>
-        <td>Otto</td>
-        <td>@mdo</td>
-      </tr>
-      <tr>
-        <th scope="row">2</th>
-        <td>Jacob</td>
-        <td>Thornton</td>
-        <td>@fat</td>
-      </tr>
-      <tr>
-        <th scope="row">3</th>
-        <td colspan="2">Larry the Bird</td>
-        <td>@twitter</td>
-      </tr>
+    <tbody class="text-center table-group-divider">
+        {% if user_id == 1 %}
+        {% for transaction in data_sent.data %}
+        <tr>
+            <!-- <th scope="row">2</th> -->
+            <td class="text-center p-2">{{ transaction.transaction_owner }}</td>
+            <td class="text-center p-2">{{ transaction.amount }}</td>
+            <td class="text-center p-2">{{ transaction.status }}</td>
+            <td class="text-center p-2">{{ transaction.created_at }}</td>
+            <td class="text-center p-2"><button class="btn-success btn-sm" id="viewTransaction">VIEW</button></td>
+            <div id="overlay_transactionview" class="overlay">
+            <div id="popupFormTransactionView" class="form-container p-1">
+                <button id="transactionViewCloseBtn" class="close-button" data-productid="{{ transaction.transaction_id }}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                      </svg>
+                </button>
+                <h2 style="text-decoration: underline;">Transaction Data</h2>
+                <ul>
+                    <p>{{ transaction.transaction_id }}</p>
+                    {% for detail in transaction.data_sold %}
+                    <li>{{ detail.product }} - {{ detail.quantity }}</li>
+                    {% endfor %}
+                    <p>Total: {{ transaction.amount }}</p>
+                    <p>Status: {{ transaction.status }}</p>
+                    <p>Mpesa Receipt Number: {{ transaction.mpesa_receipt_number }}</p>
+                    <p>Phone Number: {{ transaction.phone_number }}</p>
+                    <p>{{ transaction.result_description }}</p>
+                    <p>{{ transaction.created_at }}</p>
+                </ul>
+            </div>
+        </div>
+        </tr>
+        {% endfor %}
+        {% else %}
+        {% for transaction in data_sent.data %}
+        <tr>
+            <td class="text-center p-2">{{ transaction.transaction_id }}</td>
+            <td class="text-center p-2">{{ transaction.amount }}</td>
+            <td class="text-center p-2">{{ transaction.status }}</td>
+            <td class="text-center p-2">{{ transaction.created_at }}</td>
+            <td class="text-center p-2"><button class="btn-success btn-sm" id="viewUserTransaction">VIEW</button></td>
+            <div id="overlay_transactionuserview" class="overlay">
+                <div id="popupFormUserTransactionView" class="form-container p-1">
+                    <button id="transactionViewUserCloseBtn" class="close-button" data-productid="{{ transaction.transaction_id }}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                          </svg>
+                    </button>
+                    <h2 style="text-decoration: underline;">Transaction Data</h2>
+                    <ul>
+                        <p>{{ transaction.transaction_id }}</p>
+                        {% for detail in transaction.data_sold %}
+                        <li>{{ detail.product }} - {{ detail.quantity }}</li>
+                        {% endfor %}
+                        <p>Total: {{ transaction.amount }}</p>
+                        <p>Status: {{ transaction.status }}</p>
+                        <p>Mpesa Receipt Number: {{ transaction.mpesa_receipt_number }}</p>
+                        <p>Phone Number: {{ transaction.phone_number }}</p>
+                        <p>{{ transaction.result_description }}</p>
+                        <p>{{ transaction.created_at }}</p>
+                    </ul>
+                </div>
+            </div>
+        </tr>
+        {% endfor %}
+        {% endif %}
     </tbody>
+    {% endif %}
   </table>
+  <div class="d-inline-flex justify-content-between w-100">
+    {% if data_sent.metadata.current_page > 1 %}
+    {% if action == 'all_transactions'%}
+    <a class="btn" href="{{ url_for('getAllTransactions', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+    {% elif action == 'successful_transactions' %}
+    <a class="btn" href="{{ url_for('getSuccessfulTransactions', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+    {% elif action == 'failed_transactions' %}
+    <a class="btn" href="{{ url_for('getFailedTransactions', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+    {% elif action == 'user_all_transactions' %}
+    <a class="btn" href="{{ url_for('getUserAllTransactions', user_id=user_id, page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+    {% elif action == 'user_successful_transactions' %}
+    <a class="btn" href="{{ url_for('getUserSuccessfulTransactions', user_id=user_id, page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+    {% else %}
+    <a class="btn" href="{{ url_for('getUserFailedTransactions', user_id=user_id, page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+    {% endif %}
+    {% endif %}
+
+    {% if data_sent.metadata.current_page < data_sent.metadata.total_pages %}
+    {% if action == 'all_transactions' %}
+        <a class="btn" href="{{ url_for('getAllTransactions', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+    {% elif action == 'successful_transactions' %}
+    <a class="btn" href="{{ url_for('getSuccessfulTransactions', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+    {% elif action == 'failed_transactions' %}
+    <a class="btn" href="{{ url_for('getFailedTransactions', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+    {% elif action == 'user_all_transactions' %}
+    <a class="btn" href="{{ url_for('getUserAllTransactions', user_id=user_id, page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+    {% elif action == 'user_successful_transactions' %}
+    <a class="btn" href="{{ url_for('getUserSuccessfulTransactions', user_id=user_id, page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+    {% else %}
+    <a class="btn" href="{{ url_for('getUserFailedTransactions', user_id=user_id, page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+    {% endif %}
+    {% endif %}
+</div>
 {% endblock %}
+<!-- {
+    "transaction_id": "20240423074210",
+    "transaction_owner": 2,
+    "phone_number": "254718750145",
+    "amount": 3700,
+    "mpesa_receipt_number": "NLJ7RT61SV",
+    "data_sold": [
+        {
+            "product": "Test Product 1",
+            "quantity": 2000
+        },
+        {
+            "product": "Test Product 2",
+            "quantity": 1000
+        },
+        {
+            "product": "Test Product 3",
+            "quantity": 500
+        },
+        {
+            "product": "Test Product 4",
+            "quantity": 200
+        }
+    ],
+    "status": true,
+    "created_at": "2024-04-23T07:42:10.753527+03:00"
+} -->
+
+<body>
+    <h1>Book Recommendations</h1>
+    <form hx-post="/submit" hx-swap="beforeend" hx-target="#new-book" class="mb-3">
+        <input type="text" placeholder="Book Title" name="title" class="form-control mb-3" />
+        <input type="text" placeholder="Book Author" name="author" class="form-control mb-3" />
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Book Title</th>
+                <th scope="col">Book Author</th>
+            </tr>
+        </thead>
+        <tbody id="new-book" hx-target="closest tr" hx-swap="outerHTML swap:0.5s"> 
+        {%for book in books%}
+            <tr>
+                <td>{{book.Book.title}}</td>
+                <td>{{book.Author.name}}</td>
+                <td><button class="btn btn-primary" hx-get="/get-edit-form/{{book.Book.book_id}}">Edit Title</button></td>
+                <td><button hx-delete="/delete/{{book.Book.book_id}}" class="btn btn-primary">Delete</button></td>
+            </tr>
+        {%endfor%}
+        </tbody>
+    </table>
+</body>
