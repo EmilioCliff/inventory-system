@@ -481,6 +481,49 @@ func (server *Server) addAdminStock(ctx *gin.Context) {
 	return
 }
 
+type requstStockUri struct {
+	UserID int32 `uri:"id" binding:"required"`
+}
+
+type requestStockQuery struct {
+	Products  []int32 `json:"products" binding:"required"`
+	Quantites []int32 `json:"quantities" binding:"required"`
+}
+
+func (server *Server) requestStock(ctx *gin.Context) {
+	var req requstStockUri
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	var reqQuery requestStockQuery
+	if err := ctx.ShouldBindJSON(&reqQuery); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	reqPayload := worker.RequestStockPayload{
+		UsernameID: req.UserID,
+		Products:   reqQuery.Products,
+		Quantities: reqQuery.Quantites,
+	}
+
+	opts := []asynq.Option{
+		asynq.MaxRetry(10),
+		asynq.ProcessIn(5 * time.Second),
+		asynq.Queue(worker.QueueDefault),
+	}
+
+	if err := server.taskDistributor.DistributeSendRequestToAdmin(ctx, reqPayload, opts...); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, "send_successfully")
+	return
+}
+
 type searchUser struct {
 	SearchWord string `form:"search_word" binding:"required"`
 }

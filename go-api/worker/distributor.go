@@ -42,6 +42,11 @@ type TaskDistributor interface {
 		word string,
 		opts ...asynq.Option,
 	) error
+	DistributeSendRequestToAdmin(
+		ctx context.Context,
+		payload RequestStockPayload,
+		opts ...asynq.Option,
+	) error
 }
 
 type RedisTaskDistributor struct {

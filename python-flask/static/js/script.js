@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const editProductBtns = document.querySelectorAll('.editProduct');
   const addClientStockBtn = document.getElementById('addClientStockBtn');
   const reduceButton = document.getElementById('reduceClientStock');
+  const requestButton = document.querySelectorAll('#requestClientStock');
   const viewReceiptBtns = document.querySelectorAll('#viewReceipt');
   const viewInvoiceBtns = document.querySelectorAll('#viewInvoice');
   const viewTransactionBtns = document.querySelectorAll('#viewTransaction');
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const overlay_productedits = document.querySelectorAll('.overlay');
   const overlay_addClientStock = document.getElementById('addClientStockOverlay');
   const overlay_recudeClientStock = document.getElementById('reduceClientStockOverlay');
+  const overlay_requestClientStock = document.querySelectorAll('#requestClientStockOverlay');
   const overlay_viewReceipts = document.querySelectorAll('#overlay_receiptview');
   const overlay_viewInvoices = document.querySelectorAll('#overlay_invoiceview');
   const overlay_viewTransaction = document.querySelectorAll('#overlay_transactionview');
@@ -24,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const popupFormProductedit = document.querySelectorAll('.form-container')
   const popupFormAddClientStock = document.getElementById('popupformAddClientStock');
   const popupFormReduceClientStock = document.getElementById('popupformreduceClientStock');
+  const popupFormRequestClientStock = document.querySelectorAll('#popupformrequestClientStock');
   const popupFormReceiptView = document.querySelectorAll('#popupFormReceiptView');
   const popupFormInvoiceView = document.querySelectorAll('#popupFormInvoiceView');
   const popupFormTransactionView = document.querySelectorAll('#popupFormTransactionView');
@@ -35,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const productCloseButtonsedit = document.querySelectorAll('#productCloseButtonedit');
   const closeAddClientStockBtn = document.getElementById('close-btnnnn')
   const reduceClientStockCloseBtn = document.getElementById('close-buttonReduce');
+  const requestClientStockCloseBtn = document.querySelectorAll('#close-buttonRequest');
   const receiptViewCloseBtns = document.querySelectorAll('#receiptViewCloseBtn');
   const invoiceViewCloseBtns = document.querySelectorAll('#invoiceViewCloseBtn');
   const transactionViewCloseBtns = document.querySelectorAll('#transactionViewCloseBtn');
@@ -86,7 +90,7 @@ transactionViewUserCloseBtns.forEach((transactionViewUserCloseBtn, index) => {
 });
 });
 
-  viewReceiptBtns.forEach((viewReceiptBtn, index) => {
+viewReceiptBtns.forEach((viewReceiptBtn, index) => {
     viewReceiptBtn.addEventListener('click', function() {
         overlay_viewReceipts[index].style.display = 'block';
         popupFormReceiptView[index].style.display = 'block';
@@ -99,6 +103,39 @@ receiptViewCloseBtns.forEach((receiptViewCloseBtn, index) => {
     popupFormReceiptView[index].style.display = 'none';
   });
 });
+
+requestButton.forEach((requestB, index) => {
+  requestB.addEventListener('click', function() {
+    overlay_requestClientStock[index].style.display = 'block';
+    popupFormRequestClientStock[index].style.display = 'block';
+  });
+});
+
+requestClientStockCloseBtn.forEach((requestCloseB, index) => {
+  requestCloseB.addEventListener('click', function(){
+    // event.preventDefault();
+    overlay_requestClientStock[index].style.visibility = 'hidden';
+    overlay_requestClientStock[index].style.opacity = '0';
+    popupFormRequestClientStock[index].style.visibility = 'hidden';
+    popupFormRequestClientStock[index].style.opacity = '0';
+  });
+});
+// if (requestButton) {
+//   requestButton.addEventListener('click', function() {
+//     overlay_requestClientStock.style.display = 'block';
+//     popupFormRequestClientStock.style.display = 'block';
+//   })
+// }
+
+// if (requestClientStockCloseBtn) {
+//   requestClientStockCloseBtn.addEventListener('click', function(event){
+//     event.preventDefault();
+//     overlay_requestClientStock.style.visibility = 'hidden';
+//     overlay_requestClientStock.style.opacity = '0';
+//     popupFormRequestClientStock.style.visibility = 'hidden';
+//     popupFormRequestClientStock.style.opacity = '0';
+//   })
+// }
 
   if (reduceButton) {
     reduceButton.addEventListener('click', function() {
@@ -116,6 +153,7 @@ receiptViewCloseBtns.forEach((receiptViewCloseBtn, index) => {
       popupFormReduceClientStock.style.opacity = '0';
     })
   }
+
   
   if (closeAddClientStockBtn) {
     closeAddClientStockBtn.addEventListener('click', function(event){

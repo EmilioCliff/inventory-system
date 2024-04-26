@@ -25,6 +25,7 @@ type TaskProcessor interface {
 	ProcessSendSTK(ctx context.Context, task *asynq.Task) error
 	ProcessMpesaCallback(ctx context.Context, task *asynq.Task) error
 	ProcessTakeAndSendDBsnapshots(ctx context.Context, task *asynq.Task) error
+	ProcessSendRequestStock(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
@@ -71,6 +72,7 @@ func (processor *RedisTaskProcessor) Start() error {
 	mux.HandleFunc(SendSTKTask, processor.ProcessSendSTK)
 	mux.HandleFunc(ProcessMpesaCallbackTask, processor.ProcessMpesaCallback)
 	mux.HandleFunc(TakeAndSendDBsnpashotsTask, processor.ProcessTakeAndSendDBsnapshots)
+	mux.HandleFunc(SendRequestStockTask, processor.ProcessSendRequestStock)
 
 	return processor.server.Start(mux)
 }

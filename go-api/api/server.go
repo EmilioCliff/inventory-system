@@ -47,6 +47,7 @@ func (server *Server) setRoutes() {
 	router.Use(loggerMiddleware())
 
 	auth := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	// cors := router.Group("/").Use(CORSmiddleware())
 	auth.GET("/users/products/:id", server.getUserProducts)
 	auth.GET("/products/", server.listProducts)
 	auth.GET("/allproducts/", server.listAllProducts)
@@ -59,6 +60,7 @@ func (server *Server) setRoutes() {
 	router.POST("/reset", server.resetPassword)
 	router.POST("/resetit", server.resetIt)
 	router.Any("/transaction/:id", server.mpesaCallback)
+	auth.GET("/search/all", server.searchAll)
 	auth.GET("/users/:id", server.getUser)
 	auth.PUT("/users/:id/edit", server.editUser)
 	auth.POST("/users/admin/add", server.createUser)
@@ -70,6 +72,7 @@ func (server *Server) setRoutes() {
 	auth.POST("/users/products/sell/:id", server.reduceClientStock)
 	auth.GET("/users/invoices/:id", server.getUserInvoices)
 	auth.GET("/users/receipts/:id", server.getUserReceipts)
+	auth.POST("/users/request_stock/:id", server.requestStock)
 
 	auth.GET("/search/users", server.searchUser)
 	auth.GET("/search/products", server.searchProduct)
@@ -77,7 +80,6 @@ func (server *Server) setRoutes() {
 	auth.GET("/search/invoices", server.searchInvoice)
 	auth.GET("/search/receipts", server.searchReceipt)
 	auth.GET("/search/user/invoices", server.searchUserInvoice)
-	auth.GET("/search/user/receipts", server.searchUserReceipt)
 
 	auth.GET("/invoices/admin", server.listInvoices)
 	auth.GET("/invoices/:id", server.getInvoice)

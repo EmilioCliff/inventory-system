@@ -216,26 +216,26 @@ func (server *Server) searchReceipt(ctx *gin.Context) {
 	return
 }
 
-func (server *Server) searchUserReceipt(ctx *gin.Context) {
-	var req searchReceipt
+// func (server *Server) searchUserReceipt(ctx *gin.Context) {
+// 	var req searchReceipt
 
-	if err := ctx.ShouldBindQuery(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
+// 	if err := ctx.ShouldBindQuery(&req); err != nil {
+// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
 
-	var pgQuery pgtype.Text
-	if err := pgQuery.Scan(req.SearchWord); err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+// 	var pgQuery pgtype.Text
+// 	if err := pgQuery.Scan(req.SearchWord); err != nil {
+// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+// 		return
+// 	}
 
-	rst, err := server.store.SearchUserReceipts(ctx, pgQuery)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+// 	rst, err := server.store.SearchUserReceipts(ctx, pgQuery)
+// 	if err != nil {
+// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+// 		return
+// 	}
 
-	ctx.JSON(http.StatusOK, rst)
-	return
-}
+// 	ctx.JSON(http.StatusOK, rst)
+// 	return
+// }

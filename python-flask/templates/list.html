@@ -25,24 +25,20 @@
     </a>
     <p style="flex-grow: 1; text-align: center; align-items: center;">{{ ct|title}} Overview</p>
 </div>
-{% if ct == 'users' or ct == 'products' %}
+{% if ct == 'users' or ct == 'invoices' or 'receipts' %}
 <nav class="navbar my-2" style="background-color: #DCF2F1;">
     <div class="container-fluid" style="background-color: #DCF2F1;">
         {% if ct == 'users' %}
-        <form class="d-flex flex-grow-1" role="search" action="{{ url_for('search_users') }}" method="POST" autocomplete="off">
+        <form class="d-flex flex-grow-1" id="form" role="search" action="{{ url_for('search_all', search_context='users') }}" method="POST" autocomplete="off">
             <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
-            <input type="hidden" id="search-context" value="users">
         {% elif ct == 'products' %}
-        <form class="d-flex flex-grow-1" role="search" action="{{ url_for('search_products') }}" method="POST" autocomplete="off">
-            <input type="hidden" id="search-context" value="products">
+        <form class="d-flex flex-grow-1" id="form" role="search" action="{{ url_for('search_all', search_context='products') }}" method="POST" autocomplete="off">
             <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
         {% elif ct == 'receipts' %}
-        <form class="d-flex flex-grow-1" role="search" action="{{ url_for('search_receipts') }}" method="POST" autocomplete="off">
+        <form class="d-flex flex-grow-1" id="form" role="search" action="{{ url_for('search_all', search_context='receipts') }}" method="POST" autocomplete="off">
             <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
-            <input type="hidden" id="search-context" value="receipts">
         {% else %}
-        <form class="d-flex flex-grow-1" role="search" action="{{ url_for('search_invoices') }}" method="POST" autocomplete="off">
-            <input type="hidden" id="search-context" value="invoices">
+        <form class="d-flex flex-grow-1" id="form" role="search" action="{{ url_for('search_all', search_context='invoices') }}" method="POST" autocomplete="off">
             <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
         {% endif %}
         <button class="btn btn-outline-primary" type="submit">Search</button>
@@ -147,15 +143,18 @@
         <p style="overflow: hidden; white-space: nowrap;">{{ data.address }}</p>
     </a>
     {% endfor %}
+    {% if context == 'usersSearchPaginantion' %}
+    {% else %}
     <div class="d-inline-flex justify-content-between w-100">
         {% if data_sent.metadata.current_page > 1 %}
-        <a class="btn" href="{{ url_for('list_users', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
-    {% endif %}
+            <a class="btn" href="{{ url_for('list_users', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+        {% endif %}
     
-    {% if data_sent.metadata.current_page < data_sent.metadata.total_pages %}
-        <a class="btn" href="{{ url_for('list_users', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
-    {% endif %}
+        {% if data_sent.metadata.current_page < data_sent.metadata.total_pages %}
+            <a class="btn" href="{{ url_for('list_users', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+        {% endif %}
     </div>
+    {% endif %}
     {% endif %}
     {% elif ct == 'products' %}
     {% if data_sent.data is none %}
@@ -202,15 +201,18 @@
     </div>
     {% endif %}
     {% endfor %}
+    {% if context == 'usersSearchPaginantion' %}
+    {% else %}
     <div class="d-inline-flex justify-content-between w-100">
         {% if data_sent.metadata.current_page > 1 %}
-    <a class="btn" href="{{ url_for('list_products', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
-    {% endif %}
+            <a class="btn" href="{{ url_for('list_products', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
+        {% endif %}
 
-    {% if data_sent.metadata.current_page < data_sent.metadata.total_pages %}
-        <a class="btn" href="{{ url_for('list_products', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
-    {% endif %}
+        {% if data_sent.metadata.current_page < data_sent.metadata.total_pages %}
+            <a class="btn" href="{{ url_for('list_products', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
+        {% endif %}
     </div>
+    {% endif %}
     {% endif %}
     {% elif ct == 'receipts' %}
     {% if data_sent.data is none %}
@@ -251,6 +253,17 @@
         </div>
     </div>
     {% endfor %}
+    {% if context == 'receiptsSearchPaginantion' %}
+    <div class="d-inline-flex justify-content-between w-100">
+        {% if data_sent.metadata.current_page > 1 %}
+        <a class="btn" href="{{ url_for('search_all', page_id=data_sent.metadata.current_page - 1, search_context='receipts', search=data_sent.query_word) }}">Previous</a>
+        {% endif %}
+    
+        {% if data_sent.metadata.current_page < data_sent.metadata.total_pages %}
+            <a class="btn" href="{{ url_for('search_all', page_id=data_sent.metadata.current_page + 1, search_context='receipts', search=data_sent.query_word) }}">Next</a>
+        {% endif %}
+    </div>
+    {% else %}
     <div class="d-inline-flex justify-content-between w-100">
         {% if data_sent.metadata.current_page > 1 %}
         <a class="btn" href="{{ url_for('list_receipts', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
@@ -260,6 +273,7 @@
             <a class="btn" href="{{ url_for('list_receipts', page_id=data_sent.metadata.current_page + 1) }}">Next</a>
         {% endif %}
     </div>
+    {% endif %}
     {% endif %}
     {% else %}
     {% if data_sent.data is none %}
@@ -300,6 +314,17 @@
         </div>
     </div>
     {% endfor %}
+    {% if context == 'invoicesSearchPaginantion' %}
+    <div class="d-inline-flex justify-content-between w-100">
+        {% if data_sent.metadata.current_page > 1 %}
+        <a class="btn" href="{{ url_for('search_all', page_id=data_sent.metadata.current_page - 1, search_context='invoices', search=data_sent.query_word) }}">Previous</a>
+        {% endif %}
+    
+        {% if data_sent.metadata.current_page < data_sent.metadata.total_pages %}
+            <a class="btn" href="{{ url_for('search_all', page_id=data_sent.metadata.current_page + 1, search_context='invoices', search=data_sent.query_word) }}">Next</a>
+        {% endif %}
+    </div>
+    {% else %}
     <div class="d-inline-flex justify-content-between w-100">
         {% if data_sent.metadata.current_page > 1 %}
         <a class="btn" href="{{ url_for('list_invoices', page_id=data_sent.metadata.current_page - 1) }}">Previous</a>
@@ -311,44 +336,5 @@
     </div>
     {% endif %}
     {% endif %}
-</div>
-<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const searchInput = document.getElementById("search");
-        const dropdown = document.getElementById("dropdown");
-        
-        form.addEventListener("input", async function(event) {
-            const query = searchInput.value;            
-            const searchContext = document.getElementById("search-context").value;
-
-            switch (searchContext) {
-                case "users":
-                    endpoint = "/api/users/search";
-                    break;
-                case "products":
-                    endpoint = "/api/products/search";
-                    break;
-                case "receipts":
-                    endpoint = "/api/receipts/search";
-                    break;
-                default:
-                    endpoint = "/api/default/search";
-                    break;
-            }
-
-            const response = await fetch(`${endpoint}?query=${searchValue}`);
-            const data = await response.json();
-
-            dropdown.innerHTML = "";
-
-            data.results.forEach(result => {
-                const option = document.createElement("option");
-                option.text = result;
-                dropdown.add(option);
-            });
-
-            console.log(data);
-        });
-    });
-</script>
+    {% endif %}
 {% endblock %}

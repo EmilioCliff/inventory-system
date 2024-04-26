@@ -81,7 +81,9 @@ func CORSmiddleware() gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		ctx.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		ctx.Writer.Header().Set("Access-Control-Allow-Methods", "GET")
-		ctx.Writer.Header().Set("Access-Control-Allow-Headers", "Authorization")
+		ctx.Writer.Header().Set("Access-Control-Allow-Headers", "*")
+		ctx.Writer.Header().Set("Access-Control-Allow-Credentials", "false")
+		ctx.Writer.Header().Set("Access-Control-Max-Age", "86400")
 
 		if ctx.Request.Method == "OPTIONS" {
 			ctx.AbortWithStatus(204)

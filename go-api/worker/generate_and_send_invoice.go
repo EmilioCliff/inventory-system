@@ -95,6 +95,7 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendInvoice(ctx context.C
 	<h1>Hello %s</h1>
 	<p>We've issued products. Find the invoice attached below</p>
 	<h5>Thank You For Choosing Us.</h5>
+	<a>https://inventory-system-production-378e.up.railway.app/login_user</a>
 	`, invoiceDataPayload.User.Username)
 
 	err = processor.sender.SendMail("Invoice Issued", emailBody, "application/pdf", []string{invoiceDataPayload.User.Email}, nil, nil, []string{"Invoice.pdf"}, [][]byte{invoiceGenerated.InvoicePdf})
