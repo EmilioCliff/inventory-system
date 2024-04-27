@@ -663,6 +663,28 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		return
 	}
 
+	user, err := server.store.GetUser(ctx, uri.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	var jsonUserStock []map[string]interface{}
+	if err := json.Unmarshal(user.Stock, &jsonUserStock); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	// [
+	// 	{"productID":1,"productName":"My TestProduct 1","productQuantity":1},
+	// 	{"productID":2,"productName":"My TestProduct 2","productQuantity":7},
+	// 	{"productID":3,"productName":"My TestProduct 3","productQuantity":1},
+	// 	{"productID":4,"productName":"My TestProduct 4","productQuantity":0}
+	// ]
+
 	var amount int
 	for idx, id := range req.ProductsID {
 		removeProduct, err := server.store.GetProduct(ctx, int64(id))
@@ -675,16 +697,15 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 			return
 		}
 		amount += int(removeProduct.UnitPrice) * int(req.Quantities[idx])
-	}
 
-	user, err := server.store.GetUser(ctx, uri.ID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
+		for _, data := range jsonUserStock {
+			if id == int8(data["productID"].(float64)) {
+				if int8(data["productQuantity"].(float64)) < req.Quantities[idx] {
+					ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("Not enough in stock to sell: Product: %v InStock: %v", data["productName"], data["productQuantity"])))
+					return
+				}
+			}
 		}
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
 	}
 
 	jsonSoldProduct, err := json.Marshal(req)

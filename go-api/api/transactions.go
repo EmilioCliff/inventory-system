@@ -157,7 +157,7 @@ func (server *Server) succussfulTransactions(ctx *gin.Context) {
 		return
 	}
 
-	totalPages := totalTransactions / PageSize
+	totalPages := (totalTransactions - 1) / PageSize
 	if totalPages%PageSize != 0 {
 		totalPages++
 	}
@@ -242,7 +242,7 @@ func (server *Server) failedTransactions(ctx *gin.Context) {
 		return
 	}
 
-	totalPages := totalTransactions / PageSize
+	totalPages := (totalTransactions - 1) / PageSize
 	if totalPages%PageSize != 0 {
 		totalPages++
 	}
@@ -338,7 +338,7 @@ func (server *Server) getUsersTransactions(ctx *gin.Context) {
 		return
 	}
 
-	totalPages := totalTransactions / PageSize
+	totalPages := (totalTransactions - 1) / PageSize
 	if totalPages%PageSize != 0 {
 		totalPages++
 	}
@@ -430,7 +430,7 @@ func (server *Server) getUserSuccessfulTransaction(ctx *gin.Context) {
 		return
 	}
 
-	totalPages := totalTransactions / PageSize
+	totalPages := (totalTransactions - 1) / PageSize
 	if totalPages%PageSize != 0 {
 		totalPages++
 	}
@@ -522,7 +522,7 @@ func (server *Server) getUserFailedTransaction(ctx *gin.Context) {
 		return
 	}
 
-	totalPages := totalTransactions / PageSize
+	totalPages := (totalTransactions - 1) / PageSize
 	if totalPages%PageSize != 0 {
 		totalPages++
 	}

@@ -16,16 +16,16 @@
     </a>
     <p style="flex-grow: 1; text-align: center; align-items: center;">Transactions Overview</p>
 </div>
-{% if user_id == 1 and action == 'all_transactions' or action == 'successful_transactions' or action == 'failed_transactions'%}
+<!-- {% if user_id == 1 and action == 'all_transactions' or action == 'successful_transactions' or action == 'failed_transactions'%}
 <nav class="navbar my-2" style="background-color: #DCF2F1;">
     <div class="container-fluid" style="background-color: #DCF2F1;">
-        <form class="d-flex flex-grow-1" id="form" role="search" action="{{ url_for('search_all', search_context='transactions') }}" method="POST" autocomplete="off">
+    <form class="d-flex flex-grow-1" id="form" role="search" action="{% if request.endpoint == 'getAllTransactions' %}{{ url_for('search_transactions', search_context='search_all_transactions') }}{% elif request.endpoint == 'getSuccessfulTransactions' %}{{ url_for('search_transactions', search_context='search_successful_transactions') }}{% else %}{{ url_for('search_transactions', search_context='search_failed_transactions') }}{% endif %}" method="POST" autocomplete="off">
             <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
             <button class="btn btn-outline-primary" type="submit">Search</button>
       </form>
     </div>
   </nav>
-{% endif %}
+{% endif %} -->
 {% if data_sent.data is none %}
 <p>No Transactions</p>
 {% else %}

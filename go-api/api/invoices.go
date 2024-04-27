@@ -25,7 +25,6 @@ func newInvoiceResponse(invoice db.Invoice) (invoiceResponse, error) {
 		UserInvoiceUsername: invoice.UserInvoiceUsername,
 		InvoiceData:         invoiceData,
 		InvoiceCreateTime:   mytime,
-		InvoicePdf:          invoice.InvoicePdf,
 	}, nil
 }
 
@@ -36,7 +35,6 @@ type invoiceResponse struct {
 	UserInvoiceUsername string                   `json:"user_invoice_username"`
 	InvoiceData         []map[string]interface{} `json:"invoice_data"`
 	InvoiceCreateTime   string                   `json:"invoice_create_time"`
-	InvoicePdf          []byte                   `json:"invoice_pdf"`
 }
 
 type listInvoiceRequest struct {
@@ -181,6 +179,40 @@ func (server *Server) getInvoice(ctx *gin.Context) {
 	}
 
 	rsp, _ := newInvoiceResponse(invoice)
+
+	ctx.JSON(http.StatusOK, rsp)
+	return
+}
+
+type downloadInvoiceRequest struct {
+	ID string `uri:"id" binding:"required"`
+}
+
+type downloadInvoiceResponse struct {
+	InvoicePdf []byte `json:"invoice_pdf"`
+}
+
+func (server *Server) downloadInvoice(ctx *gin.Context) {
+	var req getInvoiceRequest
+
+	if err := ctx.ShouldBindUri(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	invoice, err := server.store.GetInvoice(ctx, req.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := downloadInvoiceResponse{
+		InvoicePdf: invoice.InvoicePdf,
+	}
 
 	ctx.JSON(http.StatusOK, rsp)
 	return

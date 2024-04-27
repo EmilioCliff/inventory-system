@@ -207,6 +207,41 @@ func (q *Queries) ListUser(ctx context.Context, arg ListUserParams) ([]User, err
 	return items, nil
 }
 
+const listUserNoPagination = `-- name: ListUserNoPagination :many
+SELECT user_id, username, password, email, phone_number, address, stock, role, created_at FROM users
+ORDER BY username
+`
+
+func (q *Queries) ListUserNoPagination(ctx context.Context) ([]User, error) {
+	rows, err := q.db.Query(ctx, listUserNoPagination)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []User{}
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Username,
+			&i.Password,
+			&i.Email,
+			&i.PhoneNumber,
+			&i.Address,
+			&i.Stock,
+			&i.Role,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const searchILikeUsers = `-- name: SearchILikeUsers :many
 SELECT username FROM users
 WHERE LOWER(username) LIKE LOWER('%' || $1 || '%')

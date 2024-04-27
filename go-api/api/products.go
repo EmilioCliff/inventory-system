@@ -302,6 +302,12 @@ type listInvoiceSearchResponse struct {
 	Metadata  PaginationMetadata `json:"metadata"`
 }
 
+type searchListTransactions struct {
+	Data      []transactionResponse `json:"data"`
+	Metadata  PaginationMetadata    `json:"metadata"`
+	QueryWord string                `json:"query_word"`
+}
+
 type searchAllRequest struct {
 	SearchQuery   string `form:"search_query" binding:"required"`
 	PageID        int32  `form:"page_id" binding:"required"`
@@ -392,6 +398,134 @@ func (server *Server) searchAll(ctx *gin.Context) {
 				CurrentPage: 1,
 				TotalData:   int32(len(productsFound)),
 			},
+		}
+
+		ctx.JSON(http.StatusOK, rsp)
+
+	case "search_all_transactions", "search_successful_transactions", "search_failed_transactions":
+		var pgQuery pgtype.Text
+		if err := pgQuery.Scan(req.SearchQuery); err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		results, err := server.store.SearchILikeUsers(ctx, pgQuery)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		var totalPages int64
+		var totalTransactions int64
+		var formatedTransaction []transactionResponse
+		for _, result := range results {
+			user, err := server.store.GetUserByUsename(ctx, result)
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+				return
+			}
+
+			var transactions []db.Transaction
+			if context == "search_all_transactions" {
+				transactions, err = server.store.AllUserTransactions(ctx, db.AllUserTransactionsParams{
+					TransactionUserID: int32(user.UserID),
+					Offset:            (req.PageID - 1) * PageSize,
+					Limit:             PageSize,
+				})
+				if err != nil {
+					ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+					return
+				}
+
+				totalTransactions, err = server.store.CountAllUserTransactions(ctx, int32(user.UserID))
+				if err != nil {
+					ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+					return
+				}
+
+			} else if context == "search_successful_transactions" {
+				transactions, err = server.store.SuccessUserTransactions(ctx, db.SuccessUserTransactionsParams{
+					TransactionUserID: int32(user.UserID),
+					Limit:             PageSize,
+					Offset:            (req.PageID - 1) * PageSize,
+				})
+				if err != nil {
+					ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+					return
+				}
+
+				totalTransactions, err = server.store.CountSuccessfulUserTransactions(ctx, int32(user.UserID))
+				if err != nil {
+					ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+					return
+				}
+
+			} else {
+				transactions, err = server.store.FailedUserTransactions(ctx, db.FailedUserTransactionsParams{
+					TransactionUserID: int32(user.UserID),
+					Limit:             PageSize,
+					Offset:            (req.PageID - 1) * PageSize,
+				})
+				if err != nil {
+					ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+					return
+				}
+
+				totalTransactions, err = server.store.CountFailedUserTransactions(ctx, int32(user.UserID))
+				if err != nil {
+					ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+					return
+				}
+
+			}
+
+			totalPages = totalTransactions / PageSize
+			if totalPages%PageSize != 0 {
+				totalPages++
+			}
+
+			for _, transaction := range transactions {
+				var transactionData map[string][]int
+				if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
+					ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+					return
+				}
+
+				var transactionProducts []productDataResponse
+				for idx, productID := range transactionData["products_id"] {
+					product, err := server.store.GetProduct(ctx, int64(productID))
+					if err != nil {
+						if err == sql.ErrNoRows {
+							ctx.JSON(http.StatusNotFound, errorResponse(err))
+							return
+						}
+						ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+						return
+					}
+
+					totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
+					transactionProducts = append(transactionProducts, productDataResponse{
+						Product:  product.ProductName,
+						Quantity: int64(totalAmount),
+					})
+				}
+
+				newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
+				if err != nil {
+					ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+					return
+				}
+				formatedTransaction = append(formatedTransaction, newTransaction)
+			}
+		}
+		rsp := searchListTransactions{
+			Data: formatedTransaction,
+			Metadata: PaginationMetadata{
+				CurrentPage: req.PageID,
+				TotalPages:  int32(totalPages),
+				TotalData:   int32(totalTransactions),
+			},
+			QueryWord: req.SearchQuery,
 		}
 
 		ctx.JSON(http.StatusOK, rsp)

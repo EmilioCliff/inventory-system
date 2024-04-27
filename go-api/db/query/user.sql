@@ -29,6 +29,10 @@ ORDER BY username
 LIMIT $1
 OFFSET $2;
 
+-- name: ListUserNoPagination :many
+SELECT * FROM users
+ORDER BY username;
+
 -- name: DeleteUser :exec
 DELETE FROM users
 WHERE user_id = $1;

@@ -107,3 +107,7 @@ LIMIT 1;
 -- name: SearchILikeTransactions :many
 SELECT transaction_id FROM transactions
 WHERE LOWER(transaction_id) LIKE LOWER('%' || $1 || '%');
+
+-- name: SearchUserTransactions :many
+SELECT transaction_user_id FROM transactions
+WHERE LOWER(transaction_user_id) LIKE LOWER('%' || $1 || '%');

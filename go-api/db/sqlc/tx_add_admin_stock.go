@@ -60,7 +60,17 @@ func (store *Store) AddAdminStockTx(ctx context.Context, arg AddAdminStockParams
 		if err != nil {
 			return err
 		}
-		// arg.Admin.Stock = jsonUserProducts
+
+		if arg.Amount != 0 {
+			_, err = q.CreateEntry(ctx, CreateEntryParams{
+				ProductName:   arg.ProducToAdd.ProductName,
+				ProductPrice:  arg.ProducToAdd.UnitPrice * int32(arg.Amount),
+				QuantityAdded: int32(arg.Amount),
+			})
+			if err != nil {
+				return err
+			}
+		}
 
 		result.Admin, err = q.UpdateUserStock(ctx, UpdateUserStockParams{
 			UserID: arg.Admin.UserID,

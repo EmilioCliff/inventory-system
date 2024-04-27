@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+type Entry struct {
+	EntryID       int64     `json:"entry_id"`
+	ProductName   string    `json:"product_name"`
+	ProductPrice  int32     `json:"product_price"`
+	QuantityAdded int32     `json:"quantity_added"`
+	CreatedAt     time.Time `json:"created_at"`
+}
+
 type Invoice struct {
 	InvoiceID           int64     `json:"invoice_id"`
 	InvoiceNumber       string    `json:"invoice_number"`

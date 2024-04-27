@@ -17,7 +17,7 @@ CREATE TABLE "users" (
 -- Create the products table
 CREATE TABLE "products" (
   "product_id" bigserial PRIMARY KEY,
-  "product_name" varchar NOT NULL,
+  "product_name" varchar NOT NULL UNIQUE,
   "unit_price" integer NOT NULL,
   "packsize" varchar NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT now()

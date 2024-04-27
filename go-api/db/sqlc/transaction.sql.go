@@ -400,6 +400,31 @@ func (q *Queries) SearchILikeTransactions(ctx context.Context, dollar_1 pgtype.T
 	return items, nil
 }
 
+const searchUserTransactions = `-- name: SearchUserTransactions :many
+SELECT transaction_user_id FROM transactions
+WHERE LOWER(transaction_user_id) LIKE LOWER('%' || $1 || '%')
+`
+
+func (q *Queries) SearchUserTransactions(ctx context.Context, dollar_1 pgtype.Text) ([]int32, error) {
+	rows, err := q.db.Query(ctx, searchUserTransactions, dollar_1)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []int32{}
+	for rows.Next() {
+		var transaction_user_id int32
+		if err := rows.Scan(&transaction_user_id); err != nil {
+			return nil, err
+		}
+		items = append(items, transaction_user_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const successTransactions = `-- name: SuccessTransactions :many
 SELECT transaction_id, transaction_user_id, amount, status, data_sold, phone_number, mpesa_receipt_number, result_description, created_at FROM transactions
 WHERE status = true

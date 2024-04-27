@@ -494,6 +494,23 @@ def reduce_client_stock(id):
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     return render_template("reduce_client_stock.html")
 
+@app.route("/search/transactions", methods=['POST', 'GET'])
+def search_transactions():
+    if request.method == "POST":
+        query = request.form.get("search", request.args.get("search", "none"))
+        page_id = request.args.get("page_id", 1)
+        search_context = request.args.get("search_context")
+        params = {"search_query": query, "page_id": page_id, "search_context": search_context}
+        listUsersUrl = f"{BASE_URL}/search/all"
+    rsp = requests.get(url=listUsersUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
+    if rsp.status_code == 500:
+        flash("Please try again server error")
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
+    elif rsp.status_code == 401:
+        flash("Please login")
+        return redirect(url_for('login'))
+    return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action=f"search_{search_context}")
+
 @app.route("/transactions")
 def getAllTransactions():
     params = {'page_id': request.args.get('page_id', 1)}
@@ -545,7 +562,7 @@ def getUserFailedTransactions(user_id):
 
 @app.route("/download/invoice/<string:id_param>", methods=['POST', 'GET'])
 def invoiceDownload(id_param):
-    url = f"{BASE_URL}/invoices/{id_param}"
+    url = f"{BASE_URL}/invoice/download/{id_param}"
     response = requests.get(url=url, headers={"Authorization": f"Bearer {session['token']}"})
     data = response.json()
 
@@ -562,7 +579,7 @@ def invoiceDownload(id_param):
     
 @app.route("/download/receipt/<string:id_param>", methods=['POST', 'GET'])
 def receiptDownload(id_param):
-    url = f"{BASE_URL}/receipts/{id_param}"
+    url = f"{BASE_URL}/receipt/download/{id_param}"
     response = requests.get(url=url, headers={"Authorization": f"Bearer {session['token']}"})
     data = response.json()
 
