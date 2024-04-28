@@ -1,5 +1,7 @@
 # Build stage
 FROM golang:1.22.0-alpine3.19 AS builder
+ARG TZ
+RUN ln -snf /user/share/zoneinfo/$TZ etc/localtime && echo $TZ > /etc/timezone
 WORKDIR /app
 COPY . .
 

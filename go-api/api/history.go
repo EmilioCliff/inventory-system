@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
@@ -45,6 +46,11 @@ type userHistoryResponse struct {
 	Price       int    `json:"price"`
 }
 
+type allUserHistoryResponse struct {
+	Data userHistoryResponse `json:"data"`
+	User string              `json:"user"`
+}
+
 type userDeptResponse struct {
 	ProductName string  `json:"product_name"`
 	Quantity    float64 `json:"quantity"`
@@ -58,6 +64,153 @@ type userDeptResponseName struct {
 
 type userHistoryRequest struct {
 	UserID int32 `uri:"id" binding:"required"`
+}
+
+func (server *Server) getAllUsersReceivedHistory(ctx *gin.Context) {
+	invoices, err := server.store.StoreGetInvoicesByDate(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	aggregatedData := make(map[string]map[string]map[string]int)
+
+	for _, invoice := range invoices {
+		var invoiceData [][]interface{}
+		if err := json.Unmarshal(invoice.InvoiceData, &invoiceData); err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		for _, data := range invoiceData {
+			for idx, item := range data {
+				product := make(map[string]interface{})
+				if idx == 0 {
+					continue
+				}
+
+				itemMap := item.(map[string]interface{})
+				for key, value := range itemMap {
+					product[key] = value
+				}
+
+				productName := product["productName"].(string)
+				quantity := int(product["productQuantity"].(float64))
+				price := int(product["totalBill"].(float64))
+
+				// issuedDate := invoice.IssuedDate.Format("2006-01-02")
+				issuedDate := invoice.IssuedDate.Truncate(10 * time.Minute).Format("2006-01-02 15:04:05")
+
+				// issuedDate := string(invoice.IssuedDate)
+				if _, ok := aggregatedData[issuedDate]; !ok {
+					aggregatedData[issuedDate] = make(map[string]map[string]int)
+				}
+
+				if _, ok := aggregatedData[issuedDate][productName]; !ok {
+					aggregatedData[issuedDate][productName] = make(map[string]int)
+				}
+
+				aggregatedData[issuedDate][productName]["quantity"] += quantity
+				aggregatedData[issuedDate][productName]["totalPrice"] += price
+			}
+		}
+	}
+
+	// log.Println("aggregated data: ", aggregatedData)
+	// var jsonResponse []userHistoryResponse
+	// for issuedDate, productData := range aggregatedData {
+	// 	for productName, data := range productData {
+	// 		response := userHistoryResponse{
+	// 			IssuedDate:  issuedDate,
+	// 			ProductName: productName,
+	// 			Quantity:    data["quantity"],
+	// 			Price:       data["totalPrice"],
+	// 		}
+	// 		jsonResponse = append(jsonResponse, response)
+	// 	}
+	// }
+
+	ctx.JSON(http.StatusOK, aggregatedData)
+	// users, err := server.store.ListUserNoPagination(ctx)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
+
+	// aggregatedData := make(map[string]map[string]map[string]int)
+
+	// for _, invoice := range invoices {
+	// 	var invoiceData [][]interface{}
+	// 	if err := json.Unmarshal(invoice.InvoiceData, &invoiceData); err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	for _, data := range invoiceData {
+	// 		for idx, item := range data {
+	// 			product := make(map[string]interface{})
+	// 			if idx == 0 {
+	// 				continue
+	// 			}
+
+	// 			itemMap := item.(map[string]interface{})
+	// 			for key, value := range itemMap {
+	// 				product[key] = value
+	// 			}
+
+	// 			productName := product["productName"].(string)
+	// 			quantity := int(product["productQuantity"].(float64))
+	// 			price := int(product["totalBill"].(float64))
+
+	// 			issuedDate := invoice.IssuedDate.Format("2006-01-02")
+
+	// 			if _, ok := aggregatedData[issuedDate]; !ok {
+	// 				aggregatedData[issuedDate] = make(map[string]map[string]int)
+	// 			}
+
+	// 			if _, ok := aggregatedData[issuedDate][productName]; !ok {
+	// 				aggregatedData[issuedDate][productName] = make(map[string]int)
+	// 			}
+
+	// 			aggregatedData[issuedDate][productName]["quantity"] += quantity
+	// 			aggregatedData[issuedDate][productName]["totalPrice"] += price
+	// 		}
+	// 	}
+	// }
+
+	// return aggregatedData, nil
+
+	// invoices, err := server.store.StoreGetInvoicesByDate(ctx)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
+
+	// var listInvoice []map[string]interface{}
+	// for _, invoice := range invoices {
+	// 	var jsonInvoice map[string]interface{}
+	// 	if err := json.Unmarshal(invoice.InvoiceData, &jsonInvoice); err != nil {
+
+	// 	}
+
+	// 	listInvoice = append(listInvoice, jsonInvoice)
+	// }
+
+	// aggregatedData, err := structureAllInvoiceProducts(invoices)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
+	// var invoiceData [][]interface{}
+	// for _, invoice := range invoices {
+	// 	var newData []interface{}
+	// 	if err := json.Unmarshal(invoice.InvoiceData, &newData); err != nil {
+	// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+	// 		return
+	// 	}
+
+	// 	invoiceData = append(invoiceData, newData)
+	// }
+	// ctx.JSON(http.StatusOK, listInvoice)
 }
 
 func (server *Server) getUserReceivedHistory(ctx *gin.Context) {
@@ -79,20 +232,21 @@ func (server *Server) getUserReceivedHistory(ctx *gin.Context) {
 		return
 	}
 
-	var jsonResponse []userHistoryResponse
-	for issuedDate, productData := range aggregatedData {
-		for productName, data := range productData {
-			response := userHistoryResponse{
-				IssuedDate:  issuedDate,
-				ProductName: productName,
-				Quantity:    data["quantity"],
-				Price:       data["totalPrice"],
-			}
-			jsonResponse = append(jsonResponse, response)
-		}
-	}
+	// log.Println("aggregated data: ", aggregatedData)
+	// var jsonResponse []userHistoryResponse
+	// for issuedDate, productData := range aggregatedData {
+	// 	for productName, data := range productData {
+	// 		response := userHistoryResponse{
+	// 			IssuedDate:  issuedDate,
+	// 			ProductName: productName,
+	// 			Quantity:    data["quantity"],
+	// 			Price:       data["totalPrice"],
+	// 		}
+	// 		jsonResponse = append(jsonResponse, response)
+	// 	}
+	// }
 
-	ctx.JSON(http.StatusOK, jsonResponse)
+	ctx.JSON(http.StatusOK, aggregatedData)
 }
 
 func (server *Server) getUserSoldHistory(ctx *gin.Context) {
@@ -181,7 +335,7 @@ func (server *Server) getAllUserDebt(ctx *gin.Context) {
 }
 
 func (server *Server) adminHistory(ctx *gin.Context) {
-	entries, err := server.store.StoreGetEntryByName(ctx)
+	entries, err := server.store.StoreGetEntryByDate(ctx)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -215,8 +369,10 @@ func structureInvoiceProducts(invoices []db.StoreGetUserInvoicesByDateRow) (map[
 				quantity := int(product["productQuantity"].(float64))
 				price := int(product["totalBill"].(float64))
 
-				issuedDate := invoice.IssuedDate.Format("2006-01-02")
+				// issuedDate := invoice.IssuedDate.Format("2006-01-02")
+				issuedDate := invoice.IssuedDate.Truncate(10 * time.Minute).Format("2006-01-02 15:04:05")
 
+				// issuedDate := string(invoice.IssuedDate)
 				if _, ok := aggregatedData[issuedDate]; !ok {
 					aggregatedData[issuedDate] = make(map[string]map[string]int)
 				}
@@ -261,6 +417,7 @@ func structureReceiptProducts(receipts []db.StoreGetUserReceiptsByDateRow) (map[
 
 				issuedDate := receipt.IssuedDate.Format("2006-01-02")
 
+				// issuedDate := string(receipt.IssuedDate)
 				if _, ok := aggregatedData[issuedDate]; !ok {
 					aggregatedData[issuedDate] = make(map[string]map[string]int)
 				}
@@ -311,4 +468,49 @@ func structureDebt(user db.User, server *Server, ctx *gin.Context) (userDeptResp
 	}
 
 	return rspName, nil
+}
+
+func structureAllInvoiceProducts(invoices []db.StoreGetInvoicesByDateRow) (map[string]map[string]map[string]int, error) {
+	aggregatedData := make(map[string]map[string]map[string]int)
+
+	for _, invoice := range invoices {
+		var invoiceData [][]interface{}
+		if err := json.Unmarshal(invoice.InvoiceData, &invoiceData); err != nil {
+			return nil, err
+		}
+
+		for _, data := range invoiceData {
+			for idx, item := range data {
+				product := make(map[string]interface{})
+				if idx == 0 {
+					continue
+				}
+
+				itemMap := item.(map[string]interface{})
+				for key, value := range itemMap {
+					product[key] = value
+				}
+
+				productName := product["productName"].(string)
+				quantity := int(product["productQuantity"].(float64))
+				price := int(product["totalBill"].(float64))
+
+				issuedDate := invoice.IssuedDate.Format("2006-01-02")
+
+				// issuedDate := string(invoice.IssuedDate)
+				if _, ok := aggregatedData[issuedDate]; !ok {
+					aggregatedData[issuedDate] = make(map[string]map[string]int)
+				}
+
+				if _, ok := aggregatedData[issuedDate][productName]; !ok {
+					aggregatedData[issuedDate][productName] = make(map[string]int)
+				}
+
+				aggregatedData[issuedDate][productName]["quantity"] += quantity
+				aggregatedData[issuedDate][productName]["totalPrice"] += price
+			}
+		}
+	}
+
+	return aggregatedData, nil
 }

@@ -42,24 +42,22 @@ func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry
 const getEntryByName = `-- name: GetEntryByName :many
 SELECT
     DATE_TRUNC('day', created_at)::timestamp AS issued_date,
-    COUNT(*) AS num_entries,
-    product_name AS product_name,
-    product_price AS product_price,
-    quantity_added AS quantity_added
+    product_name,
+    SUM(product_price) AS total_product_price,
+    SUM(quantity_added) AS total_quantity_added
 FROM
     entries
 GROUP BY
-    issued_date
+    issued_date, product_name
 ORDER BY
-    issued_date
+    issued_date, product_name
 `
 
 type GetEntryByNameRow struct {
-	IssuedDate    pgtype.Timestamp `json:"issued_date"`
-	NumEntries    int64            `json:"num_entries"`
-	ProductName   string           `json:"product_name"`
-	ProductPrice  int32            `json:"product_price"`
-	QuantityAdded int32            `json:"quantity_added"`
+	IssuedDate         pgtype.Timestamp `json:"issued_date"`
+	ProductName        string           `json:"product_name"`
+	TotalProductPrice  int64            `json:"total_product_price"`
+	TotalQuantityAdded int64            `json:"total_quantity_added"`
 }
 
 func (q *Queries) GetEntryByName(ctx context.Context) ([]GetEntryByNameRow, error) {
@@ -73,10 +71,9 @@ func (q *Queries) GetEntryByName(ctx context.Context) ([]GetEntryByNameRow, erro
 		var i GetEntryByNameRow
 		if err := rows.Scan(
 			&i.IssuedDate,
-			&i.NumEntries,
 			&i.ProductName,
-			&i.ProductPrice,
-			&i.QuantityAdded,
+			&i.TotalProductPrice,
+			&i.TotalQuantityAdded,
 		); err != nil {
 			return nil, err
 		}

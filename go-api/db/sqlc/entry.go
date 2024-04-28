@@ -5,36 +5,53 @@ import (
 	"time"
 )
 
-type StoreGetEntryByNameRow struct {
-	IssuedDate    time.Time `json:"issued_date"`
-	NumEntries    int64     `json:"num_entries"`
-	ProductName   string    `json:"product_name"`
-	ProductPrice  int32     `json:"product_price"`
-	QuantityAdded int32     `json:"quantity_added"`
+// type StoreGetEntryByNameRow struct {
+// 	IssuedDate         time.Time `json:"issued_date"`
+// 	ProductName        string    `json:"product_name"`
+// 	TotalProductPrice  int64     `json:"total_product_price"`
+// 	TotalQuantityAdded int64     `json:"total_quantity_added"`
+// }
+
+type EntryByDate struct {
+	IssuedDate   time.Time           `json:"issued_date"`
+	Transactions []GetEntryByNameRow `json:"transactions"`
 }
 
-func (q *Queries) StoreGetEntryByName(ctx context.Context) ([]StoreGetEntryByNameRow, error) {
+func (q *Queries) StoreGetEntryByDate(ctx context.Context) ([]EntryByDate, error) {
 	rows, err := q.db.Query(ctx, getEntryByName)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []StoreGetEntryByNameRow{}
+
+	// Map to store transactions by date
+	dateMap := make(map[time.Time][]GetEntryByNameRow)
+
 	for rows.Next() {
-		var i StoreGetEntryByNameRow
+		var entry GetEntryByNameRow
 		if err := rows.Scan(
-			&i.IssuedDate,
-			&i.NumEntries,
-			&i.ProductName,
-			&i.ProductPrice,
-			&i.QuantityAdded,
+			&entry.IssuedDate,
+			&entry.ProductName,
+			&entry.TotalProductPrice,
+			&entry.TotalQuantityAdded,
 		); err != nil {
 			return nil, err
 		}
-		items = append(items, i)
+
+		if _, ok := dateMap[entry.IssuedDate.Time]; !ok {
+			dateMap[entry.IssuedDate.Time] = []GetEntryByNameRow{entry}
+		} else {
+			dateMap[entry.IssuedDate.Time] = append(dateMap[entry.IssuedDate.Time], entry)
+		}
 	}
-	if err := rows.Err(); err != nil {
-		return nil, err
+
+	var result []EntryByDate
+	for date, transactions := range dateMap {
+		result = append(result, EntryByDate{
+			IssuedDate:   date,
+			Transactions: transactions,
+		})
 	}
-	return items, nil
+
+	return result, nil
 }

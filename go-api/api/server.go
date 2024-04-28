@@ -98,6 +98,7 @@ func (server *Server) setRoutes() {
 	auth.GET("/user/transactions/:id", server.getUserTransaction)
 
 	auth.GET("/history/received/:id", server.getUserReceivedHistory)
+	auth.GET("/history/all_received", server.getAllUsersReceivedHistory)
 	auth.GET("/history/sold/:id", server.getUserSoldHistory)
 	auth.GET("/history/debt/:id", server.getUserDebt)
 	auth.GET("/history/all_debt", server.getAllUserDebt)

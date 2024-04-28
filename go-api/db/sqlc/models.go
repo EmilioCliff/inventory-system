@@ -6,14 +6,16 @@ package db
 
 import (
 	"time"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Entry struct {
-	EntryID       int64     `json:"entry_id"`
-	ProductName   string    `json:"product_name"`
-	ProductPrice  int32     `json:"product_price"`
-	QuantityAdded int32     `json:"quantity_added"`
-	CreatedAt     time.Time `json:"created_at"`
+	EntryID       int64              `json:"entry_id"`
+	ProductName   string             `json:"product_name"`
+	ProductPrice  int32              `json:"product_price"`
+	QuantityAdded int32              `json:"quantity_added"`
+	CreatedAt     pgtype.Timestamptz `json:"created_at"`
 }
 
 type Invoice struct {

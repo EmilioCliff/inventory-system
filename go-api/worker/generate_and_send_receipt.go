@@ -92,17 +92,17 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendReceipt(ctx context.C
 		ReceiptPdf:          pdfBytes,
 	})
 
-	emailBody := fmt.Sprintf(`
+	_ = fmt.Sprintf(`
 	<h1>Hello %s</h1>
 	<p>We've received your payment. Find the receipt attached below</p>
 	<h5>Thank You For Choosing Us.</h5>
 	<a>https://inventory-system-production-378e.up.railway.app/login_user</a>
 	`, receiptDataPayload.User.Username)
 
-	err = processor.sender.SendMail("Receipt Issued", emailBody, "application/pdf", []string{receiptDataPayload.User.Email}, nil, nil, []string{"Receipt.pdf"}, [][]byte{receiptGenerated.ReceiptPdf})
-	if err != nil {
-		return fmt.Errorf("Failed to send email: %w", err)
-	}
+	// err = processor.sender.SendMail("Receipt Issued", emailBody, "application/pdf", []string{receiptDataPayload.User.Email}, nil, nil, []string{"Receipt.pdf"}, [][]byte{receiptGenerated.ReceiptPdf})
+	// if err != nil {
+	// 	return fmt.Errorf("Failed to send email: %w", err)
+	// }
 
 	log.Info().
 		Str("type", task.Type()).

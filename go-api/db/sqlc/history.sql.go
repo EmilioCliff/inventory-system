@@ -7,13 +7,14 @@ package db
 
 import (
 	"context"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const getInvoicesByDate = `-- name: GetInvoicesByDate :many
 SELECT 
-    DATE_TRUNC('day', created_at)::timestamp AS issued_date, 
+    -- DATE_TRUNC('day', created_at)::timestamp AS issued_date,
+    DATE_TRUNC('minute', created_at) +
+    INTERVAL '10 minutes' *
+    FLOOR(EXTRACT(MINUTE FROM created_at) / 10) AS issued_date,  
     COUNT(*) AS num_invoices, 
     JSON_AGG(invoice_data) AS invoice_data
 FROM 
@@ -25,9 +26,9 @@ ORDER BY
 `
 
 type GetInvoicesByDateRow struct {
-	IssuedDate  pgtype.Timestamp `json:"issued_date"`
-	NumInvoices int64            `json:"num_invoices"`
-	InvoiceData []byte           `json:"invoice_data"`
+	IssuedDate  int32  `json:"issued_date"`
+	NumInvoices int64  `json:"num_invoices"`
+	InvoiceData []byte `json:"invoice_data"`
 }
 
 func (q *Queries) GetInvoicesByDate(ctx context.Context) ([]GetInvoicesByDateRow, error) {
@@ -52,7 +53,10 @@ func (q *Queries) GetInvoicesByDate(ctx context.Context) ([]GetInvoicesByDateRow
 
 const getReceiptsByDate = `-- name: GetReceiptsByDate :many
 SELECT
-    DATE_TRUNC('day', created_at)::timestamp AS issued_date,
+    -- DATE_TRUNC('day', created_at)::timestamp AS issued_date,
+    DATE_TRUNC('minute', created_at) +
+    INTERVAL '10 minutes' *
+    FLOOR(EXTRACT(MINUTE FROM created_at) / 10) AS issued_date, 
     COUNT(*) AS num_receipts,
     JSON_AGG(receipt_data) AS receipt_data
 FROM 
@@ -64,9 +68,9 @@ ORDER BY
 `
 
 type GetReceiptsByDateRow struct {
-	IssuedDate  pgtype.Timestamp `json:"issued_date"`
-	NumReceipts int64            `json:"num_receipts"`
-	ReceiptData []byte           `json:"receipt_data"`
+	IssuedDate  int32  `json:"issued_date"`
+	NumReceipts int64  `json:"num_receipts"`
+	ReceiptData []byte `json:"receipt_data"`
 }
 
 func (q *Queries) GetReceiptsByDate(ctx context.Context) ([]GetReceiptsByDateRow, error) {
@@ -91,7 +95,10 @@ func (q *Queries) GetReceiptsByDate(ctx context.Context) ([]GetReceiptsByDateRow
 
 const getUserInvoicesByDate = `-- name: GetUserInvoicesByDate :many
 SELECT 
-    DATE_TRUNC('day', created_at)::timestamp AS issued_date, 
+    -- DATE_TRUNC('day', created_at)::timestamp AS issued_date, 
+    DATE_TRUNC('minute', created_at) +
+    INTERVAL '10 minutes' *
+    FLOOR(EXTRACT(MINUTE FROM created_at) / 10) AS issued_date, 
     COUNT(*) AS num_invoices, 
     JSON_AGG(invoice_data) AS invoice_data
 FROM 
@@ -105,9 +112,9 @@ ORDER BY
 `
 
 type GetUserInvoicesByDateRow struct {
-	IssuedDate  pgtype.Timestamp `json:"issued_date"`
-	NumInvoices int64            `json:"num_invoices"`
-	InvoiceData []byte           `json:"invoice_data"`
+	IssuedDate  int32  `json:"issued_date"`
+	NumInvoices int64  `json:"num_invoices"`
+	InvoiceData []byte `json:"invoice_data"`
 }
 
 func (q *Queries) GetUserInvoicesByDate(ctx context.Context, userInvoiceID int32) ([]GetUserInvoicesByDateRow, error) {
@@ -132,7 +139,10 @@ func (q *Queries) GetUserInvoicesByDate(ctx context.Context, userInvoiceID int32
 
 const getUserReceiptsByDate = `-- name: GetUserReceiptsByDate :many
 SELECT
-    DATE_TRUNC('day', created_at)::timestamp AS issued_date,
+    -- DATE_TRUNC('day', created_at)::timestamp AS issued_date,
+    DATE_TRUNC('minute', created_at) +
+    INTERVAL '10 minutes' *
+    FLOOR(EXTRACT(MINUTE FROM created_at) / 10) AS issued_date, 
     COUNT(*) AS num_receipts,
     JSON_AGG(receipt_data) AS receipt_data
 FROM 
@@ -146,9 +156,9 @@ ORDER BY
 `
 
 type GetUserReceiptsByDateRow struct {
-	IssuedDate  pgtype.Timestamp `json:"issued_date"`
-	NumReceipts int64            `json:"num_receipts"`
-	ReceiptData []byte           `json:"receipt_data"`
+	IssuedDate  int32  `json:"issued_date"`
+	NumReceipts int64  `json:"num_receipts"`
+	ReceiptData []byte `json:"receipt_data"`
 }
 
 func (q *Queries) GetUserReceiptsByDate(ctx context.Context, userReceiptID int32) ([]GetUserReceiptsByDateRow, error) {
