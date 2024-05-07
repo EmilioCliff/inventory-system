@@ -454,7 +454,7 @@ def add_client_stock(id):
         products_id = request.form.getlist('products_id')
         products_list = [int(product_id) for product_id in products_id if product_id]
         quantities = request.form.getlist('quantities')
-        quantities_list = [int(quantity) for quantity in quantities if product_id]
+        quantities_list = [int(quantity) for quantity in quantities if quantity]
 
         print(quantities_list, products_list, id)
         data = {
@@ -666,7 +666,6 @@ def user_debt_history(user_id):
         else:    
             url = f"{BASE_URL}/history/debt/{user_id}"
         rsp = requests.get(url, headers={"Authorization": f"Bearer {session['token']}"})
-        print(rsp.json())
         if rsp.status_code == 200:
             if session['user_id'] == 1:
                 data = rsp.json()
@@ -674,8 +673,9 @@ def user_debt_history(user_id):
                 user_total_price = {}
                 for entry in data:
                     user = entry['user']
-                    total_price = sum(product['price'] for product in entry['Data'])
-                    total_quantity = sum(product['quantity'] for product in entry['Data'])
+                    if entry['Data'] is not None:
+                        total_price = sum(product['price'] for product in entry['Data'])
+                        total_quantity = sum(product['quantity'] for product in entry['Data'])
                     user_total_price[user] = total_price
                     user_total_quantity[user] = total_quantity
                 return render_template('admin-history.html', user_id=session['user_id'], price=user_total_price, quantity=user_total_quantity, data_sent=rsp.json(), action="debt")
