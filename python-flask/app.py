@@ -233,11 +233,11 @@ def get_user(id):
     # product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"}) 
     if id != 1:
         rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
-        rspAdmin = requests.get(url=f"{BASE_URL}/users/1", headers={"Authorization": f"Bearer {session['token']}"})
     else:
+        rspAdmin = requests.get(url=f"{BASE_URL}/users/1", headers={"Authorization": f"Bearer {session['token']}"})
         rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 200:
-        if id == 1:
+        if id != 1:
             return render_template('user.html', user=rsp.json(), admin="none", user_id=session['user_id'], ct="user")
         else:
             return render_template('user.html', user=rsp.json(), admin=rspAdmin.json(), user_id=session['user_id'], ct="user")
