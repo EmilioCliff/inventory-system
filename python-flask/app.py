@@ -379,7 +379,7 @@ def list_products():
     rsp = requests.get(url=listProductsUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     all_products = ""
     if session['user_id'] != 1:
-        all_products = request.get(url=f"{BASE_URL}/allproducts/", headers={"Authorization": f"Bearer {session['token']}"})
+        all_products = requests.get(url=f"{BASE_URL}/allproducts/", headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])

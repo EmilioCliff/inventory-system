@@ -55,7 +55,7 @@
             <td class="text-center p-2">{{ transaction.status }}</td>
             <td class="text-center p-2">{{ transaction.created_at }}</td>
             <td class="text-center p-2"><button class="btn-success btn-sm" id="viewTransaction">VIEW</button></td>
-            <div id="overlay_transactionview" class="overlay" style="position: absolute;">
+            <div id="overlay_transactionview" class="overlay">
             <div id="popupFormTransactionView" class="form-container p-1">
                 <button id="transactionViewCloseBtn" class="close-button" data-productid="{{ transaction.transaction_id }}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
@@ -87,7 +87,7 @@
             <td class="text-center p-2">{{ transaction.status }}</td>
             <td class="text-center p-2">{{ transaction.created_at }}</td>
             <td class="text-center p-2"><button class="btn-success btn-sm" id="viewUserTransaction">VIEW</button></td>
-            <div id="overlay_transactionuserview" class="overlay" style="position: absolute;">
+            <div id="overlay_transactionuserview" class="overlay">
                 <div id="popupFormUserTransactionView" class="form-container p-1">
                     <button id="transactionViewUserCloseBtn" class="close-button" data-productid="{{ transaction.transaction_id }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
