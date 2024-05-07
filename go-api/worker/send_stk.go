@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
+	"github.com/EmilioCliff/inventory-system/db/utils"
 	"github.com/hibiken/asynq"
 	"github.com/rs/zerolog/log"
 )
@@ -48,13 +48,11 @@ func (processor *RedisTaskProcessor) ProcessSendSTK(ctx context.Context, task *a
 		return fmt.Errorf("Failed to unmarshal send_stk payload: %w", err)
 	}
 
-	// rescDescription, trasactionID, err := utils.SendSTK(sendSTKPayload.Amount, sendSTKPayload.User.UserID, sendSTKPayload.User.PhoneNumber)
-	// if err != nil {
-	// 	return fmt.Errorf("Failed to send stk : %w", err)
-	// }
+	rescDescription, trasactionID, err := utils.SendSTK(sendSTKPayload.Amount, sendSTKPayload.User.UserID, sendSTKPayload.User.PhoneNumber)
+	if err != nil {
+		return fmt.Errorf("Failed to send stk : %w", err)
+	}
 
-	rescDescription := "The service request has been accepted successfully."
-	trasactionID := time.Now().Format("20060102150405")
 	intAmount, err := strconv.ParseInt(sendSTKPayload.Amount, 0, 64)
 	if err != nil {
 		return fmt.Errorf("Failed to parse amount to int64: %w", err)

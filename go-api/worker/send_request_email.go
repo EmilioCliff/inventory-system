@@ -78,7 +78,7 @@ func (processor *RedisTaskProcessor) ProcessSendRequestStock(ctx context.Context
 	%s
 `, user.Username, generateHTMLTable(dataToSend))
 
-	err = processor.sender.SendMail("Request Stock", emailBody, "application/json", []string{user.Email}, nil, nil, nil, nil)
+	err = processor.sender.SendMail("Request Stock", emailBody, "application/json", []string{"clifftest33@gmail.com"}, nil, nil, nil, nil)
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}

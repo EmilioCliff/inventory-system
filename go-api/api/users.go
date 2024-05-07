@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+
 	"log"
 	"net/http"
 	"strconv"
@@ -122,6 +123,11 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
+	if err := server.redis.Del(ctx, ListUsers+fmt.Sprintf(":1")).Err(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	resp, _ := newUserResponse(createUserResult.User)
 
 	ctx.JSON(http.StatusOK, resp)
@@ -222,6 +228,12 @@ func (server *Server) getUser(ctx *gin.Context) {
 
 	resp, _ := newUserResponse(user)
 
+	err = server.setCache(ctx, GetUser+fmt.Sprintf("%v", req.ID), resp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, resp)
 	return
 }
@@ -248,6 +260,11 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 		return
 	}
 
+	if err := server.redis.Del(ctx, ListUsers+fmt.Sprintf(":1")).Err(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{"Message": "User Deleted Succesfully"})
 	return
 }
@@ -265,6 +282,14 @@ func (server *Server) listUsers(ctx *gin.Context) {
 	var req listUserRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cacheKey := fmt.Sprintf("%v:%v", ctx.Request.URL.Path, req.PageID)
+	cacheData, err := server.redis.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		// log.Info().Msgf("cached hit for: %v", cacheKey)
+		ctx.Data(http.StatusOK, "application/json", cacheData)
 		return
 	}
 
@@ -301,6 +326,12 @@ func (server *Server) listUsers(ctx *gin.Context) {
 			TotalPages:  int32(totalPages),
 			TotalData:   int32(totalUser),
 		},
+	}
+
+	err = server.setCache(ctx, cacheKey, rsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
 	ctx.JSON(http.StatusOK, rsp)
@@ -371,6 +402,11 @@ func (server *Server) editUser(ctx *gin.Context) {
 		return
 	}
 
+	if err := server.redis.Del(ctx, GetUser+fmt.Sprintf("%v", uri.ID)).Err(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, gin.H{"success": "user update succeful"})
 	return
 }
@@ -415,6 +451,11 @@ func (server *Server) manageUser(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if err := server.redis.Del(ctx, GetUser+fmt.Sprintf("%v", uri.ID)).Err(); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -473,6 +514,11 @@ func (server *Server) addAdminStock(ctx *gin.Context) {
 	})
 
 	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if err := server.redis.Del(ctx, GetUser+fmt.Sprintf("%v", uri.ID)).Err(); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -636,6 +682,11 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 		return
 	}
 
+	if err := server.redis.Del(ctx, GetUser+fmt.Sprintf("%v", uri.ID)).Err(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, updatedData)
 	return
 }
@@ -678,12 +729,6 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	// [
-	// 	{"productID":1,"productName":"My TestProduct 1","productQuantity":1},
-	// 	{"productID":2,"productName":"My TestProduct 2","productQuantity":7},
-	// 	{"productID":3,"productName":"My TestProduct 3","productQuantity":1},
-	// 	{"productID":4,"productName":"My TestProduct 4","productQuantity":0}
-	// ]
 
 	var amount int
 	for idx, id := range req.ProductsID {
@@ -726,6 +771,11 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 	}
 	err = server.taskDistributor.DistributeSendSTK(ctx, *sendSTKPayload, opts...)
 	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if err := server.redis.Del(ctx, GetUser+fmt.Sprintf("%v", uri.ID)).Err(); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

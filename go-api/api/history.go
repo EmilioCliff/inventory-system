@@ -3,6 +3,7 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
@@ -10,8 +11,6 @@ import (
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
 )
-
-// func
 
 func (server *Server) testGroup(ctx *gin.Context) {
 	invoices, err := server.store.StoreGetUserInvoicesByDate(ctx, 2)
@@ -34,6 +33,12 @@ func (server *Server) testGroup(ctx *gin.Context) {
 			"invoice_data": invoiceData,
 		}
 		jsonResponse = append(jsonResponse, response)
+	}
+
+	err = server.setCache(ctx, TestGroup, jsonResponse)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
 	ctx.JSON(http.StatusOK, jsonResponse)
@@ -116,7 +121,6 @@ func (server *Server) getAllUsersReceivedHistory(ctx *gin.Context) {
 		}
 	}
 
-	// log.Println("aggregated data: ", aggregatedData)
 	// var jsonResponse []userHistoryResponse
 	// for issuedDate, productData := range aggregatedData {
 	// 	for productName, data := range productData {
@@ -129,88 +133,13 @@ func (server *Server) getAllUsersReceivedHistory(ctx *gin.Context) {
 	// 		jsonResponse = append(jsonResponse, response)
 	// 	}
 	// }
+	err = server.setCache(ctx, AllUserReceiverHistory, aggregatedData)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
 	ctx.JSON(http.StatusOK, aggregatedData)
-	// users, err := server.store.ListUserNoPagination(ctx)
-	// if err != nil {
-	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-	// 	return
-	// }
-
-	// aggregatedData := make(map[string]map[string]map[string]int)
-
-	// for _, invoice := range invoices {
-	// 	var invoiceData [][]interface{}
-	// 	if err := json.Unmarshal(invoice.InvoiceData, &invoiceData); err != nil {
-	// 		return nil, err
-	// 	}
-
-	// 	for _, data := range invoiceData {
-	// 		for idx, item := range data {
-	// 			product := make(map[string]interface{})
-	// 			if idx == 0 {
-	// 				continue
-	// 			}
-
-	// 			itemMap := item.(map[string]interface{})
-	// 			for key, value := range itemMap {
-	// 				product[key] = value
-	// 			}
-
-	// 			productName := product["productName"].(string)
-	// 			quantity := int(product["productQuantity"].(float64))
-	// 			price := int(product["totalBill"].(float64))
-
-	// 			issuedDate := invoice.IssuedDate.Format("2006-01-02")
-
-	// 			if _, ok := aggregatedData[issuedDate]; !ok {
-	// 				aggregatedData[issuedDate] = make(map[string]map[string]int)
-	// 			}
-
-	// 			if _, ok := aggregatedData[issuedDate][productName]; !ok {
-	// 				aggregatedData[issuedDate][productName] = make(map[string]int)
-	// 			}
-
-	// 			aggregatedData[issuedDate][productName]["quantity"] += quantity
-	// 			aggregatedData[issuedDate][productName]["totalPrice"] += price
-	// 		}
-	// 	}
-	// }
-
-	// return aggregatedData, nil
-
-	// invoices, err := server.store.StoreGetInvoicesByDate(ctx)
-	// if err != nil {
-	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-	// 	return
-	// }
-
-	// var listInvoice []map[string]interface{}
-	// for _, invoice := range invoices {
-	// 	var jsonInvoice map[string]interface{}
-	// 	if err := json.Unmarshal(invoice.InvoiceData, &jsonInvoice); err != nil {
-
-	// 	}
-
-	// 	listInvoice = append(listInvoice, jsonInvoice)
-	// }
-
-	// aggregatedData, err := structureAllInvoiceProducts(invoices)
-	// if err != nil {
-	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-	// 	return
-	// }
-	// var invoiceData [][]interface{}
-	// for _, invoice := range invoices {
-	// 	var newData []interface{}
-	// 	if err := json.Unmarshal(invoice.InvoiceData, &newData); err != nil {
-	// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-	// 		return
-	// 	}
-
-	// 	invoiceData = append(invoiceData, newData)
-	// }
-	// ctx.JSON(http.StatusOK, listInvoice)
 }
 
 func (server *Server) getUserReceivedHistory(ctx *gin.Context) {
@@ -245,6 +174,11 @@ func (server *Server) getUserReceivedHistory(ctx *gin.Context) {
 	// 		jsonResponse = append(jsonResponse, response)
 	// 	}
 	// }
+	err = server.setCache(ctx, UserReceivedHistory+fmt.Sprintf("%v", req.UserID), aggregatedData)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
 	ctx.JSON(http.StatusOK, aggregatedData)
 }
@@ -268,20 +202,25 @@ func (server *Server) getUserSoldHistory(ctx *gin.Context) {
 		return
 	}
 
-	var jsonResponse []userHistoryResponse
-	for issuedDate, productData := range aggregatedData {
-		for productName, data := range productData {
-			response := userHistoryResponse{
-				IssuedDate:  issuedDate,
-				ProductName: productName,
-				Quantity:    data["quantity"],
-				Price:       data["totalPrice"],
-			}
-			jsonResponse = append(jsonResponse, response)
-		}
+	// var jsonResponse []userHistoryResponse
+	// for issuedDate, productData := range aggregatedData {
+	// 	for productName, data := range productData {
+	// 		response := userHistoryResponse{
+	// 			IssuedDate:  issuedDate,
+	// 			ProductName: productName,
+	// 			Quantity:    data["quantity"],
+	// 			Price:       data["totalPrice"],
+	// 		}
+	// 		jsonResponse = append(jsonResponse, response)
+	// 	}
+	// }
+	err = server.setCache(ctx, UserSoldHistory+fmt.Sprintf("%v", req.UserID), aggregatedData)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
-	ctx.JSON(http.StatusOK, jsonResponse)
+	ctx.JSON(http.StatusOK, aggregatedData)
 }
 
 func (server *Server) getUserDebt(ctx *gin.Context) {
@@ -302,6 +241,12 @@ func (server *Server) getUserDebt(ctx *gin.Context) {
 	}
 
 	rsp, err := structureDebt(user, server, ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = server.setCache(ctx, UserDebt+fmt.Sprintf("%v", req.UserID), rsp)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -331,11 +276,23 @@ func (server *Server) getAllUserDebt(ctx *gin.Context) {
 	}
 	log.Println(rsp)
 
+	err = server.setCache(ctx, AllUserDebt, rsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, rsp)
 }
 
 func (server *Server) adminHistory(ctx *gin.Context) {
 	entries, err := server.store.StoreGetEntryByDate(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = server.setCache(ctx, AdminHistory, entries)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -415,8 +372,9 @@ func structureReceiptProducts(receipts []db.StoreGetUserReceiptsByDateRow) (map[
 				quantity := int(product["productQuantity"].(float64))
 				price := int(product["totalBill"].(float64))
 
-				issuedDate := receipt.IssuedDate.Format("2006-01-02")
+				// issuedDate := receipt.IssuedDate.Format("2006-01-02")
 
+				issuedDate := receipt.IssuedDate.Truncate(10 * time.Minute).Format("2006-01-02 15:04:05")
 				// issuedDate := string(receipt.IssuedDate)
 				if _, ok := aggregatedData[issuedDate]; !ok {
 					aggregatedData[issuedDate] = make(map[string]map[string]int)

@@ -11,7 +11,7 @@ FROM
 GROUP BY 
     issued_date
 ORDER BY 
-    issued_date;
+    issued_date DESC;
 
 -- name: GetUserInvoicesByDate :many
 SELECT 
@@ -28,7 +28,7 @@ WHERE
 GROUP BY 
     issued_date
 ORDER BY 
-    issued_date;
+    issued_date DESC;
 
 -- name: GetReceiptsByDate :many
 SELECT
@@ -43,7 +43,7 @@ FROM
 GROUP BY
     issued_date
 ORDER BY
-    issued_date;
+    issued_date DESC;
 
 -- name: GetUserReceiptsByDate :many
 SELECT
@@ -60,4 +60,4 @@ WHERE
 GROUP BY
     issued_date
 ORDER BY
-    issued_date;
+    issued_date DESC;

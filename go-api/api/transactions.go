@@ -3,11 +3,13 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/rs/zerolog/log"
 )
 
 type listTransactions struct {
@@ -54,6 +56,14 @@ func (server *Server) allTransactions(ctx *gin.Context) {
 	var req listAllTransactionsRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cacheKey := fmt.Sprintf("%v:%v", ctx.Request.URL.Path, req.PageID)
+	cacheData, err := server.redis.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Info().Msgf("cached hit for: %v", cacheKey)
+		ctx.Data(http.StatusOK, "application/json", cacheData)
 		return
 	}
 
@@ -131,6 +141,12 @@ func (server *Server) allTransactions(ctx *gin.Context) {
 		},
 	}
 
+	err = server.setCache(ctx, cacheKey, rsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, rsp)
 	return
 }
@@ -139,6 +155,14 @@ func (server *Server) succussfulTransactions(ctx *gin.Context) {
 	var req listAllTransactionsRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cacheKey := fmt.Sprintf("%v:%v", ctx.Request.URL.Path, req.PageID)
+	cacheData, err := server.redis.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Info().Msgf("cached hit for: %v", cacheKey)
+		ctx.Data(http.StatusOK, "application/json", cacheData)
 		return
 	}
 
@@ -216,6 +240,12 @@ func (server *Server) succussfulTransactions(ctx *gin.Context) {
 		},
 	}
 
+	err = server.setCache(ctx, cacheKey, rsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, rsp)
 	return
 }
@@ -224,6 +254,14 @@ func (server *Server) failedTransactions(ctx *gin.Context) {
 	var req listAllTransactionsRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cacheKey := fmt.Sprintf("%v:%v", ctx.Request.URL.Path, req.PageID)
+	cacheData, err := server.redis.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Info().Msgf("cached hit for: %v", cacheKey)
+		ctx.Data(http.StatusOK, "application/json", cacheData)
 		return
 	}
 
@@ -301,6 +339,12 @@ func (server *Server) failedTransactions(ctx *gin.Context) {
 		},
 	}
 
+	err = server.setCache(ctx, cacheKey, rsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, rsp)
 	return
 }
@@ -319,6 +363,14 @@ func (server *Server) getUsersTransactions(ctx *gin.Context) {
 	var req listAllTransactionsRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cacheKey := fmt.Sprintf("%v/%v:%v", ctx.Request.URL.Path, uri.UserID, req.PageID)
+	cacheData, err := server.redis.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Info().Msgf("cached hit for: %v", cacheKey)
+		ctx.Data(http.StatusOK, "application/json", cacheData)
 		return
 	}
 
@@ -397,6 +449,12 @@ func (server *Server) getUsersTransactions(ctx *gin.Context) {
 		},
 	}
 
+	err = server.setCache(ctx, cacheKey, rsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, rsp)
 	return
 }
@@ -411,6 +469,14 @@ func (server *Server) getUserSuccessfulTransaction(ctx *gin.Context) {
 	var req listAllTransactionsRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cacheKey := fmt.Sprintf("%v/%v:%v", ctx.Request.URL.Path, uri.UserID, req.PageID)
+	cacheData, err := server.redis.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Info().Msgf("cached hit for: %v", cacheKey)
+		ctx.Data(http.StatusOK, "application/json", cacheData)
 		return
 	}
 
@@ -489,6 +555,12 @@ func (server *Server) getUserSuccessfulTransaction(ctx *gin.Context) {
 		},
 	}
 
+	err = server.setCache(ctx, cacheKey, rsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, rsp)
 	return
 }
@@ -503,6 +575,14 @@ func (server *Server) getUserFailedTransaction(ctx *gin.Context) {
 	var req listAllTransactionsRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cacheKey := fmt.Sprintf("%v/%v:%v", ctx.Request.URL.Path, uri.UserID, req.PageID)
+	cacheData, err := server.redis.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Info().Msgf("cached hit for: %v", cacheKey)
+		ctx.Data(http.StatusOK, "application/json", cacheData)
 		return
 	}
 
@@ -581,6 +661,12 @@ func (server *Server) getUserFailedTransaction(ctx *gin.Context) {
 		},
 	}
 
+	err = server.setCache(ctx, cacheKey, rsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, rsp)
 	return
 }
@@ -638,6 +724,12 @@ func (server *Server) getUserTransaction(ctx *gin.Context) {
 	}
 
 	rsp, err := newTransactionResponse(transactions, transactionProducts, user.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = server.setCache(ctx, UserTransactions+fmt.Sprintf("%v", req.TrasanctionID), rsp)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return

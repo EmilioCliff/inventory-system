@@ -3,46 +3,48 @@ document.addEventListener('DOMContentLoaded', function() {
   const newProductBtn = document.getElementById('newProduct');
   const editProductBtns = document.querySelectorAll('.editProduct');
   const addClientStockBtn = document.getElementById('addClientStockBtn');
-  const reduceButton = document.getElementById('reduceClientStock');
-  const requestButton = document.querySelectorAll('#requestClientStock');
+  const reduceButton = document.querySelector('#reduceClientStock');
   const viewReceiptBtns = document.querySelectorAll('#viewReceipt');
   const viewInvoiceBtns = document.querySelectorAll('#viewInvoice');
   const viewTransactionBtns = document.querySelectorAll('#viewTransaction');
   const viewUserTransactionBtns = document.querySelectorAll('#viewUserTransaction');
+  const viewDebtBtns = document.querySelectorAll('#viewDebt');
 
   const overlay_create = document.getElementById('overlay_create');
   const overlay_product = document.getElementById('overlay_product');
   const overlay_productedits = document.querySelectorAll('.overlay');
   const overlay_addClientStock = document.getElementById('addClientStockOverlay');
   const overlay_recudeClientStock = document.getElementById('reduceClientStockOverlay');
-  const overlay_requestClientStock = document.querySelectorAll('#requestClientStockOverlay');
+  const overlay_requestClientStock = document.getElementById('requestClientStockOverlay');
   const overlay_viewReceipts = document.querySelectorAll('#overlay_receiptview');
   const overlay_viewInvoices = document.querySelectorAll('#overlay_invoiceview');
   const overlay_viewTransaction = document.querySelectorAll('#overlay_transactionview');
   const overlay_viewUserTransaction = document.querySelectorAll('#overlay_transactionuserview');
+  const overlay_viewDebt = document.querySelectorAll('#overlay_debtview');
 
   const popupFormCreate = document.getElementById('popupFormCreate');
   const popupFormProduct = document.getElementById('popupFormProduct');
   const popupFormProductedit = document.querySelectorAll('.form-container')
   const popupFormAddClientStock = document.getElementById('popupformAddClientStock');
   const popupFormReduceClientStock = document.getElementById('popupformreduceClientStock');
-  const popupFormRequestClientStock = document.querySelectorAll('#popupformrequestClientStock');
+  const popupFormRequestClientStock = document.getElementById('popupformrequestClientStock');
   const popupFormReceiptView = document.querySelectorAll('#popupFormReceiptView');
   const popupFormInvoiceView = document.querySelectorAll('#popupFormInvoiceView');
   const popupFormTransactionView = document.querySelectorAll('#popupFormTransactionView');
   const popupFormUserTransactionView = document.querySelectorAll('#popupFormUserTransactionView');
+  const popupFormDebtView = document.querySelectorAll('#popupFormDebtView');
 
   const deleteButton = document.querySelector('.delete-button');
   const overlay_delete = document.getElementById('overlay_delete');
   const deleteFormContainer = document.querySelector('.delete-form-container');
   const productCloseButtonsedit = document.querySelectorAll('#productCloseButtonedit');
   const closeAddClientStockBtn = document.getElementById('close-btnnnn')
-  const reduceClientStockCloseBtn = document.getElementById('close-buttonReduce');
-  const requestClientStockCloseBtn = document.querySelectorAll('#close-buttonRequest');
+  const reduceClientStockCloseBtn = document.querySelector('#close-buttonReduce');
   const receiptViewCloseBtns = document.querySelectorAll('#receiptViewCloseBtn');
   const invoiceViewCloseBtns = document.querySelectorAll('#invoiceViewCloseBtn');
   const transactionViewCloseBtns = document.querySelectorAll('#transactionViewCloseBtn');
   const transactionViewUserCloseBtns = document.querySelectorAll('#transactionViewUserCloseBtn');
+  const debtViewUserCloseBtns = document.querySelectorAll('#debtViewUserCloseBtn');
 
   const editButton = document.getElementById('editButton');
   const overlay_edit = document.getElementById('overlayedit');
@@ -76,6 +78,7 @@ transactionViewCloseBtns.forEach((transactionViewCloseBtn, index) => {
 });
 });
 
+
 viewUserTransactionBtns.forEach((viewUserTransactionBtn, index) => {
   viewUserTransactionBtn.addEventListener('click', function() {
       overlay_viewUserTransaction[index].style.display = 'block';
@@ -87,6 +90,20 @@ transactionViewUserCloseBtns.forEach((transactionViewUserCloseBtn, index) => {
   transactionViewUserCloseBtn.addEventListener('click', function() {
     overlay_viewUserTransaction[index].style.display = 'none';
     popupFormUserTransactionView[index].style.display = 'none';
+});
+});
+
+viewDebtBtns.forEach((viewDebtBtn, index) => {
+  viewDebtBtn.addEventListener('click', function() {
+      overlay_viewDebt[index].style.display = 'block';
+      popupFormDebtView[index].style.display = 'block';
+  });
+});
+
+debtViewUserCloseBtns.forEach((debtViewUserCloseBtn, index) => {
+  debtViewUserCloseBtn.addEventListener('click', function() {
+    overlay_viewDebt[index].style.display = 'none';
+    popupFormDebtView[index].style.display = 'none';
 });
 });
 
@@ -104,38 +121,43 @@ receiptViewCloseBtns.forEach((receiptViewCloseBtn, index) => {
   });
 });
 
-requestButton.forEach((requestB, index) => {
-  requestB.addEventListener('click', function() {
-    overlay_requestClientStock[index].style.display = 'block';
-    popupFormRequestClientStock[index].style.display = 'block';
-  });
-});
+// Selecting request button and close button
+const requestButton = document.getElementById('requestClientStockkk');
+const requestClientStockCloseBtn = document.getElementById('close-buttonRequest');
 
-requestClientStockCloseBtn.forEach((requestCloseB, index) => {
-  requestCloseB.addEventListener('click', function(){
-    // event.preventDefault();
-    overlay_requestClientStock[index].style.visibility = 'hidden';
-    overlay_requestClientStock[index].style.opacity = '0';
-    popupFormRequestClientStock[index].style.visibility = 'hidden';
-    popupFormRequestClientStock[index].style.opacity = '0';
-  });
-});
+// Adding event listener to request button
 // if (requestButton) {
-//   requestButton.addEventListener('click', function() {
-//     overlay_requestClientStock.style.display = 'block';
-//     popupFormRequestClientStock.style.display = 'block';
-//   })
+//     requestButton.addEventListener('click', function() {
+//         console.log("request button clicked");
+//         overlay_requestClientStock.style.display = 'block';
+//         popupFormRequestClientStock.style.display = 'block';
+//     });
 // }
 
+// // Adding event listener to close button
 // if (requestClientStockCloseBtn) {
-//   requestClientStockCloseBtn.addEventListener('click', function(event){
-//     event.preventDefault();
-//     overlay_requestClientStock.style.visibility = 'hidden';
-//     overlay_requestClientStock.style.opacity = '0';
-//     popupFormRequestClientStock.style.visibility = 'hidden';
-//     popupFormRequestClientStock.style.opacity = '0';
-//   })
+//     requestClientStockCloseBtn.addEventListener('click', function(){
+//         console.log("close button clicked");
+//         overlay_requestClientStock.style.display = 'none';
+//         popupFormRequestClientStock.style.display = 'none';
+//     });
 // }
+// });
+if (requestButton) {
+  requestButton.addEventListener('click', function() {
+    overlay_requestClientStock.style.display = 'block';
+    popupFormRequestClientStock.style.display = 'block';
+  })
+}
+
+if (requestClientStockCloseBtn) {
+  requestClientStockCloseBtn.addEventListener('click', function(){
+    overlay_requestClientStock.style.visibility = 'hidden';
+    overlay_requestClientStock.style.opacity = '0';
+    popupFormRequestClientStock.style.visibility = 'hidden';
+    popupFormRequestClientStock.style.opacity = '0';
+  })
+}
 
   if (reduceButton) {
     reduceButton.addEventListener('click', function() {

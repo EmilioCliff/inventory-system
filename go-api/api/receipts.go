@@ -3,11 +3,13 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/rs/zerolog/log"
 )
 
 func newReceiptResponse(receipt db.Receipt) (receiptResponse, error) {
@@ -54,6 +56,14 @@ func (server *Server) listReceipts(ctx *gin.Context) {
 		return
 	}
 
+	cacheKey := fmt.Sprintf("%v:%v", ctx.Request.URL.Path, req.PageID)
+	cacheData, err := server.redis.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Info().Msgf("cached hit for: %v", cacheKey)
+		ctx.Data(http.StatusOK, "application/json", cacheData)
+		return
+	}
+
 	receipts, err := server.store.ListReceipts(ctx, db.ListReceiptsParams{
 		Limit:  PageSize,
 		Offset: (req.PageID - 1) * PageSize,
@@ -90,6 +100,12 @@ func (server *Server) listReceipts(ctx *gin.Context) {
 		},
 	}
 
+	err = server.setCache(ctx, cacheKey, newRsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, newRsp)
 	return
 }
@@ -117,6 +133,14 @@ func (server *Server) getUserReceipts(ctx *gin.Context) {
 	var page getUserReceiptsFormRequest
 	if err := ctx.ShouldBindQuery(&page); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cacheKey := fmt.Sprintf("%v/%v:%v", ctx.Request.URL.Path, req.ID, page.PageID)
+	cacheData, err := server.redis.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Info().Msgf("cached hit for: %v", cacheKey)
+		ctx.Data(http.StatusOK, "application/json", cacheData)
 		return
 	}
 
@@ -154,6 +178,12 @@ func (server *Server) getUserReceipts(ctx *gin.Context) {
 		},
 	}
 
+	err = server.setCache(ctx, cacheKey, newRsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, newRsp)
 	return
 }
@@ -181,6 +211,12 @@ func (server *Server) getReceipt(ctx *gin.Context) {
 	}
 
 	rsp, _ := newReceiptResponse(receipt)
+
+	err = server.setCache(ctx, GetReceipt+fmt.Sprintf("%v", req.ID), rsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 
 	ctx.JSON(http.StatusOK, rsp)
 	return

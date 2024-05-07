@@ -11,9 +11,9 @@ HEADERS={
     "Authorization": "Bearer "
 }
 
-BASE_URL="http://0.0.0.0:8080" # When Testing
+# BASE_URL="http://0.0.0.0:8080" # When Testing
 # BASE_URL = "http://inventory-system-api-1:8080" When using Docker Compose
-# BASE_URL = "http://secretive-window.railway.internal:8080"  #  Production
+BASE_URL = "http://secretive-window.railway.internal:8080"  #  Production
    
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "32e234353t4rffbfbfgxx"
@@ -199,7 +199,7 @@ def resetit():
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     return render_template("forgot_password.html", token=token)
     
-@app.route('/login_user', methods=['GET', 'POST'])
+@app.route('/', methods=['GET', 'POST'])
 def login():
     if request.method == "POST":
         userLoginRequest = {
@@ -230,11 +230,11 @@ def login():
 def get_user(id):
     # print(session['user_id'])
     getUserUri = f"{BASE_URL}/users/{id}"
-    product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"}) 
+    # product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"}) 
     rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
     rspAdmin = requests.get(url=f"{BASE_URL}/users/1", headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 200:
-        return render_template('user.html', user=rsp.json(), admin=rspAdmin.json(), user_id=session['user_id'], ct="user", products=product_reponse.json()) # unmarshal JSON and read data
+        return render_template('user.html', user=rsp.json(), admin=rspAdmin.json(), user_id=session['user_id'], ct="user") # unmarshal JSON and read data
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
@@ -278,7 +278,7 @@ def get_receipt(id):
     else:
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
 
-@app.route('/')
+@app.route('/dashboard')
 def dashboard():
     getUserUri = f"{BASE_URL}/users/{session['user_id']}"
     rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
@@ -387,11 +387,11 @@ def list_products():
 def get_user_invoices(id):
     user = requests.get(url=f"{BASE_URL}/users/{id}", headers={"Authorization": f"Bearer {session['token']}"})
     params = {'page_id': request.args.get('page_id', 1)}
+    # product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"})
     getUserInvoiceUrl = f"{BASE_URL}/users/invoices/{id}"
-    product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"})
     rsp = requests.get(url=getUserInvoiceUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 200:
-        return render_template("user.html", invoice=rsp.json(), user=user.json(), admin={"stock": None}, user_id=session['user_id'], ct='invoice', products=product_reponse.json())
+        return render_template("user.html", invoice=rsp.json(), user=user.json(), admin={"stock": None}, user_id=session['user_id'], ct='invoice')
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
@@ -403,10 +403,10 @@ def get_user_receipts(id):
     user = requests.get(url=f"{BASE_URL}/users/{id}", headers={"Authorization": f"Bearer {session['token']}"})
     params = {'page_id': request.args.get('page_id', 1)}
     getUserReceiptsUrl = f"{BASE_URL}/users/receipts/{id}"
-    product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"})
+    # product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"})
     rsp = requests.get(url=getUserReceiptsUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 200:
-        return render_template("user.html", receipt=rsp.json(), user=user.json(), admin={"stock": None}, user_id=session['user_id'], ct='receipt', products=product_reponse.json())
+        return render_template("user.html", receipt=rsp.json(), user=user.json(), admin={"stock": None}, user_id=session['user_id'], ct='receipt')
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
@@ -537,21 +537,21 @@ def getUserAllTransactions(user_id):
     params = {'page_id': request.args.get('page_id', 1)}
     url = f"{BASE_URL}/user/transactions/all/{user_id}"
     rsp = requests.get(url, params=params, headers={"Authorization": f"Bearer {session['token']}"})
-    return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action="user_all_transactions")
+    return render_template("transactions.html", data_sent=rsp.json(), user_id=user_id, action="user_all_transactions")
 
 @app.route("/transactions/users/successful/<int:user_id>")
 def getUserSuccessfulTransactions(user_id):
     params = {'page_id': request.args.get('page_id', 1)}
     url = f"{BASE_URL}/user/transactions/successful/{user_id}"
     rsp = requests.get(url, params=params, headers={"Authorization": f"Bearer {session['token']}"})
-    return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action="user_successful_transactions")
+    return render_template("transactions.html", data_sent=rsp.json(), user_id=user_id, action="user_successful_transactions")
 
 @app.route("/transactions/users/failed/<int:user_id>")
 def getUserFailedTransactions(user_id):
     params = {'page_id': request.args.get('page_id', 1)}
     url = f"{BASE_URL}/user/transactions/failed/{user_id}"
     rsp = requests.get(url, params=params, headers={"Authorization": f"Bearer {session['token']}"})
-    return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action="user_failed_transactions")
+    return render_template("transactions.html", data_sent=rsp.json(), user_id=user_id, action="user_failed_transactions")
 
 # @app.route("/transactions/<transaction_number>", methods=['POST', 'GET'])
 # def getTransaction(transaction_number):
@@ -609,13 +609,76 @@ def request_stock(id):
             rsp = requests.post(url, json=data, headers={"Authorization": f"Bearer {session['token']}"})
 
             if rsp.status_code == 200:
-                return redirect(url_for('get_user', id=id))  # Redirect to some success page
+                return redirect(url_for('list_products'))  # Redirect to some success page
             elif rsp.status_code == 401:
                 flash("Please login")
                 return redirect(url_for('login'))
             else:
                 return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
         return render_template("failed.html")
+
+@app.route("/history/received/<int:user_id>")
+def user_received_history(user_id):
+        if user_id == 1:
+            url = f"{BASE_URL}/history/admin"
+        else:
+            url = f"{BASE_URL}/history/received/{user_id}"
+        rsp = requests.get(url, headers={"Authorization": f"Bearer {session['token']}"})
+        print(rsp.json())
+        if rsp.status_code == 200:
+            if session['user_id'] == 1:
+                return render_template('admin-history.html', user_id=session['user_id'], data_sent=rsp.json(), action="received")
+            return render_template('history.html', user_id=session['user_id'], data_sent=rsp.json(), action="received")
+        elif rsp.status_code == 401:
+            flash("Please login")
+            return redirect(url_for('login'))
+        else:
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
+        
+@app.route("/history/sold/<int:user_id>")
+def user_sold_history(user_id):
+        if user_id == 1:
+            url = f"{BASE_URL}/history/all_received"
+        else:
+            url = f"{BASE_URL}/history/sold/{user_id}"
+        rsp = requests.get(url, headers={"Authorization": f"Bearer {session['token']}"})
+        print(rsp.json())
+        if rsp.status_code == 200:
+            if session['user_id'] == 1:
+                return render_template('admin-history.html', user_id=session['user_id'], data_sent=rsp.json(), action="sold")
+            return render_template('history.html', user_id=session['user_id'], data_sent=rsp.json(), action="sold")
+        elif rsp.status_code == 401:
+            flash("Please login")
+            return redirect(url_for('login'))
+        else:
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
+        
+@app.route("/history/debt/<int:user_id>")
+def user_debt_history(user_id):
+        if user_id == 1:
+            url = f"{BASE_URL}/history/all_debt"
+        else:    
+            url = f"{BASE_URL}/history/debt/{user_id}"
+        rsp = requests.get(url, headers={"Authorization": f"Bearer {session['token']}"})
+        print(rsp.json())
+        if rsp.status_code == 200:
+            if session['user_id'] == 1:
+                data = rsp.json()
+                user_total_quantity = {}
+                user_total_price = {}
+                for entry in data:
+                    user = entry['user']
+                    total_price = sum(product['price'] for product in entry['Data'])
+                    total_quantity = sum(product['quantity'] for product in entry['Data'])
+                    user_total_price[user] = total_price
+                    user_total_quantity[user] = total_quantity
+                return render_template('admin-history.html', user_id=session['user_id'], price=user_total_price, quantity=user_total_quantity, data_sent=rsp.json(), action="debt")
+            return render_template('history.html', user_id=session['user_id'], data_sent=rsp.json(), action="debt")
+        elif rsp.status_code == 401:
+            flash("Please login")
+            return redirect(url_for('login'))
+        else:
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
 
 # @app.route('/users/products/sell/<int:id>', methods=['POST', 'GET'])
 # def reduce_client_stock(id):

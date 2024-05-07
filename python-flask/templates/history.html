@@ -1,0 +1,56 @@
+{% extends 'index.html' %}
+{% block content %}
+    <div class="d-inline-flex justify-content-start align-items-center">
+        <a href="{{ url_for('dashboard') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+            </svg>
+        </a>
+        <p style="flex-grow: 1; text-align: center; align-items: center;">{{ action }} Overview</p>
+    </div>
+{% if data_sent.data is none %}
+    <p>No History</p>
+{% else %}
+<div class="table-responsive-md">
+    <table class="table table-bordered table-sm">
+    <thead class="table-dark">
+        <tr>
+            {% if action == 'sold' or action == 'received' %}
+                <th class="text-center" scope="col">PRODUCT</th>
+                <th class="text-center" scope="col">QUANTITY</th>
+                <th class="text-center" scope="col">PRICE<//th>
+                <th class="text-center" scope="col">DATE</th>
+            {% else %}
+                <th class="text-center" scope="col">PRODUCT</th>
+                <th class="text-center" scope="col">QUANTITY</th>
+                <th class="text-center" scope="col">PRICE</th>
+            {% endif %}
+        </tr>
+    </thead>
+    <tbody class="text-center table-group-divider">
+        {% if action == 'debt' %}
+
+                            {% for details in data_sent.Data %}
+                            <tr>
+                                <td class="text-start p-2">{{ details.product_name }}</td>
+                                <td class="text-center p-2">{{ details.quantity }}</td>
+                                <td class="text-center p-2">{{ details.price }}</td>
+                            </tr>
+                            {% endfor %}
+        {% else %}
+            {% for key, details in data_sent.items() %}
+                {% for keyNew, details in details.items() %}
+                    <tr>
+                        <td class="text-start p-2">{{ keyNew}}</td>
+                        <td class="text-center p-2">{{ details.quantity }}</td>
+                        <td class="text-center p-2">{{ details.totalPrice }}</td>
+                        <td class="text-center p-2">{{ key }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+        {% endif %}
+    </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

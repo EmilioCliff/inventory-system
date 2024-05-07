@@ -29,14 +29,15 @@
 {% if data_sent.data is none %}
 <p>No Transactions</p>
 {% else %}
+<div class="table-responsive-sm">
 <table class="table table-bordered table-sm">
-    <thead class="table-dark text-center">
+    <thead class="table-dark">
       <tr>
         <!-- <th scope="col">#</th> -->
         {% if user_id == 1 %}
-        <th class="text-center" scope="col">USERNAME</th>
+        <th class="text-start" scope="col">USERNAME</th>
         {% else %}
-        <th class="text-center" scope="col">TRANSACTION NUMBER</th>
+        <th class="text-start" scope="col">TRANSACTION NUMBER</th>
         {% endif %}
         <th class="text-center" scope="col">AMOUNT</th>
         <th class="text-center" scope="col">STATUS</th>
@@ -49,7 +50,7 @@
         {% for transaction in data_sent.data %}
         <tr>
             <!-- <th scope="row">2</th> -->
-            <td class="text-center p-2">{{ transaction.transaction_owner }}</td>
+            <td class="text-start p-2">{{ transaction.transaction_owner }}</td>
             <td class="text-center p-2">{{ transaction.amount }}</td>
             <td class="text-center p-2">{{ transaction.status }}</td>
             <td class="text-center p-2">{{ transaction.created_at }}</td>
@@ -81,7 +82,7 @@
         {% else %}
         {% for transaction in data_sent.data %}
         <tr>
-            <td class="text-center p-2">{{ transaction.transaction_id }}</td>
+            <td class="text-start p-2">{{ transaction.transaction_id }}</td>
             <td class="text-center p-2">{{ transaction.amount }}</td>
             <td class="text-center p-2">{{ transaction.status }}</td>
             <td class="text-center p-2">{{ transaction.created_at }}</td>
@@ -114,6 +115,7 @@
     </tbody>
     {% endif %}
   </table>
+</div>
   <div class="d-inline-flex justify-content-between w-100">
     {% if data_sent.metadata.current_page > 1 %}
     {% if action == 'all_transactions'%}

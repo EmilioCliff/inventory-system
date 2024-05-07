@@ -13,8 +13,8 @@ import (
 )
 
 const (
-	baseURL      = "https://sandbox.safaricom.co.ke"
-	sandbox      = "174379"
+	baseURL      = "https://api.safaricom.co.ke"
+	sandbox      = "7169782"
 	lipaEndpoint = "/mpesa/stkpush/v1/processrequest"
 	callbackPath = "/callback"
 )
@@ -51,8 +51,8 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 		"PartyB":            sandbox,
 		"PhoneNumber":       newNumber,
 		"CallBackURL":       callback,
-		"AccountReference":  "Cliff Test",
-		"TransactionDesc":   "Pay Bob For Test",
+		"AccountReference":  "Kokomed Supplies",
+		"TransactionDesc":   "Pay Sold Products",
 	}
 
 	jsonBody, err := json.Marshal(requestBody)
@@ -106,6 +106,7 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	authString := consumerKey + ":" + consumerSecret
 	encodedAuthString := base64.StdEncoding.EncodeToString([]byte(authString))
 
+	// url := baseURL + "/oauth/v1/generate?grant_type=client_credentials"
 	url := baseURL + "/oauth/v1/generate?grant_type=client_credentials"
 
 	req, err := http.NewRequest("GET", url, nil)

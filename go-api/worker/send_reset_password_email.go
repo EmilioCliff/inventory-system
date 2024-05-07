@@ -62,13 +62,13 @@ func (processor *RedisTaskProcessor) ProcessSendResetPasswordEmail(ctx context.C
 		return fmt.Errorf("Internal error: %w", err)
 	}
 
-	resetPasswordLink := fmt.Sprintf("%v/resetit?token=%v", processor.config.PUBLIC_URL, accessToken) // URL + TOKEN for passwordreset
+	resetPasswordLink := fmt.Sprintf("%v/resetit?token=%v", processor.config.PUBLIC_URL, accessToken)
 	emailBody := fmt.Sprintf(`
 	<h1>Hello %s</h1>
 	<p>We received a request to reset your password. Click the link below to reset it:</p>
 	<a href="%s" style="display:inline-block; padding:10px 20px; background-color:#007BFF; color:#fff; text-decoration:none; border-radius:5px;">Reset Password</a>
 	<h5>The link is valid for 10 Minutes</h5>
-	<a>https://inventory-system-production-378e.up.railway.app/login_user</a>
+	<a>https://inventory-system-production-378e.up.railway.app/</a>
 `, user.Username, resetPasswordLink)
 
 	err = processor.sender.SendMail("Reset Password", emailBody, "application/pdf", []string{user.Email}, nil, nil, nil, nil)

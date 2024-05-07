@@ -9,6 +9,7 @@ import (
 
 	"github.com/EmilioCliff/inventory-system/token"
 	"github.com/gin-gonic/gin"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -74,6 +75,22 @@ func loggerMiddleware() gin.HandlerFunc {
 			Int("status_code", c.Writer.Status()).
 			Str("status_text", http.StatusText(c.Writer.Status())).
 			Dur("duration", duration)
+	}
+}
+
+func redisCacheMiddleware(redis *redis.Client) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		requestPath := ctx.Request.URL.Path
+
+		cacheData, err := redis.Get(ctx, requestPath).Bytes()
+		if err == nil {
+			log.Info().
+				Msgf("cached hit for: %v", requestPath)
+			ctx.Data(http.StatusOK, "application/json", cacheData)
+			return
+		}
+
+		ctx.Next()
 	}
 }
 

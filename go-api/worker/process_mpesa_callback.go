@@ -52,19 +52,19 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 		return fmt.Errorf("failed to unmarshal mpesa callback payload: %w", err)
 	}
 
+	transaction, err := processor.store.GetTransaction(ctx, mpesaCallbackPayload.TransactionID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return fmt.Errorf("transaction not found: %w", err)
+		}
+		return fmt.Errorf("internal server error: %w", err)
+	}
+
 	intUserID, _ := strconv.Atoi(mpesaCallbackPayload.UserID)
 	user, err := processor.store.GetUserForUpdate(ctx, int64(intUserID))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("user not found: %w", err)
-		}
-		return fmt.Errorf("internal server error: %w", err)
-	}
-
-	transaction, err := processor.store.GetTransaction(ctx, mpesaCallbackPayload.TransactionID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return fmt.Errorf("transaction not found: %w", err)
 		}
 		return fmt.Errorf("internal server error: %w", err)
 	}
@@ -117,6 +117,34 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 	if !ok {
 		return fmt.Errorf("failed to parse mpesa metaData items: metaData items field is not a map[string]interface{}")
 	}
+	// {
+	// 	"Body": {
+	// 	   "stkCallback": {
+	// 		  "MerchantRequestID": "29115-34620561-1",
+	// 		  "CheckoutRequestID": "ws_CO_191220191020363925",
+	// 		  "ResultCode": 0,
+	// 		  "ResultDesc": "The service request is processed successfully.",
+	// 		  "CallbackMetadata": {
+	// 			 "Item": [{
+	// 				"Name": "Amount",
+	// 				"Value": 1.00
+	// 			 },
+	// 			 {
+	// 				"Name": "MpesaReceiptNumber",
+	// 				"Value": "NLJ7RT61SV"
+	// 			 },
+	// 			 {
+	// 				"Name": "TransactionDate",
+	// 				"Value": 20191219102115
+	// 			 },
+	// 			 {
+	// 				"Name": "PhoneNumber",
+	// 				"Value": 254708374149
+	// 			 }]
+	// 		  }
+	// 	   }
+	// 	}
+	//  }
 
 	var phoneNumber, mpesaReceiptNumber string
 	for _, item := range items {

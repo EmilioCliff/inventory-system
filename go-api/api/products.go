@@ -3,12 +3,14 @@ package api
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
 	_ "github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rs/zerolog/log"
 )
 
 type createProductRequest struct {
@@ -57,6 +59,11 @@ func (server *Server) createProduct(ctx *gin.Context) {
 		return
 	}
 
+	if err := server.redis.Del(ctx, ListProducts+fmt.Sprintf(":1")).Err(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, product)
 	return
 }
@@ -78,6 +85,11 @@ func (server *Server) deleteProduct(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if err := server.redis.Del(ctx, ListProducts+fmt.Sprintf(":1")).Err(); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -128,6 +140,11 @@ func (server *Server) editProduct(ctx *gin.Context) {
 		return
 	}
 
+	if err := server.redis.Del(ctx, ListProducts+fmt.Sprintf(":1")).Err(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, edited_product.ProductEdited)
 	return
 }
@@ -145,6 +162,14 @@ func (server *Server) listProducts(ctx *gin.Context) {
 	var req listProductsRequest
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	cacheKey := fmt.Sprintf("%v:%v", ctx.Request.URL.Path, req.PageID)
+	cacheData, err := server.redis.Get(ctx, cacheKey).Bytes()
+	if err == nil {
+		log.Info().Msgf("cached hit for: %v", cacheKey)
+		ctx.Data(http.StatusOK, "application/json", cacheData)
 		return
 	}
 
@@ -177,6 +202,12 @@ func (server *Server) listProducts(ctx *gin.Context) {
 		},
 	}
 
+	err = server.setCache(ctx, cacheKey, rsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, rsp)
 	return
 }
@@ -184,6 +215,12 @@ func (server *Server) listProducts(ctx *gin.Context) {
 func (server *Server) listAllProducts(ctx *gin.Context) {
 
 	list_product, err := server.store.ListAllProduct(ctx)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = server.setCache(ctx, ListAllProducts, list_product)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -248,6 +285,11 @@ func (server *Server) getUserProducts(ctx *gin.Context) {
 		}
 	}
 
+	err = server.setCache(ctx, UserProducts+fmt.Sprintf("%v", uri.ID), rsp)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 	ctx.JSON(http.StatusOK, rsp)
 	return
 }

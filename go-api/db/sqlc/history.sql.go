@@ -22,7 +22,7 @@ FROM
 GROUP BY 
     issued_date
 ORDER BY 
-    issued_date
+    issued_date DESC
 `
 
 type GetInvoicesByDateRow struct {
@@ -64,7 +64,7 @@ FROM
 GROUP BY
     issued_date
 ORDER BY
-    issued_date
+    issued_date DESC
 `
 
 type GetReceiptsByDateRow struct {
@@ -108,7 +108,7 @@ WHERE
 GROUP BY 
     issued_date
 ORDER BY 
-    issued_date
+    issued_date DESC
 `
 
 type GetUserInvoicesByDateRow struct {
@@ -152,7 +152,7 @@ WHERE
 GROUP BY
     issued_date
 ORDER BY
-    issued_date
+    issued_date DESC
 `
 
 type GetUserReceiptsByDateRow struct {

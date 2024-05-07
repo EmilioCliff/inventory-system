@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/EmilioCliff/inventory-system/api"
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -11,6 +12,7 @@ import (
 	"github.com/golang-migrate/migrate"
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 )
 
@@ -30,14 +32,22 @@ func main() {
 
 	store := db.NewStore(conn)
 	redisOpt := asynq.RedisClientOpt{
-		Addr: "0.0.0.0:6379",
-		// Addr:     config.REDIS_URI,
-		// Password: config.REDIS_PASSWORD,
+		// Addr: "0.0.0.0:6379",
+		Addr:     config.REDIS_URI,
+		Password: config.REDIS_PASSWORD,
+		DB:       1,
 	}
+
+	redisClient := redis.NewClient(&redis.Options{
+		// Addr: "0.0.0.0:6379",
+		Addr:     config.REDIS_URI,
+		Password: config.REDIS_PASSWORD,
+		DB:       2,
+	})
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
 
-	server, err := api.NewServer(config, store, *emailSender, taskDistributor)
+	server, err := api.NewServer(config, store, *emailSender, taskDistributor, redisClient)
 	if err != nil {
 		log.Fatal().Msgf("Couldnt create new server: %s", err)
 	}
@@ -45,10 +55,10 @@ func main() {
 	accessToken, err := server.GeneratePythonToken("pythonApp")
 	fmt.Println(accessToken)
 
-	// port := os.Getenv("PORT")
+	port := os.Getenv("PORT")
 	go runRedisTaskProcessor(redisOpt, *store, *emailSender, config, taskDistributor)
-	log.Info().Msgf("starting server at port: %s", "8080") // change port to read from env and also start
-	err = server.Start(fmt.Sprintf("0.0.0.0:%s", "8080"))
+	log.Info().Msgf("starting server at port: %s", port)
+	err = server.Start(fmt.Sprintf("0.0.0.0:%s", port))
 	if err != nil {
 		log.Fatal().Msgf("Couldnot start server: %s", err)
 	}
