@@ -378,7 +378,7 @@ def list_products():
     params = {'page_id': request.args.get('page_id', 1)}
     rsp = requests.get(url=listProductsUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     all_products = ""
-    if session['user_id'] != 1:
+    if session['user_id'] > 1:
         all_products = requests.get(url=f"{BASE_URL}/allproducts/", headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
@@ -386,7 +386,7 @@ def list_products():
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
-    return render_template("list.html", data_sent=rsp.json(), ct="products", all_products=all_products, user_id=session['user_id'])
+    return render_template("list.html", data_sent=rsp.json(), ct="products", all_products=all_products.json(), user_id=session['user_id'])
 
 @app.route('/get_user_invoices/<int:id>')
 def get_user_invoices(id):

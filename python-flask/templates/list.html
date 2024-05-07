@@ -178,8 +178,8 @@
                             {% if all_products is none %}
                             <option value="-100">No Products</option>
                             {% else %}
-                            {% for stock in all_products %}
-                            <option value="{{ stock.product_id }}">{{ stock.product_name }}</option>
+                            {% for loopStock in all_products %}
+                            <option value="{{ loopStock.product_id }}">{{ loopStock.product_name }}</option>
                             {% endfor %}
                             {% endif %}
                         </select>
