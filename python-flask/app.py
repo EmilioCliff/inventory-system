@@ -614,6 +614,7 @@ def request_stock(id):
             rsp = requests.post(url, json=data, headers={"Authorization": f"Bearer {session['token']}"})
 
             if rsp.status_code == 200:
+                flash("Request Recorded")
                 return redirect(url_for('list_products'))  # Redirect to some success page
             elif rsp.status_code == 401:
                 flash("Please login")

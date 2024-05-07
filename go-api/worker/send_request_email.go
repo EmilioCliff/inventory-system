@@ -74,9 +74,9 @@ func (processor *RedisTaskProcessor) ProcessSendRequestStock(ctx context.Context
 
 	emailBody := fmt.Sprintf(`
 	<h1>Hello Joan</h1>
-	<p>You have received a new Stock Request from %s. Find the more details below.</p>
+	<p>You have received a new Stock Request from %s, %v - %v. Find the more details below.</p>
 	%s
-`, user.Username, generateHTMLTable(dataToSend))
+`, user.Username, user.PhoneNumber, user.Email, generateHTMLTable(dataToSend))
 
 	err = processor.sender.SendMail("Request Stock", emailBody, "application/json", []string{"clifftest33@gmail.com"}, nil, nil, nil, nil)
 	if err != nil {
@@ -93,7 +93,7 @@ func (processor *RedisTaskProcessor) ProcessSendRequestStock(ctx context.Context
 
 func generateHTMLTable(products []map[string]interface{}) string {
 	const tableTemplate = `
-	<table border="1" style="border-collapse: collapse; width: 80%; text-align: center;">
+	<table border="1" style="border-collapse: collapse; width: 70%; text-align: center;">
 		<tr style="background-color: #333; color: white; font-weight: bold; text-transform: uppercase;">
 			<td style="padding: 10px;">Product</td>
 			<td style="padding: 10px;">Quantity</td>

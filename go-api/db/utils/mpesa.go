@@ -7,9 +7,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -24,7 +25,7 @@ var transactionID string
 func SendSTK(amount string, userID int64, phoneNumber string) (string, string, error) {
 	config, err := ReadConfig("../..")
 	if err != nil {
-		log.Fatal("Could not log config file: ", err)
+		log.Fatal().Msgf("Could not log config file: %v", err)
 	}
 
 	consumerKey := config.CONSUMER_KEY
@@ -87,6 +88,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 		return "", transactionID, err
 	}
 
+	log.Info().Msgf("stkResponseBody: %v", stkResponseBody)
 	description, ok := stkResponseBody["ResponseDescription"].(string)
 	if !ok {
 		return "failed to parse mpesa metaData", transactionID, nil
@@ -142,7 +144,7 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	if !ok {
 		return "", fmt.Errorf("Access token not found in response")
 	}
-	log.Println(accessToken)
+	log.Info().Msgf("Access Token: %v", accessToken)
 
 	return accessToken, nil
 }
