@@ -206,9 +206,9 @@
 {% else %}
 {% for data in user.stock %}
     {% if (data.productQuantity) < 4 %}
-    <div class="d-flex justify-content-between list--container mb-3 p-3" style="background-color: #F7D060;">
+    <div class="d-flex justify-content-between list--container mb-3 p-3 flex-grow-1" style="background-color: #F7D060;">
     {% else %}
-    <div class="d-flex justify-content-between list--container mb-3 p-3">
+    <div class="d-flex justify-content-between list--container mb-3 p-3 flex-grow-1">
     {% endif %}
         <div style="flex-direction: column;">
                 <p style="font-size: 18px; font-weight: 500;"> {{ data.productName }}</p>
