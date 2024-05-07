@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"os"
@@ -86,7 +87,13 @@ func redisCacheMiddleware(redis *redis.Client) gin.HandlerFunc {
 		if err == nil {
 			log.Info().
 				Msgf("cached hit for: %v", requestPath)
-			ctx.Data(http.StatusOK, "application/json", cacheData)
+			var jsonData any
+			if err := json.Unmarshal(cacheData, &jsonData); err != nil {
+				ctx.AbortWithError(http.StatusInternalServerError, errors.New("could not unmarshal redis cache"))
+				return
+			}
+			// ctx.Data(http.StatusOK, "application/json", cacheData)
+			ctx.AbortWithStatusJSON(http.StatusOK, jsonData)
 			return
 		}
 
