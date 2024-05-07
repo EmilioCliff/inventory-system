@@ -228,13 +228,15 @@ def login():
 
 @app.route('/get_user/<int:id>')
 def get_user(id):
-    # print(session['user_id'])
     getUserUri = f"{BASE_URL}/users/{id}"
-    # product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"}) 
-    rspAdmin = requests.get(url=f"{BASE_URL}/users/1", headers={"Authorization": f"Bearer {session['token']}"})
+    # product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"})
+    if session['user_id'] == 1:
+        rspAdmin = requests.get(url=f"{BASE_URL}/users/1", headers={"Authorization": f"Bearer {session['token']}"})
     rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 200:
-        return render_template('user.html', user=rsp.json(), admin=rspAdmin.json(), user_id=session['user_id'], ct="user")
+        if session['user_id'] == 1:
+            return render_template('user.html', user=rsp.json(), admin=rspAdmin.json(), user_id=session['user_id'], ct="user")
+        return render_template('user.html', user=rsp.json(), admin="none", user_id=session['user_id'], ct="user")
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))

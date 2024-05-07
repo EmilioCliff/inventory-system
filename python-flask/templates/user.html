@@ -114,8 +114,8 @@
                                 {% if admin.stock is none %}
                                     <option value="-100">No Products To Sell</option>
                                 {% else %}
-                                    {% for stock in admin.stock %}
-                                        <option value="{{ stock.product_id }}">{{ stock.productName }}:{{ stock.productQuantity }}</option>
+                                    {% for product in admin.stock %}
+                                        <option value="{{ product.productID }}">{{ product.productName }}:{{ product.productQuantity }}</option>
                                     {% endfor %}
                                 {% endif %}
                             </select>
