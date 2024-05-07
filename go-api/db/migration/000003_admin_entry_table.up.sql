@@ -12,11 +12,4 @@ CREATE TABLE "entries" (
 );
 
 -- Set the time zone to Nairobi for the current database
-ALTER DATABASE inventorydb SET timezone TO 'Africa/Nairobi';
-
--- ALTER DATABASE inventorydb SET TIMEZONE TO 'Africa/Nairobi';
--- ALTER TABLE products SET TIMEZONE TO 'Africa/Nairobi';
--- ALTER TABLE invoices SET TIMEZONE TO 'Africa/Nairobi';
--- ALTER TABLE receipts SET TIMEZONE TO 'Africa/Nairobi';
--- ALTER TABLE transactions SET TIMEZONE TO 'Africa/Nairobi';
--- ALTER TABLE entries SET TIMEZONE TO 'Africa/Nairobi';
+ALTER DATABASE railway SET timezone TO 'Africa/Nairobi';
