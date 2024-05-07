@@ -55,28 +55,6 @@
             <td class="text-center p-2">{{ transaction.status }}</td>
             <td class="text-center p-2">{{ transaction.created_at }}</td>
             <td class="text-center p-2"><button class="btn-success btn-sm" id="viewTransaction">VIEW</button></td>
-            <div id="overlay_transactionview" class="overlay">
-            <div id="popupFormTransactionView" class="form-container p-1">
-                <button id="transactionViewCloseBtn" class="close-button" data-productid="{{ transaction.transaction_id }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-                      </svg>
-                </button>
-                <h2 style="text-decoration: underline;">Transaction Data</h2>
-                <ul>
-                    <p>{{ transaction.transaction_id }}</p>
-                    {% for detail in transaction.data_sold %}
-                    <li>{{ detail.product }} - {{ detail.quantity }}</li>
-                    {% endfor %}
-                    <p>Total: {{ transaction.amount }}</p>
-                    <p>Status: {{ transaction.status }}</p>
-                    <p>Mpesa Receipt Number: {{ transaction.mpesa_receipt_number }}</p>
-                    <p>Phone Number: {{ transaction.phone_number }}</p>
-                    <p>{{ transaction.result_description }}</p>
-                    <p>{{ transaction.created_at }}</p>
-                </ul>
-            </div>
-        </div>
         </tr>
         {% endfor %}
         {% else %}
@@ -87,34 +65,56 @@
             <td class="text-center p-2">{{ transaction.status }}</td>
             <td class="text-center p-2">{{ transaction.created_at }}</td>
             <td class="text-center p-2"><button class="btn-success btn-sm" id="viewUserTransaction">VIEW</button></td>
-            <div id="overlay_transactionuserview" class="overlay">
-                <div id="popupFormUserTransactionView" class="form-container p-1">
-                    <button id="transactionViewUserCloseBtn" class="close-button" data-productid="{{ transaction.transaction_id }}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-                            <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-                          </svg>
-                    </button>
-                    <h2 style="text-decoration: underline;">Transaction Data</h2>
-                    <ul>
-                        <p>{{ transaction.transaction_id }}</p>
-                        {% for detail in transaction.data_sold %}
-                        <li>{{ detail.product }} - {{ detail.quantity }}</li>
-                        {% endfor %}
-                        <p>Total: {{ transaction.amount }}</p>
-                        <p>Status: {{ transaction.status }}</p>
-                        <p>Mpesa Receipt Number: {{ transaction.mpesa_receipt_number }}</p>
-                        <p>Phone Number: {{ transaction.phone_number }}</p>
-                        <p>{{ transaction.result_description }}</p>
-                        <p>{{ transaction.created_at }}</p>
-                    </ul>
-                </div>
-            </div>
         </tr>
         {% endfor %}
         {% endif %}
     </tbody>
     {% endif %}
   </table>
+  <div id="overlay_transactionuserview" class="overlay">
+    <div id="popupFormUserTransactionView" class="form-container p-1">
+        <button id="transactionViewUserCloseBtn" class="close-button" data-productid="{{ transaction.transaction_id }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+              </svg>
+        </button>
+        <h2 style="text-decoration: underline;">Transaction Data</h2>
+        <ul>
+            <p>{{ transaction.transaction_id }}</p>
+            {% for detail in transaction.data_sold %}
+            <li>{{ detail.product }} - {{ detail.quantity }}</li>
+            {% endfor %}
+            <p>Total: {{ transaction.amount }}</p>
+            <p>Status: {{ transaction.status }}</p>
+            <p>Mpesa Receipt Number: {{ transaction.mpesa_receipt_number }}</p>
+            <p>Phone Number: {{ transaction.phone_number }}</p>
+            <p>{{ transaction.result_description }}</p>
+            <p>{{ transaction.created_at }}</p>
+        </ul>
+    </div>
+</div>
+  <div id="overlay_transactionview" class="overlay">
+    <div id="popupFormTransactionView" class="form-container p-1">
+        <button id="transactionViewCloseBtn" class="close-button" data-productid="{{ transaction.transaction_id }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+              </svg>
+        </button>
+        <h2 style="text-decoration: underline;">Transaction Data</h2>
+        <ul>
+            <p>{{ transaction.transaction_id }}</p>
+            {% for detail in transaction.data_sold %}
+            <li>{{ detail.product }} - {{ detail.quantity }}</li>
+            {% endfor %}
+            <p>Total: {{ transaction.amount }}</p>
+            <p>Status: {{ transaction.status }}</p>
+            <p>Mpesa Receipt Number: {{ transaction.mpesa_receipt_number }}</p>
+            <p>Phone Number: {{ transaction.phone_number }}</p>
+            <p>{{ transaction.result_description }}</p>
+            <p>{{ transaction.created_at }}</p>
+        </ul>
+    </div>
+</div>
 </div>
   <div class="d-inline-flex justify-content-between w-100">
     {% if data_sent.metadata.current_page > 1 %}
