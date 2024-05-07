@@ -68,7 +68,7 @@ func (processor *RedisTaskProcessor) ProcessSendResetPasswordEmail(ctx context.C
 	<p>We received a request to reset your password. Click the link below to reset it:</p>
 	<a href="%s" style="display:inline-block; padding:10px 20px; background-color:#007BFF; color:#fff; text-decoration:none; border-radius:5px;">Reset Password</a>
 	<h5>The link is valid for 10 Minutes</h5>
-	<a>https://inventory-system-production-378e.up.railway.app/</a>
+	<a href="https://inventory-system-production-378e.up.railway.app/">https://inventory-system-production-378e.up.railway.app/</a>
 `, user.Username, resetPasswordLink)
 
 	err = processor.sender.SendMail("Reset Password", emailBody, "application/pdf", []string{user.Email}, nil, nil, nil, nil)

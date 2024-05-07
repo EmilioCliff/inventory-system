@@ -486,6 +486,11 @@ func (server *Server) addAdminStock(ctx *gin.Context) {
 		return
 	}
 
+	if err := server.redis.Del(ctx, GetUser+fmt.Sprintf("1")).Err(); err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	product, err := server.store.GetProduct(ctx, uri.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -513,11 +518,6 @@ func (server *Server) addAdminStock(ctx *gin.Context) {
 	})
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	if err := server.redis.Del(ctx, GetUser+fmt.Sprintf("%v", uri.ID)).Err(); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -641,6 +641,7 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 	}
 
 	var newProducts []db.Product
+	log.Info().Int("first quantity", int(req.Quantities[0])).Msg("add client stock log")
 	for idx, id := range req.ProductsID {
 		log.Info().Int("productId", int(id)).Int("quantity", int(req.Quantities[idx])).Msg("add client stock log")
 		addProduct, err := server.store.GetProduct(ctx, id)

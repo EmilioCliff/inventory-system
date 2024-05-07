@@ -110,7 +110,7 @@
                 <form id="productForm" method="POST" action="{{ url_for('add_client_stock', id=user.id) }}" autocomplete="off">
                     <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden">
                         <div class="d-flex">
-                            <select class="product me-1" name="products_id">
+                            <select class="product me-1" name="products_id" required>
                                 {% if admin.stock is none %}
                                     <option value="-100">No Products To Sell</option>
                                 {% else %}

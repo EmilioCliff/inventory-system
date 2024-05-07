@@ -175,10 +175,10 @@
                     <div id="requestStockList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden">
                         <div class="d-flex">
                         <select class="product_request me-1" name="products_id_request">
-                            {% if data_sent.data is none %}
+                            {% if all_products is none %}
                             <option value="-100">No Products</option>
                             {% else %}
-                            {% for stock in data_sent.data %}
+                            {% for stock in all_products %}
                             <option value="{{ stock.product_id }}">{{ stock.product_name }}</option>
                             {% endfor %}
                             {% endif %}

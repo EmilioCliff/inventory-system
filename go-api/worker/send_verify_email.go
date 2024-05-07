@@ -64,7 +64,7 @@ func (processor *RedisTaskProcessor) ProcessSendVerifyEmail(ctx context.Context,
 	<p>A new account has been created for the Kokomed Supplies System. Please create your Password and Login to check it out</p>
 	<a href="%s" style="display:inline-block; padding:10px 20px; background-color:#007BFF; color:#fff; text-decoration:none; border-radius:5px;">Create Password</a>
 	<h5>The link is valid for 10 Minutes</h5>
-	<a>https://inventory-system-production-378e.up.railway.app/</a>
+	<a href="https://inventory-system-production-378e.up.railway.app/">https://inventory-system-production-378e.up.railway.app/</a>
 `, user.Username, resetPasswordLink)
 
 	err = processor.sender.SendMail("Create Password", emailBody, "application/pdf", []string{user.Email}, nil, nil, nil, nil)

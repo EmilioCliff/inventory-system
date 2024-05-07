@@ -381,13 +381,16 @@ def list_products():
     listProductsUrl = f"{BASE_URL}/products"
     params = {'page_id': request.args.get('page_id', 1)}
     rsp = requests.get(url=listProductsUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
+    all_products = ""
+    if session['user_id'] != 1:
+        all_products = request.get(url=f"{BASE_URL}/allproducts/", headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
         flash("Please try again server error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
-    return render_template("list.html", data_sent=rsp.json(), ct="products", user_id=session['user_id'])
+    return render_template("list.html", data_sent=rsp.json(), ct="products", all_products=all_products, user_id=session['user_id'])
 
 @app.route('/get_user_invoices/<int:id>')
 def get_user_invoices(id):
@@ -452,9 +455,9 @@ def add_admin_stock():
 def add_client_stock(id):
     if request.method == 'POST':
         products_id = request.form.getlist('products_id')
-        products_list = [int(product_id) for product_id in products_id if product_id]
+        products_list = [int(product_id) for product_id in products_id]
         quantities = request.form.getlist('quantities')
-        quantities_list = [int(quantity) for quantity in quantities if quantity]
+        quantities_list = [int(quantity) for quantity in quantities]
 
         print(quantities_list, products_list, id)
         data = {
@@ -672,12 +675,12 @@ def user_debt_history(user_id):
                 user_total_quantity = {}
                 user_total_price = {}
                 for entry in data:
-                    user = entry['user']
                     if entry['Data'] is not None:
+                        user = entry['user']
                         total_price = sum(product['price'] for product in entry['Data'])
                         total_quantity = sum(product['quantity'] for product in entry['Data'])
-                    user_total_price[user] = total_price
-                    user_total_quantity[user] = total_quantity
+                        user_total_price[user] = total_price
+                        user_total_quantity[user] = total_quantity
                 return render_template('admin-history.html', user_id=session['user_id'], price=user_total_price, quantity=user_total_quantity, data_sent=rsp.json(), action="debt")
             return render_template('history.html', user_id=session['user_id'], data_sent=rsp.json(), action="debt")
         elif rsp.status_code == 401:
