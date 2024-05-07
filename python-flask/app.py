@@ -450,10 +450,10 @@ def add_admin_stock():
 @app.route('/add_client_stock/<int:id>', methods=['POST', 'GET'])
 def add_client_stock(id):
     if request.method == 'POST':
-        products_id = request.form.getlist('products_id')
-        products_list = [int(product_id) for product_id in products_id]
         quantities = request.form.getlist('quantities')
         quantities_list = [int(quantity) for quantity in quantities]
+        products_id = request.form.getlist('products_id')
+        products_list = [int(product_id) for product_id in products_id]
 
         print(quantities_list, products_list, id)
         data = {

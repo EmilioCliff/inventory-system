@@ -110,16 +110,16 @@
                 <form id="productForm" method="POST" action="{{ url_for('add_client_stock', id=user.id) }}" autocomplete="off">
                     <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden">
                         <div class="d-flex">
-                            <select class="product me-1" name="products_id" required>
+                            <select class="product me-1" name="products_id" id="products_id">
                                 {% if admin.stock is none %}
                                     <option value="-100">No Products To Sell</option>
                                 {% else %}
                                     {% for product in admin.stock %}
-                                        <option value="{{ product.productID }}">{{ product.productName }}:{{ product.productQuantity }}</option>
+                                        <option value="{{ product.productID }}">{{ product.productID }}:{{ product.productName }}:{{ product.productQuantity }}</option>
                                     {% endfor %}
                                 {% endif %}
                             </select>
-                            <input type="number" class="quantity me-5" name="quantities" placeholder="Quantity" required style="width: auto;">
+                            <input type="number" class="quantity me-5" name="quantities" id="quantities" placeholder="Quantity" style="width: auto;">
                             <!-- <label for="quantities">Quantity</label> -->
                         </div>
                     </div>
