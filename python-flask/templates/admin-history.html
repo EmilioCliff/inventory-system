@@ -16,7 +16,7 @@
             <button class="btn btn-outline-success ms-1 rounded" type="submit">Search</button>
         </div>
         </form>
-{% if data_sent.data is none %}
+{% if data_sent|length == 0 %}
     <p>No History</p>
 {% else %}
 <div class="table-responsive-md">
@@ -39,31 +39,34 @@
     <tbody class="text-center table-group-divider">
         {% if action == 'debt' %}
             {% for details in data_sent %}
-            <tr>
-                <td class="text-start p-2">{{ details.user }}</td>
-                <td class="text-center p-2">{{ quantity.get(details.user, 0) }}</td>
-                <td class="text-center p-2">{{ price.get(details.user, 0) }}</td>
-                <td class="text-center p-2"><button class="btn-success btn-sm" id="viewDebt">VIEW</button></td>
-                <div id="overlay_debtview" class="overlay">
-                    <div id="popupFormDebtView" class="form-container p-1">
-                        <button id="debtViewUserCloseBtn" class="close-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
-                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
-                              </svg>
-                        </button>
-                        <h2 style="text-decoration: underline;">User Data</h2>
-                        <ul>
-                            <li>{{ details.user }}</li>
-                            {% for detail in details.Data %}
-                                <p>Product Name: {{ detail.product_name }}</p>
-                                <p>Total Quantity: {{ detail.quantity }}</p>
-                                <p>Total Price: {{ detail.price }}</p>
-                                <br>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            </tr>
+                {% if details.Data == none %}
+                {% else %}
+                    <tr>
+                        <td class="text-start p-2">{{ details.user }}</td>
+                        <td class="text-center p-2">{{ quantity.get(details.user, 0) }}</td>
+                        <td class="text-center p-2">{{ price.get(details.user, 0) }}</td>
+                        <td class="text-center p-2"><button class="btn-success btn-sm" id="viewDebt">VIEW</button></td>
+                        <div id="overlay_debtview" class="overlay">
+                            <div id="popupFormDebtView" class="form-container p-1">
+                                <button id="debtViewUserCloseBtn" class="close-button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                                      </svg>
+                                </button>
+                                <h2 style="text-decoration: underline;">User Data</h2>
+                                <ul>
+                                    <li>{{ details.user }}</li>
+                                    {% for detail in details.Data %}
+                                        <p>Product Name: {{ detail.product_name }}</p>
+                                        <p>Total Quantity: {{ detail.quantity }}</p>
+                                        <p>Total Price: {{ detail.price }}</p>
+                                        <br>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    </tr>
+                {% endif %}
             {% endfor %}
         {% else %}
             {% if action == 'received' %}

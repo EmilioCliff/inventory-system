@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 
-	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,7 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgtype"
-	// "google.golang.org/appengine/log"
+	"github.com/rs/zerolog/log"
 )
 
 func newUserResponse(user db.User) (userResponse, error) {
@@ -288,7 +287,7 @@ func (server *Server) listUsers(ctx *gin.Context) {
 	cacheKey := fmt.Sprintf("%v:%v", ctx.Request.URL.Path, req.PageID)
 	cacheData, err := server.redis.Get(ctx, cacheKey).Bytes()
 	if err == nil {
-		// log.Info().Msgf("cached hit for: %v", cacheKey)
+		log.Info().Msgf("cached hit for: %v", cacheKey)
 		ctx.Data(http.StatusOK, "application/json", cacheData)
 		return
 	}
@@ -621,7 +620,7 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 		return
 	}
 
-	admin, err := server.store.GetUserForUpdate(ctx, 1) // add manually the admins_id
+	admin, err := server.store.GetUser(ctx, 1) // add manually the admins_id
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -631,7 +630,7 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 		return
 	}
 
-	user, err := server.store.GetUserForUpdate(ctx, uri.ID)
+	user, err := server.store.GetUser(ctx, uri.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -642,7 +641,8 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 	}
 
 	var newProducts []db.Product
-	for _, id := range req.ProductsID {
+	for idx, id := range req.ProductsID {
+		log.Info().Int("productId", int(id)).Int("quantity", int(req.Quantities[idx])).Msg("add client stock log")
 		addProduct, err := server.store.GetProduct(ctx, id)
 		if err != nil {
 			if err == sql.ErrNoRows {
@@ -789,7 +789,7 @@ type mpesaCallbackRequest struct {
 }
 
 func (server *Server) mpesaCallback(ctx *gin.Context) {
-	log.Println("In mpesaCallbackURL from safaricom")
+	log.Info().Msg("In mpesaCallbackURL from safaricom")
 	var req mpesaCallbackRequest
 
 	if err := ctx.ShouldBindUri(&req); err != nil {
@@ -839,7 +839,7 @@ func (server *Server) mpesaCallback(ctx *gin.Context) {
 
 	err := server.taskDistributor.DistributeProcessMpesaCallback(ctx, *processMpesaCallbackPayload, opts...)
 	if err != nil {
-		log.Println(err)
+		log.Err(err)
 		// redirectToPythonApp(user, transaction, err)
 	}
 

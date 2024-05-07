@@ -110,18 +110,18 @@
                 <form id="productForm" method="POST" action="{{ url_for('add_client_stock', id=user.id) }}" autocomplete="off">
                     <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden">
                         <div class="d-flex">
-                        <select class="product me-1" name="products_id">
-                            {% if admin.stock is none %}
-                            <option value="-100">No Products To Sell</option>
-                            {% else %}
-                            {% for stock in admin.stock %}
-                            <option value="{{ stock.product_id }}">{{ stock.productName }}:{{ stock.productQuantity }}</option>
-                            {% endfor %}
-                            {% endif %}
-                        </select>
-                        <input type="number" class="quantity me-5" name="quantities" placeholder="Quantity" required style="width: auto;">
-                        <label for="quantities">Quantity</label>
-                    </div>
+                            <select class="product me-1" name="products_id">
+                                {% if admin.stock is none %}
+                                    <option value="-100">No Products To Sell</option>
+                                {% else %}
+                                    {% for stock in admin.stock %}
+                                        <option value="{{ stock.product_id }}">{{ stock.productName }}:{{ stock.productQuantity }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                            <input type="number" class="quantity me-5" name="quantities" placeholder="Quantity" required style="width: auto;">
+                            <label for="quantities">Quantity</label>
+                        </div>
                     </div>
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </form>

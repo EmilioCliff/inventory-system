@@ -231,10 +231,16 @@ def get_user(id):
     # print(session['user_id'])
     getUserUri = f"{BASE_URL}/users/{id}"
     # product_reponse = requests.get(url=f"{BASE_URL}/allproducts", headers={"Authorization": f"Bearer {session['token']}"}) 
-    rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
-    rspAdmin = requests.get(url=f"{BASE_URL}/users/1", headers={"Authorization": f"Bearer {session['token']}"})
+    if id != 1:
+        rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
+        rspAdmin = requests.get(url=f"{BASE_URL}/users/1", headers={"Authorization": f"Bearer {session['token']}"})
+    else:
+        rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 200:
-        return render_template('user.html', user=rsp.json(), admin=rspAdmin.json(), user_id=session['user_id'], ct="user") # unmarshal JSON and read data
+        if id == 1:
+            return render_template('user.html', user=rsp.json(), admin="none", user_id=session['user_id'], ct="user")
+        else:
+            return render_template('user.html', user=rsp.json(), admin=rspAdmin.json(), user_id=session['user_id'], ct="user")
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
@@ -446,9 +452,9 @@ def add_admin_stock():
 def add_client_stock(id):
     if request.method == 'POST':
         products_id = request.form.getlist('products_id')
-        products_list = [int(product_id) for product_id in products_id]
+        products_list = [int(product_id) for product_id in products_id if product_id]
         quantities = request.form.getlist('quantities')
-        quantities_list = [int(quantity) for quantity in quantities]
+        quantities_list = [int(quantity) for quantity in quantities if product_id]
 
         print(quantities_list, products_list, id)
         data = {

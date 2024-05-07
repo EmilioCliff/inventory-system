@@ -8,7 +8,9 @@
         </a>
         <p style="flex-grow: 1; text-align: center; align-items: center;">{{ action }} Overview</p>
     </div>
-{% if data_sent.data is none %}
+{% if data_sent|length == 0 %}
+    <p>No History</p>
+{% elif action == 'debt' and data_sent.Data == none %}
     <p>No History</p>
 {% else %}
 <div class="table-responsive-md">
