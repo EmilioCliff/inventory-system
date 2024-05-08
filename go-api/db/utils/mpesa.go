@@ -66,7 +66,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 	}
 
 	req.Header.Set("Authorization", "Bearer "+accessToken)
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -104,7 +104,7 @@ func setPhoneNumber(phoneNumber string) string {
 }
 
 func generateAccessToken(consumerKey string, consumerSecret string) (string, error) {
-	authString := consumerKey + " : " + consumerSecret
+	authString := consumerKey + ":" + consumerSecret
 	encodedAuthString := base64.StdEncoding.EncodeToString([]byte(authString))
 	log.Debug().Msgf("Encoded Auth: %v", encodedAuthString)
 
@@ -124,6 +124,8 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 		return "", errors.New(fmt.Sprintf("Error Number 1: %s", err))
 	}
 	defer resp.Body.Close()
+	header := resp.Header.Values("Authorization")
+	log.Debug().Any("headers", header)
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("unexpected response status code: %d", resp.StatusCode)
