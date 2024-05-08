@@ -107,6 +107,7 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 			Msg("tasked processed successfull")
 		return nil
 	}
+	// invalidate the cache for user
 
 	metaData, ok := stkCallbackValue["CallbackMetadata"].(map[string]interface{})
 	if !ok {

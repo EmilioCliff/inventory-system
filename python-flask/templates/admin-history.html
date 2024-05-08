@@ -18,7 +18,7 @@
             {% if action == 'sold' or action == 'received' %}
                 <th class="text-center" scope="col">PRODUCT</th>
                 <th class="text-center" scope="col">QUANTITY</th>
-                <th class="text-center" scope="col">PRICE</th>
+                <!-- <th class="text-center" scope="col">PRICE</th> -->
                 <th class="text-center" scope="col">DATE</th>
             {% else %}
                 <th class="text-center" scope="col">USER</th>
@@ -67,7 +67,7 @@
                             <tr>
                                 <td class="text-start p-2">{{ detail.product_name }}</td>
                                 <td class="text-center p-2">{{ detail.total_quantity_added }}</td>
-                                <td class="text-center p-2">{{ detail.total_product_price }}</td>
+                                <!-- <td class="text-center p-2">{{ detail.total_product_price }}</td> -->
                                 <td class="text-center p-2">{{ details.issued_date }}</td>
                             </tr>
                         {% endfor %}
@@ -78,7 +78,7 @@
                             <tr>
                                 <td class="text-start p-2">{{ keyNew}}</td>
                                 <td class="text-center p-2">{{ details.quantity }}</td>
-                                <td class="text-center p-2">{{ details.totalPrice }}</td>
+                                <!-- <td class="text-center p-2">{{ details.totalPrice }}</td> -->
                                 <td class="text-center p-2">{{ key }}</td>
                             </tr>
                         {% endfor %}

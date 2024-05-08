@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/gin-gonic/gin"
@@ -103,10 +102,8 @@ func (server *Server) getAllUsersReceivedHistory(ctx *gin.Context) {
 				quantity := int(product["productQuantity"].(float64))
 				price := int(product["totalBill"].(float64))
 
-				// issuedDate := invoice.IssuedDate.Format("2006-01-02")
-				issuedDate := invoice.IssuedDate.Truncate(10 * time.Minute).Format("2006-01-02 15:04:05")
+				issuedDate := invoice.IssuedDate.Format("2006-01-02")
 
-				// issuedDate := string(invoice.IssuedDate)
 				if _, ok := aggregatedData[issuedDate]; !ok {
 					aggregatedData[issuedDate] = make(map[string]map[string]int)
 				}
@@ -326,10 +323,8 @@ func structureInvoiceProducts(invoices []db.StoreGetUserInvoicesByDateRow) (map[
 				quantity := int(product["productQuantity"].(float64))
 				price := int(product["totalBill"].(float64))
 
-				// issuedDate := invoice.IssuedDate.Format("2006-01-02")
-				issuedDate := invoice.IssuedDate.Truncate(10 * time.Minute).Format("2006-01-02 15:04:05")
+				issuedDate := invoice.IssuedDate.Format("2006-01-02")
 
-				// issuedDate := string(invoice.IssuedDate)
 				if _, ok := aggregatedData[issuedDate]; !ok {
 					aggregatedData[issuedDate] = make(map[string]map[string]int)
 				}
@@ -372,10 +367,8 @@ func structureReceiptProducts(receipts []db.StoreGetUserReceiptsByDateRow) (map[
 				quantity := int(product["productQuantity"].(float64))
 				price := int(product["totalBill"].(float64))
 
-				// issuedDate := receipt.IssuedDate.Format("2006-01-02")
+				issuedDate := receipt.IssuedDate.Format("2006-01-02")
 
-				issuedDate := receipt.IssuedDate.Truncate(10 * time.Minute).Format("2006-01-02 15:04:05")
-				// issuedDate := string(receipt.IssuedDate)
 				if _, ok := aggregatedData[issuedDate]; !ok {
 					aggregatedData[issuedDate] = make(map[string]map[string]int)
 				}
@@ -455,7 +448,6 @@ func structureAllInvoiceProducts(invoices []db.StoreGetInvoicesByDateRow) (map[s
 
 				issuedDate := invoice.IssuedDate.Format("2006-01-02")
 
-				// issuedDate := string(invoice.IssuedDate)
 				if _, ok := aggregatedData[issuedDate]; !ok {
 					aggregatedData[issuedDate] = make(map[string]map[string]int)
 				}

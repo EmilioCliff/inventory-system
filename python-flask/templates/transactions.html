@@ -2,8 +2,8 @@
 {% block content %}
 <div class="d-inline-flex justify-content-start align-items-center">
     {% if user_id == 1 %}
-        {% if request.view_args.get('user_id') is not none %}
-            <a href="{{ url_for('get_user', id=request.view_args['user_id']) }}">
+        {% if request.view_args.get('id') is not none %}
+            <a href="{{ url_for('get_user', id=request.view_args['id']) }}">
         {% else %}
         <a href="{{ url_for('dashboard') }}">
         {% endif %}

@@ -81,8 +81,14 @@
                         <label for="quantities">Quantity</label>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" id="initializeSTK" class="btn btn-primary">Submit</button>
                 </form>
+            </div>
+        </div>
+        <div class="overlay" id="waitOverlay">
+            <div class="form-container d-flex flex-column justify-content-center align-items-center p-1" id="popupformWait">
+                <p>Please wait to enter M-PESA PIN</p>
+                <button id="close-buttonWait" class="btn btn-success">close</button>
             </div>
         </div>
     </a>
@@ -189,26 +195,15 @@
     </div>
     {% endif %}
     {% endif %}
-<!-- </div>
-<nav class="navbar my-2" style="background-color: #DCF2F1;">
-    <div class="container-fluid" style="background-color: #DCF2F1;">
-        <form class="d-flex flex-grow-1" role="search">
-            <input class="form-control search mb-0 me-2" name="search" id="search" autocomplete="off" type="search" placeholder="Search" aria-label="Search">
-            <div id="searchResults"></div>
-            <button class="btn btn-outline-primary" type="submit">Search</button>
-        </form>
-    </div>
-</nav>
-<div> -->
 {% if ct == 'user' %}
 {% if user.stock is none %}
 <p>No Products Yet</p>
 {% else %}
 {% for data in user.stock %}
     {% if (data.productQuantity) < 4 %}
-    <div class="d-flex justify-content-between list--container mb-3 p-3 row flex-grow-1" style="background-color: #F7D060;">
+    <div class="d-flex justify-content-between list--container mb-3 p-3 row" style="background-color: #F7D060;">
     {% else %}
-    <div class="d-flex justify-content-between list--container mb-3 p-3 row flex-grow-1">
+    <div class="d-flex justify-content-between list--container mb-3 p-3 row">
     {% endif %}
         <div style="flex-direction: column;">
                 <p style="font-size: 18px; font-weight: 500;"> {{ data.productName }}</p>
