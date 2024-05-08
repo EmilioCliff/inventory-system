@@ -104,9 +104,8 @@ func setPhoneNumber(phoneNumber string) string {
 }
 
 func generateAccessToken(consumerKey string, consumerSecret string) (string, error) {
-	authString := consumerKey + ":" + consumerSecret
-	// encodedAuthString := base64.StdEncoding.EncodeToString([]byte(authString))
-	encodedAuthString := base64.RawStdEncoding.EncodeToString([]byte(authString))
+	authString := consumerKey + " : " + consumerSecret
+	encodedAuthString := base64.StdEncoding.EncodeToString([]byte(authString))
 	log.Debug().Msgf("Encoded Auth: %v", encodedAuthString)
 
 	url := "https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
@@ -117,7 +116,7 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+encodedAuthString)
+	req.Header.Set("Authorization", "Basic "+encodedAuthString)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
