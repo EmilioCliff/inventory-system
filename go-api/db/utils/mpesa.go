@@ -40,6 +40,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 	}
 
 	newNumber := setPhoneNumber(phoneNumber)
+	log.Info().Msgf("number: %v", newNumber)
 
 	callback := fmt.Sprintf("https://secretive-window-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	requestBody := map[string]interface{}{
@@ -89,6 +90,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 	}
 
 	log.Info().Msgf("stkResponseBody: %v", stkResponseBody)
+
 	description, ok := stkResponseBody["ResponseDescription"].(string)
 	if !ok {
 		return "failed to parse mpesa metaData", transactionID, nil
@@ -108,7 +110,6 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	authString := consumerKey + ":" + consumerSecret
 	encodedAuthString := base64.StdEncoding.EncodeToString([]byte(authString))
 
-	// url := baseURL + "/oauth/v1/generate?grant_type=client_credentials"
 	url := baseURL + "/oauth/v1/generate?grant_type=client_credentials"
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -121,7 +122,7 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("Error Number 1:%s", err))
+		return "", errors.New(fmt.Sprintf("Error Number 1: %s", err))
 	}
 	defer resp.Body.Close()
 
@@ -131,13 +132,13 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("Error Number 2:%s", err))
+		return "", errors.New(fmt.Sprintf("Error Number 2: %s", err))
 	}
 
 	var tokenResponse map[string]interface{}
 	err = json.Unmarshal(body, &tokenResponse)
 	if err != nil {
-		return "", errors.New(fmt.Sprintf("Error Number 3:%s", err))
+		return "", errors.New(fmt.Sprintf("Error Number 3: %s", err))
 	}
 
 	accessToken, ok := tokenResponse["access_token"].(string)
