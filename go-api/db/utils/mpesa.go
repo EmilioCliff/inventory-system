@@ -14,10 +14,7 @@ import (
 )
 
 const (
-	baseURL      = "https://api.safaricom.co.ke"
-	sandbox      = "7169782"
-	lipaEndpoint = "/mpesa/stkpush/v1/processrequest"
-	callbackPath = "/callback"
+	shortCode = "7169782"
 )
 
 var transactionID string
@@ -44,8 +41,8 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 
 	callback := fmt.Sprintf("https://secretive-window-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	requestBody := map[string]interface{}{
-		"BusinessShortCode": sandbox,
-		"Password":          generatePassword(sandbox, config.PASSKEY),
+		"BusinessShortCode": shortCode,
+		"Password":          generatePassword(shortCode, config.PASSKEY),
 		"Timestamp":         time.Now().Format("20060102150405"),
 		"TransactionType":   "CustomerBuyGoodsOnline",
 		"Amount":            amount,
@@ -63,7 +60,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", baseURL+lipaEndpoint, bytes.NewBuffer(jsonBody))
+	req, err := http.NewRequest("POST", "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		return "", transactionID, err
 	}
@@ -110,7 +107,7 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	authString := consumerKey + ":" + consumerSecret
 	encodedAuthString := base64.StdEncoding.EncodeToString([]byte(authString))
 
-	url := baseURL + "/oauth/v1/generate?grant_type=client_credentials"
+	url := " https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -146,7 +143,7 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 	if !ok {
 		return "", fmt.Errorf("Access token not found in response")
 	}
-	log.Info().Msgf("Access Token: %v", accessToken)
+	log.Info().Msgf("tokenResponse: %v", tokenResponse)
 
 	return accessToken, nil
 }
