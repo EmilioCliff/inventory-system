@@ -377,7 +377,7 @@ def list_products():
     listProductsUrl = f"{BASE_URL}/products"
     params = {'page_id': request.args.get('page_id', 1)}
     rsp = requests.get(url=listProductsUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
-    all_products = ""
+    products = ""
     if session['user_id'] > 1:
         products = requests.get(url=f"{BASE_URL}/allproducts/", headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
@@ -386,7 +386,10 @@ def list_products():
     elif rsp.status_code == 401:
         flash("Please login")
         return redirect(url_for('login'))
-    return render_template("list.html", data_sent=rsp.json(), ct="products", all_products=products.json(), user_id=session['user_id'])
+    if session['user_id'] > 1:
+        return render_template("list.html", data_sent=rsp.json(), ct="products", all_products=products.json(), user_id=session['user_id'])
+    else:
+        return render_template("list.html", data_sent=rsp.json(), ct="products", all_products=products, user_id=session['user_id'])        
 
 @app.route('/get_user_invoices/<int:id>')
 def get_user_invoices(id):
@@ -490,8 +493,9 @@ def reduce_client_stock(id):
         rsp = requests.post(url, json=data, headers={"Authorization": f"Bearer {session['token']}"})
 
         if rsp.status_code == 200:
-            # flash("STK")
-            return redirect(url_for('get_user', id=id))  # Redirect to some success page
+            flash("Please wait to enter M-PESA PIN")
+            return
+            # return redirect(url_for('get_user', id=id))  # Redirect to some success page
         elif rsp.status_code == 401:
             flash("Please login")
             return redirect(url_for('login'))

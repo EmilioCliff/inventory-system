@@ -182,6 +182,10 @@ if (requestClientStockCloseBtn) {
 
   if (waitViewButton) {
     waitViewButton.addEventListener('click', function() {
+      overlay_recudeClientStock.style.visibility = 'hidden';
+      overlay_recudeClientStock.style.opacity = '0';
+      popupFormReduceClientStock.style.visibility = 'hidden';
+      popupFormReduceClientStock.style.opacity = '0';
       overlay_Wait.style.display = 'block';
       popupFormWait.style.display = 'block';
     });

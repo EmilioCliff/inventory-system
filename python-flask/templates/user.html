@@ -55,7 +55,7 @@
 <div class="d-inline-flex justify-content-around" style="flex-wrap: wrap; gap: 10px;">
     <!-- {% if ct not in ['receipts', 'invoices'] %} -->
     {% if user.id != 1 and user_id != 1 %}
-    <a href="{{ url_for('getUserAllTransactions', user_id=user.id) }}" class="btn btn-outline-primary" id="nnn">Transactions</a>
+    <!-- <a href="{{ url_for('getUserAllTransactions', user_id=user.id) }}" class="btn btn-outline-primary" id="nnn">Transactions</a> -->
     <a href="#" class="btn btn-outline-primary" id="reduceClientStock">Sold Products
         <div class="overlay" id="reduceClientStockOverlay">
             <div class="form-container p-1" id="popupformreduceClientStock">
@@ -86,7 +86,7 @@
             </div>
         </div>
         <div class="overlay" id="waitOverlay">
-            <div class="form-container d-flex flex-column justify-content-center align-items-center p-1" id="popupformWait">
+            <div class="form-container d-flex flex-column justify-content-center align-items-center p-4 rounded" id="popupformWait">
                 <p>Please wait to enter M-PESA PIN</p>
                 <button id="close-buttonWait" class="btn btn-success">close</button>
             </div>
@@ -195,6 +195,7 @@
     </div>
     {% endif %}
     {% endif %}
+</div>
 {% if ct == 'user' %}
 {% if user.stock is none %}
 <p>No Products Yet</p>
