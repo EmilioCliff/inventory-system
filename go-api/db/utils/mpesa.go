@@ -37,7 +37,6 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 	}
 
 	newNumber := setPhoneNumber(phoneNumber)
-	log.Info().Msgf("number: %v", newNumber)
 
 	callback := fmt.Sprintf("https://secretive-window-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	requestBody := map[string]interface{}{
@@ -106,7 +105,6 @@ func setPhoneNumber(phoneNumber string) string {
 func generateAccessToken(consumerKey string, consumerSecret string) (string, error) {
 	authString := consumerKey + ":" + consumerSecret
 	encodedAuthString := base64.StdEncoding.EncodeToString([]byte(authString))
-	log.Debug().Msgf("Encoded Auth: %v", encodedAuthString)
 
 	url := "https://api.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"
 
@@ -115,8 +113,8 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 		return "", errors.New(fmt.Sprintf("Error Number 0:%s", err))
 	}
 
-	req.Header.Add("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Basic "+encodedAuthString)
+	req.Header.Add("Content-Type", "application/json")
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -124,8 +122,6 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 		return "", errors.New(fmt.Sprintf("Error Number 1: %s", err))
 	}
 	defer resp.Body.Close()
-	header := resp.Header.Values("Authorization")
-	log.Debug().Any("headers", header)
 
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("unexpected response status code: %d", resp.StatusCode)
