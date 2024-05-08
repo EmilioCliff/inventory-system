@@ -50,7 +50,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 		"TransactionType":   "CustomerBuyGoodsOnline",
 		"Amount":            amount,
 		"PartyA":            newNumber,
-		"PartyB":            sandbox,
+		"PartyB":            "9090757",
 		"PhoneNumber":       newNumber,
 		"CallBackURL":       callback,
 		"AccountReference":  "Kokomed Supplies",
