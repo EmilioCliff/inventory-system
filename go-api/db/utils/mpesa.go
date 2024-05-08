@@ -47,7 +47,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 		"BusinessShortCode": sandbox,
 		"Password":          generatePassword(sandbox, config.PASSKEY),
 		"Timestamp":         time.Now().Format("20060102150405"),
-		"TransactionType":   "CustomerPayBillOnline",
+		"TransactionType":   "CustomerBuyGoodsOnline",
 		"Amount":            amount,
 		"PartyA":            newNumber,
 		"PartyB":            sandbox,
@@ -117,6 +117,7 @@ func generateAccessToken(consumerKey string, consumerSecret string) (string, err
 		return "", errors.New(fmt.Sprintf("Error Number 0:%s", err))
 	}
 
+	req.Header.Add("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Basic "+encodedAuthString)
 
 	client := &http.Client{}
