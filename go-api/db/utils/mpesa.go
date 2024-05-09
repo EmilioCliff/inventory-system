@@ -49,7 +49,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 		"PartyB":            "9090757",
 		"PhoneNumber":       newNumber,
 		"CallBackURL":       callback,
-		"AccountReference":  "Kokomed Supplies",
+		"AccountReference":  "KOKOMED SUPPLIES LTD",
 		"TransactionDesc":   "Pay Sold Products",
 	}
 

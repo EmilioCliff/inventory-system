@@ -50,7 +50,7 @@ FROM
 GROUP BY
     issued_date, product_name
 ORDER BY
-    issued_date, product_name
+    issued_date, product_name DESC
 `
 
 type GetEntryByNameRow struct {

@@ -127,7 +127,11 @@
 <div>
     {% if ct == 'users' %}
     {% if data_sent.data is none %}
-    <p>No Users Yet</p>
+        {% if context == 'usersSearchPagination' %}
+        <p>No User Searched</p>
+        {% else %}
+        <p>No Users Yet</p>
+        {% endif %}
     {% else %}
     {% for data in data_sent.data if not data.id == user_id %}
     <a href="{{ url_for('get_user', id=data.id) }}" class="d-flex justify-content-between list--container p-3 mb-3">
@@ -158,7 +162,11 @@
     {% endif %}
     {% elif ct == 'products' %}
     {% if data_sent.data is none %}
-    <p>No Products Yet</p>
+        {% if context == 'productsSearchPagination' %}
+        <p>No Product Searched</p>
+        {% else %}
+        <p>No Products Yet</p>
+        {% endif %}
     {% else %}
     {% if user_id != 1 %}
     <div class="d-inline-flex justify-content-start align-items-center mb-3">
@@ -250,7 +258,11 @@
     {% endif %}
     {% elif ct == 'receipts' %}
     {% if data_sent.data is none %}
-    <p>No Receipts Yet</p>
+        {% if context == 'receiptsSearchPagination' %}
+        <p>No User Receipt Searched</p>
+        {% else %}
+        <p>No Receipts Yet</p>
+        {% endif %}
     {% else %}
     {% for data in data_sent.data %}
     <a href="#" id="viewReceipt" class="d-flex justify-content-between list--container mb-3 p-3">
@@ -311,7 +323,11 @@
     {% endif %}
     {% else %}
     {% if data_sent.data is none %}
-    <p>No Invoice Yet</p>
+        {% if context == 'invoicesSearchPagination' %}
+        <p>No User Invoice Searched</p>
+        {% else %}
+        <p>No Invoice Yet</p>
+        {% endif %}
     {% else %}
     {% for data in data_sent.data %}
     <a href="#" id="viewInvoice" class="d-flex justify-content-between list--container mb-3 p-3">
