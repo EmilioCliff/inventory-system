@@ -651,7 +651,6 @@ def user_received_history(user_id):
         else:
             url = f"{BASE_URL}/history/received/{user_id}"
         rsp = requests.get(url, headers={"Authorization": f"Bearer {session['token']}"})
-        print(rsp.json())
         if rsp.status_code == 200:
             if session['user_id'] == 1:
                 return render_template('admin-history.html', user_id=session['user_id'], data_sent=rsp.json(), action="received")
@@ -669,7 +668,6 @@ def user_sold_history(user_id):
         else:
             url = f"{BASE_URL}/history/sold/{user_id}"
         rsp = requests.get(url, headers={"Authorization": f"Bearer {session['token']}"})
-        print(rsp.json())
         if rsp.status_code == 200:
             if session['user_id'] == 1:
                 return render_template('admin-history.html', user_id=session['user_id'], data_sent=rsp.json(), action="sold")
@@ -692,13 +690,14 @@ def user_debt_history(user_id):
                 data = rsp.json()
                 user_total_quantity = {}
                 user_total_price = {}
-                for entry in data:
-                    if entry['Data'] is not None:
-                        user = entry['user']
-                        total_price = sum(product['price'] for product in entry['Data'])
-                        total_quantity = sum(product['quantity'] for product in entry['Data'])
-                        user_total_price[user] = total_price
-                        user_total_quantity[user] = total_quantity
+                if data is not None:
+                    for entry in data:
+                        if entry['Data'] is not None:
+                            user = entry['user']
+                            total_price = sum(product['price'] for product in entry['Data'])
+                            total_quantity = sum(product['quantity'] for product in entry['Data'])
+                            user_total_price[user] = total_price
+                            user_total_quantity[user] = total_quantity
                 return render_template('admin-history.html', user_id=session['user_id'], price=user_total_price, quantity=user_total_quantity, data_sent=rsp.json(), action="debt")
             return render_template('history.html', user_id=session['user_id'], data_sent=rsp.json(), action="debt")
         elif rsp.status_code == 401:
