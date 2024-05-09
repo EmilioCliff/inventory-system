@@ -10,10 +10,10 @@
     </div>
 {% if action == 'sold' and data_sent|length == 0 %}
     <p>No History</p>
-{% elif action == 'debt' and quantity|length == 0 or price|length == 0 %}
-    <p>No Users Debt</p>
-{% elif data_sent is none %}
+{% elif action == 'received' and data_sent is none %}
     <p>No History</p>
+{% elif action == 'debt' and quantity|length == 0 or price|length == 0 %}
+   <p>No Users Debt</p>
 {% else %}
 <div class="table-responsive-md">
     <table class="table table-bordered table-sm">
