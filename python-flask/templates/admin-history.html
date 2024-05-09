@@ -10,7 +10,7 @@
     </div>
 {% if action == 'sold' and data_sent|length == 0 %}
         <p>No History</p>
-{% elif action == 'debt' and quantity|length == 0 or price|length == 0 %}
+{% elif action == 'debt' and quantity|length == 0 and price|length == 0 %}
         <p>No Users Debt</p>
 {% elif action == 'received' and data_sent is none %}
         <p>No History</p>
