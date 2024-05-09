@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -271,7 +270,6 @@ func (server *Server) getAllUserDebt(ctx *gin.Context) {
 		}
 		rsp = append(rsp, response)
 	}
-	log.Println(rsp)
 
 	err = server.setCache(ctx, AllUserDebt, rsp)
 	if err != nil {
