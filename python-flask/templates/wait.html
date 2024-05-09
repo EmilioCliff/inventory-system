@@ -3,7 +3,7 @@
 <div class="overlay-wait" id="waitOverlay">
     <div class="form-container-wait d-flex flex-column justify-content-center align-items-center p-4 rounded" id="popupformWait">
         <p class="mb-3">Please wait to enter M-PESA PIN</p>
-        <a href="{{ url_for('get_user', id=user.id) }}" id="close-buttonWait" class="btn btn-success mb-2">close</a>
+        <a href="{{ url_for('get_user', id=user_id) }}" id="close-buttonWait" class="btn btn-success mb-2">close</a>
     </div>
 </div>
 {% endblock %}
