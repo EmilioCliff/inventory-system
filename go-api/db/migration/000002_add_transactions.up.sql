@@ -9,7 +9,7 @@ CREATE TABLE "transactions" (
   "mpesa_receipt_number" varchar NOT NULL DEFAULT 'No Receipt Number',
   "result_description" varchar NOT NULL DEFAULT 'Mpesa Not Called Back Description',
   "created_at" timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT fk_transaction_user_id FOREIGN KEY ("transaction_user_id") REFERENCES "users" ("user_id")
+  CONSTRAINT fk_transaction_user_id FOREIGN KEY ("transaction_user_id") REFERENCES "users" ("user_id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 ALTER TABLE "receipts" ADD FOREIGN KEY ("receipt_number") REFERENCES "transactions" ("transaction_id");
