@@ -53,7 +53,7 @@ func (processor *RedisTaskProcessor) ProcessSendVerifyEmail(ctx context.Context,
 		return fmt.Errorf("Internal error: %w", err)
 	}
 
-	accessToken, err := processor.tokenMaker.CreateToken(user.Username, (24 * time.Hour))
+	accessToken, err := processor.tokenMaker.CreateToken(user.Username, (168 * time.Hour))
 	if err != nil {
 		return fmt.Errorf("Internal error: %w", err)
 	}
@@ -63,7 +63,7 @@ func (processor *RedisTaskProcessor) ProcessSendVerifyEmail(ctx context.Context,
 	<h1>Hello %s</h1>
 	<p>A new account has been created for the Kokomed Supplies System. Please create your Password and Login to check it out</p>
 	<a href="%s" style="display:inline-block; padding:10px 20px; background-color:#007BFF; color:#fff; text-decoration:none; border-radius:5px;">Create Password</a>
-	<h5>The link is valid for 10 Minutes</h5>
+	<h5>The link is valid for 1 week</h5>
 	<a href="https://inventory-system-production-378e.up.railway.app/">https://inventory-system-production-378e.up.railway.app/</a>
 `, user.Username, resetPasswordLink)
 
