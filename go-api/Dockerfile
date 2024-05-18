@@ -24,6 +24,7 @@ RUN cd /app/go-api &&  go build -o main main.go
 # Run stage
 FROM alpine:3.19
 WORKDIR /app
+ARG DB_SOURCE
 COPY --from=builder /app/go-api/main .
 COPY --from=builder /app/migrate ./migrate
 COPY --from=builder /app/go-api/app.env .
