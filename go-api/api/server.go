@@ -70,7 +70,7 @@ func (server *Server) setRoutes() {
 	auth.DELETE("/products/admin/delete/:id", server.deleteProduct)
 	auth.PUT("/products/admin/edit/:id", server.editProduct)
 
-	router.GET("/users/login", server.loginUser)
+	router.POST("/users/login", server.loginUser)
 	router.POST("/reset", server.resetPassword)
 	router.POST("/resetit", server.resetIt)
 	router.Any("/transaction/:id", server.mpesaCallback)

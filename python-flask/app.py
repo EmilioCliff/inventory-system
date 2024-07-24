@@ -207,7 +207,7 @@ def login():
             "password": request.form['pass']
         }
         userLoginUrl = f"{BASE_URL}/users/login"
-        rsp = requests.get(url=userLoginUrl, json=userLoginRequest)
+        rsp = requests.post(url=userLoginUrl, json=userLoginRequest)
         user_response = rsp.json()
         if rsp.status_code == 200:
             session['token'] = user_response['access_token']
