@@ -187,6 +187,15 @@ func generateReceipt(data [][]string, user map[string]string) ([]byte, error) {
 		}
 	}
 
+	xPos, yPos := pdf.GetXY()
+	pdf.Ln(5)
+	_, height := pdf.GetFontSize()
+
+	pdf.SetFont("Arial", "", 8.0)
+	pdf.MultiCell(75.0, height, fmt.Sprintf("Payment made from %s. This receipt has been generated electronically and does not require a signature.", user["toContact"]), "0", "", false)
+	pdf.SetFont("Arial", "", 12)
+	pdf.SetXY(xPos, yPos)
+
 	// Calculate the subtotal
 	pdf.SetFontStyle("B")
 	leftIndent := 0.0
