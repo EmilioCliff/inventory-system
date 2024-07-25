@@ -1,8 +1,8 @@
 {% extends 'index.html' %}
 {% block content %}
-{% with messages = get_flashed_messages() %}
-{% for message in messages %}
-<div class="alert alert-success alert-dismissible fade show flash-messages" role="alert">
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for category, message in messages %}
+<div role="alert" class="alert alert-dismissible fade show flash-messages {{ 'alert-success' if category == 'success' else 'alert-danger' }}">
   <div class="d-flex align-items-center"> <!-- Make the icon and text flex items -->
       <div>
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">

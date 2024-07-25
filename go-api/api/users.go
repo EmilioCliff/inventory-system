@@ -630,6 +630,12 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 		return
 	}
 
+	// var adminProducts []map[string]interface{}
+	// if unerr := json.Unmarshal(admin.Stock, &adminProducts); unerr != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
+
 	user, err := server.store.GetUser(ctx, uri.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -641,7 +647,6 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 	}
 
 	var newProducts []db.Product
-	log.Info().Int("first quantity", int(req.Quantities[0])).Msg("add client stock log")
 	for idx, id := range req.ProductsID {
 		log.Info().Int("productId", int(id)).Int("quantity", int(req.Quantities[idx])).Msg("add client stock log")
 		addProduct, err := server.store.GetProduct(ctx, id)
@@ -653,6 +658,28 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
 		}
+		// check if admin has enough stock to sell
+		// for _, adminProduct := range adminProducts {
+		// 	if idAdmin, ok := adminProduct["productID"].(float64); ok {
+		// 		idInt := int64(idAdmin)
+		// 		if idInt == id {
+		// 			quantityInt := adminProduct["productQuantity"].(int64)
+		// 			// quantityInt := quantityFloat
+		// 			if quantityInt-req.Quantities[idx] < 0 {
+		// 				ctx.JSON(http.StatusNotAcceptable, gin.H{"error": fmt.Sprintf("Not enough in stock to distribute: %s = %v", addProduct.ProductName, req.Quantities[idx])})
+		// 				return
+		// 				// return fmt.Errorf("Not enough in inventory %v - %v to sell %v", adminProduct["productName"], adminProduct["productQuantity"], arg.Amount[index])
+		// 			}
+		// 		}
+		// 	}
+		// }
+		/*
+			[
+				{"productID":1,"productName":"Test Product 1","productQuantity":0},
+				{"productID":2,"productName":"Test Product 2","productQuantity":3},
+				{"productID":3,"productName":"Test Product 3","productQuantity":70}
+			]
+		*/
 
 		newProducts = append(newProducts, addProduct)
 	}
@@ -679,7 +706,7 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 		},
 	})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusNotAcceptable, errorResponse(err))
 		return
 	}
 
@@ -747,7 +774,7 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		for _, data := range jsonUserStock {
 			if id == int8(data["productID"].(float64)) {
 				if int8(data["productQuantity"].(float64)) < req.Quantities[idx] {
-					ctx.JSON(http.StatusInternalServerError, errorResponse(fmt.Errorf("Not enough in stock to sell: Product: %v InStock: %v", data["productName"], data["productQuantity"])))
+					ctx.JSON(http.StatusNotAcceptable, errorResponse(fmt.Errorf("Not enough in stock to sell: Product: %v InStock: %v", data["productName"], data["productQuantity"])))
 					return
 				}
 			}

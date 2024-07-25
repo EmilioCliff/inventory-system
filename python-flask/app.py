@@ -34,10 +34,10 @@ def create_user():
         }
         rsp = requests.post(url=createUserUrl, json=createUserRequest, headers={"Authorization": f"Bearer {session['token']}"})
         if rsp.status_code == 200:
-            flash("User Created Succefully")
+            flash("User Created Succefully", "success")
             return redirect(url_for('list_users'))
         elif rsp.status_code == 401:
-            flash("Please login")
+            flash("Please login", "error")
             return redirect(url_for('login'))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -54,10 +54,10 @@ def create_product():
         }
         rsp = requests.post(url=createProductUrl, json=createProductRequest, headers={"Authorization": f"Bearer {session['token']}"})
         if rsp.status_code == 200:
-            flash("Product Created Successfully")
+            flash("Product Created Successfully", "success")
             return redirect(url_for('list_products'))
         elif rsp.status_code == 401:
-            flash("Please login")
+            flash("Please login", "error")
             return redirect(url_for('login'))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -68,10 +68,10 @@ def delete_product(id):
     deleteProductUrl = f"{BASE_URL}/products/admin/delete/{id}"
     rsp = requests.delete(url=deleteProductUrl, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 200:
-        flash("Product Deleted Successfully")
+        flash("Product Deleted Successfully", "success")
         return redirect(url_for('list_products'))
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -87,15 +87,15 @@ def delete_user(id):
             deleteUserUrl = f"{BASE_URL}/users/admin/{id}"
             rsp = requests.delete(url=deleteUserUrl, headers={"Authorization": f"Bearer {session['token']}"})
             if rsp.status_code == 200:
-                flash("User Deleted Successfully")
+                flash("User Deleted Successfully", "success")
                 return redirect(url_for('list_users'))
             elif rsp.status_code == 401:
-                flash("Please login")
+                flash("Please login", "error")
                 return redirect(url_for('login'))
             else:
                 return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
         else:
-            flash("Username didnt match")
+            flash("Username didnt match", "error")
             return redirect(url_for('list_users'))
     
 @app.route('/edit_product/<int:id>', methods=['POST'])
@@ -110,10 +110,10 @@ def edit_product(id):
         print(editProductRequest)
         rsp = requests.put(url=editProductUrl, json=editProductRequest, headers={"Authorization": f"Bearer {session['token']}"})
         if rsp.status_code == 200:
-            flash("Products Details Changed Successfully")
+            flash("Products Details Changed Successfully", "success")
             return redirect(url_for('list_products'))
         elif rsp.status_code == 401:
-            flash("Please login")
+            flash("Please login", "error")
             return redirect(url_for('login'))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])         
@@ -131,10 +131,10 @@ def change_password(id):
         }
         rsp = requests.put(url=changePasswordUrl, json=changePasswordRequest, headers={"Authorization": f"Bearer {session['token']}"})
         if rsp.status_code == 200:
-            flash("Password Details Changed Successfully")
+            flash("Password Details Changed Successfully", "success")
             return redirect(url_for('get_user'))
         elif rsp.status_code == 401:
-            flash("Please login")
+            flash("Please login", "error")
             return redirect(url_for('login'))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -155,10 +155,10 @@ def manage_user(id):
         rsp = requests.put(url=manageUserUrl, json=changePasswordRequest, headers={"Authorization": f"Bearer {session['token']}"})
 
         if rsp.status_code == 200:
-            flash("Users Details Changed Successfully")
+            flash("Users Details Changed Successfully", "success")
             return redirect(url_for('get_user', id=id))
         elif rsp.status_code == 401:
-            flash("Please login")
+            flash("Please login", "error")
             return redirect(url_for('login'))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])          
@@ -171,10 +171,10 @@ def reset():
         resetPasswordRequest = {"email": request.form.get('email')}
         rsp = requests.post(url=resetPasswordUrl, json=resetPasswordRequest)
         if rsp.status_code == 200:
-            flash("Reset email sent")
+            flash("Reset email sent", "success")
             return redirect(url_for('login'))
         elif rsp.status_code == 500:
-            flash("No User Found With Email Provided")
+            flash("No User Found With Email Provided", "error")
             return redirect(url_for('reset'))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])    
@@ -188,7 +188,7 @@ def resetit():
         password = request.form.get('pass')
         confimPass = request.form.get('Confirmpass')
         if password != confimPass:
-            flash("Password Don't Match")
+            flash("Password Don't Match", "error")
             return redirect('reset')
         resetItUrl = f"{BASE_URL}/resetit"
         rsp = requests.post(url=resetItUrl, params={"token": token}, json={"password": password})
@@ -217,12 +217,12 @@ def login():
         elif rsp.status_code == 400:
             render_template('failed.html', error_code=rsp.status_code)
         elif rsp.status_code == 401:
-            flash("Incorrect Password")
+            flash("Incorrect Password", "error")
         elif rsp.status_code == 404:
-            flash("No user with this email found")
+            flash("No user with this email found", "error")
         else:
             print(user_response['error'])
-            flash("No user found")
+            flash("No user found", "error")
             # return render_template('failed.html', error_code=rsp.status_code)
     return render_template("login.html")
 
@@ -237,7 +237,7 @@ def get_user(id):
             return render_template('user.html', user=rsp.json(), admin=rspAdmin.json(), user_id=session['user_id'], ct="user")
         return render_template('user.html', user=rsp.json(), admin="none", user_id=session['user_id'], ct="user")
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -249,7 +249,7 @@ def get_product(id):
     if rsp.status_code == 200:
         return render_template('get_product.html', user_data=rsp.json()) # unmarshal JSON and read data
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -262,7 +262,7 @@ def get_invoice(id):
     if rsp.status_code == 200:
         return render_template('get_invoice.html', user_data=rsp.json()) # unmarshal JSON and read data
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -274,7 +274,7 @@ def get_receipt(id):
     if rsp.status_code == 200:
         return render_template('get_receipt.html', user_data=rsp.json()) # unmarshal JSON and read data
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -291,10 +291,10 @@ def list_invoices():
     params = {'page_id': request.args.get('page_id', 1)}
     rsp = requests.get(url=listInvoicesUri, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
-        flash("Please try again server error")
+        flash("Please try again server error", "error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     return render_template("list.html", data_sent=rsp.json(), ct="invoices", user_id=session['user_id'], context="listingPagination")
 
@@ -304,10 +304,10 @@ def list_receipts():
     params = {'page_id': request.args.get('page_id', 1)}
     rsp = requests.get(url=listReceiptUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
-        flash("Please try again server error")
+        flash("Please try again server error", "error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     return render_template("list.html", data_sent=rsp.json(), ct="receipts", user_id=session['user_id'], context="listingPagination")
 
@@ -317,10 +317,10 @@ def list_users():
     params = {'page_id': request.args.get('page_id', 1)}
     rsp = requests.get(url=listUsersUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
-        flash("Please try again server error")
+        flash("Please try again server error", "error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     return render_template("list.html", data_sent=rsp.json(), ct="users", user_id=session['user_id'], context="listingPagination")
 
@@ -343,10 +343,10 @@ def search_all():
                 return redirect(url_for('list_invoices'))
     rsp = requests.get(url=listUsersUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
-        flash("Please try again server error")
+        flash("Please try again server error", "error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     if search_context == "products":
         products = requests.get(url=f"{BASE_URL}/allproducts/", headers={"Authorization": f"Bearer {session['token']}"})
@@ -392,10 +392,10 @@ def list_products():
     if session['user_id'] > 1:
         products = requests.get(url=f"{BASE_URL}/allproducts/", headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
-        flash("Please try again server error")
+        flash("Please try again server error", "error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     if session['user_id'] > 1:
         return render_template("list.html", data_sent=rsp.json(), ct="products", all_products=products.json(), user_id=session['user_id'])
@@ -415,7 +415,7 @@ def get_user_invoices(id):
             return render_template("user.html", invoice=rsp.json(), user=user.json(), admin=rspAdmin.json(), user_id=session['user_id'], ct='invoice')
         return render_template("user.html", invoice=rsp.json(), user=user.json(), admin={"stock": None}, user_id=session['user_id'], ct='invoice')
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -433,7 +433,7 @@ def get_user_receipts(id):
             return render_template("user.html", invoice=rsp.json(), user=user.json(), admin=rspAdmin.json(), user_id=session['user_id'], ct='invoice')
         return render_template("user.html", receipt=rsp.json(), user=user.json(), admin={"stock": None}, user_id=session['user_id'], ct='receipt')
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -445,7 +445,7 @@ def get_user_products(id):
     if rsp.status_code == 200:
         return render_template("get_user_products.html", user_invoiceData=rsp.json())
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -459,10 +459,10 @@ def add_admin_stock():
         q = request.form.get("quantity")
         rsp = requests.post(url=addAdminStockUrl, json={"user_id": 1, "quantity": int(q)}, headers={"Authorization": f"Bearer {session['token']}"})
         if rsp.status_code == 200:
-            flash("Stock Added Successfully")
+            flash("Stock Added Successfully", "success")
             return redirect(url_for('get_user', id=1))
         elif rsp.status_code == 401:
-            flash("Please login")
+            flash("Please login", "error")
             return redirect(url_for('login'))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -483,11 +483,14 @@ def add_client_stock(id):
         addClientStockUrl = f"{BASE_URL}/users/admin/manage/add/{id}"
         rsp = requests.post(url=addClientStockUrl, json=data, headers={"Authorization": f"Bearer {session['token']}"})
         if rsp.status_code == 200:
-            flash("User Stock Added")
+            flash("User Stock Added", "success")
             return redirect(url_for('get_user', id=id))
         elif rsp.status_code == 401:
-            flash("Please login")
+            flash("Please login", "error")
             return redirect(url_for('login'))
+        elif rsp.status_code == 406:
+            flash(rsp.json()["error"], "error")
+            return redirect(url_for('get_user', id=id))
         else:
             return render_template('failed.html', error_code=rsp.status_code)
     return render_template("add_client_stock.html")
@@ -514,8 +517,11 @@ def reduce_client_stock(id):
             return render_template("wait.html", user_id=id)
             # return redirect(url_for('get_user', id=id))  # Redirect to some success page
         elif rsp.status_code == 401:
-            flash("Please login")
+            flash("Please login", "error")
             return redirect(url_for('login'))
+        elif rsp.status_code == 406:
+            flash(rsp.json()["error"], "error")
+            return render_template("wait.html", user_id=id)
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     return render_template("reduce_client_stock.html")
@@ -530,10 +536,10 @@ def search_transactions():
         listUsersUrl = f"{BASE_URL}/search/all"
     rsp = requests.get(url=listUsersUrl, params=params, headers={"Authorization": f"Bearer {session['token']}"})
     if rsp.status_code == 500:
-        flash("Please try again server error")
+        flash("Please try again server error", "error")
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     elif rsp.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     return render_template("transactions.html", data_sent=rsp.json(), user_id=session['user_id'], action=f"search_{search_context}")
 
@@ -595,10 +601,10 @@ def invoiceDownload(id_param):
     pdf_bytes = base64.b64decode(data['invoice_pdf'])
 
     if response.status_code == 200:
-        flash("Invoice Downloaded Successfully")
+        flash("Invoice Downloaded Successfully", "success")
         return send_file(BytesIO(pdf_bytes), as_attachment=True, mimetype='application/pdf', download_name=f"INV-{id_param}.pdf")
     elif response.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=response.status_code, error=response.json()['error'])
@@ -611,10 +617,10 @@ def receiptDownload(id_param):
 
     if response.status_code == 200:
         pdf_bytes = base64.b64decode(data['receipt_pdf'])
-        flash("Receipt Downloaded Successfully")
+        flash("Receipt Downloaded Successfully", "success")
         return send_file(BytesIO(pdf_bytes), as_attachment=True, mimetype='application/pdf', download_name=f"RCPT-{id_param}.pdf")
     elif response.status_code == 401:
-        flash("Please login")
+        flash("Please login", "error")
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=response.status_code, error=response.json()['error'])
@@ -635,10 +641,10 @@ def request_stock(id):
             rsp = requests.post(url, json=data, headers={"Authorization": f"Bearer {session['token']}"})
 
             if rsp.status_code == 200:
-                flash("Request Recorded")
+                flash("Request Recorded", "success")
                 return redirect(url_for('list_products'))  # Redirect to some success page
             elif rsp.status_code == 401:
-                flash("Please login")
+                flash("Please login", "error")
                 return redirect(url_for('login'))
             else:
                 return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -656,7 +662,7 @@ def user_received_history(user_id):
                 return render_template('admin-history.html', user_id=session['user_id'], data_sent=rsp.json(), action="received")
             return render_template('history.html', user_id=session['user_id'], data_sent=rsp.json(), action="received")
         elif rsp.status_code == 401:
-            flash("Please login")
+            flash("Please login", "error")
             return redirect(url_for('login'))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -673,7 +679,7 @@ def user_sold_history(user_id):
                 return render_template('admin-history.html', user_id=session['user_id'], data_sent=rsp.json(), action="sold")
             return render_template('history.html', user_id=session['user_id'], data_sent=rsp.json(), action="sold")
         elif rsp.status_code == 401:
-            flash("Please login")
+            flash("Please login", "error")
             return redirect(url_for('login'))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -701,7 +707,7 @@ def user_debt_history(user_id):
                 return render_template('admin-history.html', user_id=session['user_id'], price=user_total_price, quantity=user_total_quantity, data_sent=rsp.json(), action="debt")
             return render_template('history.html', user_id=session['user_id'], data_sent=rsp.json(), action="debt")
         elif rsp.status_code == 401:
-            flash("Please login")
+            flash("Please login", "error")
             return redirect(url_for('login'))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
@@ -743,9 +749,9 @@ def notify():
 def handle_connection_error(error):
     return render_template('failed.html', error_code=500, error=str(error), connection=True)
 
-@app.errorhandler(InternalServerError)
-def handle_server_error(error):
-    return render_template('failed.html', error_code=500, error=str(error), connection=True)
+# @app.errorhandler(InternalServerError)
+# def handle_server_error(error):
+#     return render_template('failed.html', error_code=500, error=str(error), connection=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
