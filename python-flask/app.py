@@ -206,7 +206,7 @@ def login():
             "email": request.form['email'],
             "password": request.form['pass']
         }
-        
+
         userLoginUrl = f"{BASE_URL}/users/login"
         rsp = requests.post(url=userLoginUrl, json=userLoginRequest)
         user_response = rsp.json()
@@ -522,7 +522,7 @@ def reduce_client_stock(id):
             return redirect(url_for('login'))
         elif rsp.status_code == 406:
             flash(rsp.json()["error"], "error")
-            return render_template("wait.html", user_id=id)
+            return redirect(url_for('get_user', id=id))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     return render_template("reduce_client_stock.html")

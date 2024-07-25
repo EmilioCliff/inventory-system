@@ -160,11 +160,6 @@ if (requestClientStockCloseBtn) {
     overlay_requestClientStock.style.opacity = '0';
     popupFormRequestClientStock.style.visibility = 'hidden';
     popupFormRequestClientStock.style.opacity = '0';
-
-    requestButton.addEventListener('click', function() {
-      overlay_requestClientStock.style.display = 'block';
-      popupFormRequestClientStock.style.display = 'block';
-    });
   });
 }
 
@@ -182,11 +177,6 @@ if (requestClientStockCloseBtn) {
       overlay_recudeClientStock.style.opacity = '0';
       popupFormReduceClientStock.style.visibility = 'hidden';
       popupFormReduceClientStock.style.opacity = '0';
-
-      reduceButton.addEventListener('click', function() {
-        overlay_recudeClientStock.style.display = 'block';
-        popupFormReduceClientStock.style.display = 'block';
-      });
     });
   }
 
@@ -219,11 +209,6 @@ if (requestClientStockCloseBtn) {
       overlay_addClientStock.style.opacity = '0';
       popupFormAddClientStock.style.visibility = 'hidden';
       popupFormAddClientStock.style.opacity = '0';
-    })
-
-    addClientStockBtn.addEventListener('click', function() {
-      overlay_addClientStock.style.display = 'block';
-      popupFormAddClientStock.style.display = 'block';
     })
   }
 
@@ -372,7 +357,7 @@ if (closeButton) {
       });
   }
 
-  const buttons = document.querySelectorAll('.btn:not(.delete-button):not(#editButton):not(#requestClientStockkk):not(#reduceClientStock):not(#addClientStockBtn)');
+  const buttons = document.querySelectorAll('.btn:not(.delete-button):not(#editButton)');
 
   buttons.forEach(button => {
     button.addEventListener('click', function() {
