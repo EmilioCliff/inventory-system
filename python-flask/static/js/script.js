@@ -372,7 +372,7 @@ if (closeButton) {
       });
   }
 
-  const buttons = document.querySelectorAll('.btn:not(.delete-button):not(#editButton)');
+  const buttons = document.querySelectorAll('.btn:not(.delete-button):not(#editButton):not(#requestClientStockkk):not(#reduceClientStock):not(#addClientStockBtn)');
 
   buttons.forEach(button => {
     button.addEventListener('click', function() {

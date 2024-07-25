@@ -206,6 +206,7 @@ def login():
             "email": request.form['email'],
             "password": request.form['pass']
         }
+        
         userLoginUrl = f"{BASE_URL}/users/login"
         rsp = requests.post(url=userLoginUrl, json=userLoginRequest)
         user_response = rsp.json()
