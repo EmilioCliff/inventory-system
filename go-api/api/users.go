@@ -469,7 +469,7 @@ type addAdminStockURIRequest struct {
 
 type addAdminStockJSONRequest struct {
 	UserID   int64 `json:"user_id" binding:"required,min=1"`
-	Quantity int64 `json:"quantity" binding:"required,min=1"`
+	Quantity int64 `json:"quantity" binding:"required"`
 }
 
 func (server *Server) addAdminStock(ctx *gin.Context) {
