@@ -189,7 +189,7 @@ func generateInvoice(data [][]string, user map[string]string) ([]byte, error) {
 	_, height := pdf.GetFontSize()
 
 	pdf.SetFont("Arial", "", 8.0)
-	pdf.MultiCell(75.0, height, "Please ensure that this invoice is paid within 15 days from the invoice date. This invoice has been generated electronically and does not require a signature.", "0", "", false)
+	pdf.MultiCell(75.0, height, "Payment should be strictly paid to Till Number 9090757", "0", "", false)
 	pdf.SetFont("Arial", "", 12)
 	pdf.SetXY(xPos, yPos)
 
@@ -216,7 +216,7 @@ func generateInvoice(data [][]string, user map[string]string) ([]byte, error) {
 	pdf.Cell(40, 8.0, "PAYMENT INFORMATION")
 	pdf.SetFontStyle("")
 	pdf.Ln(5)
-	pdf.Cell(60, 8.0, fmt.Sprintf("Till Number: %s", "7169782"))
+	pdf.Cell(60, 8.0, fmt.Sprintf("Till Number: %s", "9090757"))
 
 	var buffer bytes.Buffer
 	if err := pdf.Output(&buffer); err != nil {
