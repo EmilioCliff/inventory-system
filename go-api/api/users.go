@@ -724,8 +724,8 @@ type reduceClientStockURIRequest struct {
 }
 
 type reduceClientStockJSONRequest struct {
-	ProductsID []int8 `json:"products_id" biding:"required"`
-	Quantities []int8 `json:"quantities" biding:"required"`
+	ProductsID []int8  `json:"products_id" biding:"required"`
+	Quantities []int64 `json:"quantities" biding:"required"`
 }
 
 func (server *Server) reduceClientStock(ctx *gin.Context) {
