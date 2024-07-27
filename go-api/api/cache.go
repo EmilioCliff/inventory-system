@@ -27,5 +27,5 @@ const (
 	AllUserDebt                = "/history/all_debt"
 	AdminHistory               = "/history/admin"
 	TestGroup                  = "/history/test"
-	Random                     = "//"
+	Random                     = "//image"
 )
