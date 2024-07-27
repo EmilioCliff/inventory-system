@@ -775,7 +775,7 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 			dataID := int8(data["productID"].(float64))
 			if dataID == id {
 				// if id == int8(data["productID"].(float64)) {
-				if int8(data["productQuantity"].(float64)) < req.Quantities[idx] {
+				if int64(data["productQuantity"].(float64)) < int64(req.Quantities[idx]) {
 					log.Info().Int("productId", int(id)).Int("quantity", int(req.Quantities[idx])).Msg("reduce client stock log")
 					ctx.JSON(http.StatusNotAcceptable, errorResponse(fmt.Errorf("Not enough in stock to sell: Product: %v InStock: %v", data["productName"], data["productQuantity"])))
 					return
