@@ -38,7 +38,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 
 	newNumber := setPhoneNumber(phoneNumber)
 
-	// callback := fmt.Sprintf("https://secretive-window-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
+	callback := fmt.Sprintf("https://secretive-window-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	requestBody := map[string]interface{}{
 		"BusinessShortCode": shortCode,
 		"Password":          generatePassword(shortCode, config.PASSKEY),
@@ -48,7 +48,7 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 		"PartyA":            newNumber,
 		"PartyB":            "9090757",
 		"PhoneNumber":       newNumber,
-		"CallBackURL":       "https://secretive-window-production.up.railway.app/transon/",
+		"CallBackURL":       callback,
 		"AccountReference":  "KOKOMED SUPPLIES LTD",
 		"TransactionDesc":   "Pay Sold Products",
 	}
