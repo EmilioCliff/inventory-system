@@ -30,7 +30,7 @@
             <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
         </svg>
     </a>
-    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; row-gap: .5rem;">
+    <div style="display: flex; flex-direction: column; justify-content: center; align-items: center; margin: auto;">
             <p style="flex-grow: 1; align-items: center; text-align: center;font-size: large; font-weight: 500;color: black;">{{ user.username|title}}</p>
         {% if user.id != 1 and user_id == 1 %}
             <p style="font-size: 1rem;margin-top: .5rem;color: black;font-weight: 600;"><sup style="position: relative;top: -15px; font-size: .7rem;">KES</sup>{{ invoice_date }}</p>
