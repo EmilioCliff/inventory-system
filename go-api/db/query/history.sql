@@ -10,6 +10,16 @@ GROUP BY
 ORDER BY 
     issued_date DESC;
 
+-- name: GetInvoicesByDateReverse :many
+SELECT 
+    DATE_TRUNC('day', created_at)::timestamp AS issued_date,
+    COUNT(*) AS num_invoices, 
+    JSON_AGG(invoice_data) AS invoice_data
+FROM 
+    invoices
+GROUP BY 
+    issued_date;
+
 -- name: GetUserInvoicesByDate :many
 SELECT 
     DATE_TRUNC('day', created_at)::timestamp AS issued_date,

@@ -2,6 +2,7 @@
 FROM golang:1.22.0-alpine3.19 AS builder
 WORKDIR /app
 COPY . .
+# RUN mkdir /app/snapshots
 
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 RUN apk update
@@ -14,7 +15,8 @@ RUN echo "$GPG_KEY" > /app/gpg_key
 RUN gpg --import /app/gpg_key
 RUN rm -r /app/gpg_key
 RUN git secret reveal -f
-RUN git secret cat go-api/app.env
+# RUN git secret cat go-api/app.env
+RUN git secret cat app.env
 
 # install migrate
 RUN apk add curl
@@ -24,16 +26,16 @@ RUN cd /app/go-api &&  go build -o main main.go
 # Run stage
 FROM alpine:3.19
 WORKDIR /app
+
 ARG DB_SOURCE
 COPY --from=builder /app/go-api/main .
 COPY --from=builder /app/migrate ./migrate
 COPY --from=builder /app/go-api/app.env .
-COPY --from=builder /app/snapshots/*.sql /app/snapshots
+# COPY --from=builder /app/snapshots/*.sql /app/snapshots
 COPY go-api/db/migration ./migration
 COPY go-api/db/sqlc/Kokomed-Logo.png .
+COPY go-api/db/sqlc/Kokomed-Logo-small.png .
 COPY go-api/start.sh .
 
-
 EXPOSE 8080
-CMD ["/app/main"]
 ENTRYPOINT ["/app/start.sh"]

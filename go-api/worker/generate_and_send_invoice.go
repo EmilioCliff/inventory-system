@@ -15,9 +15,10 @@ import (
 const GenerateInvoiceAndSendEmailTask = "task:generate_invoice_and_send_email"
 
 type GenerateInvoiceAndSendEmailPayload struct {
-	User     db.User      `json:"username"`
-	Products []db.Product `json:"products"`
-	Amount   []int64      `json:"amount"`
+	User        db.User      `json:"username"`
+	Products    []db.Product `json:"products"`
+	Amount      []int64      `json:"amount"`
+	InvoiceDate time.Time    `json:"invoice_date"`
 }
 
 func (distributor *RedisTaskDistributor) DistributeGenerateAndSendInvoice(ctx context.Context, payload GenerateInvoiceAndSendEmailPayload, opt ...asynq.Option) error {
@@ -66,10 +67,16 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendInvoice(ctx context.C
 	}
 
 	timestamp := time.Now().Format("20060102150405")
+	// timestampUUID, err := uuid.NewRandom()
+	// if err != nil {
+	// 	return fmt.Errorf("Failed to generate uuid: %w", err)
+	// }
+
+	// timestamp := timestampUUID.String()[:10]
 
 	invoiceC := map[string]string{
 		"invoice_number":   timestamp,
-		"created_at":       time.Now().Format("2006-01-02"),
+		"created_at":       invoiceDataPayload.InvoiceDate.Format("2006-01-02"),
 		"invoice_username": invoiceDataPayload.User.Username,
 	}
 
@@ -89,6 +96,7 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendInvoice(ctx context.C
 		InvoiceData:         jsonInvoiceData,
 		UserInvoiceUsername: invoiceDataPayload.User.Username,
 		InvoicePdf:          pdfBytes,
+		InvoiceDate:         invoiceDataPayload.InvoiceDate,
 	})
 
 	emailBody := fmt.Sprintf(`

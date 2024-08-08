@@ -2,7 +2,6 @@ package api
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -89,11 +88,11 @@ func (server *Server) allTransactions(ctx *gin.Context) {
 
 	var formatedTransaction []transactionResponse
 	for _, transaction := range transactions {
-		var transactionData map[string][]int
-		if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-			return
-		}
+		// var transactionData map[string][]int
+		// if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
+		// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 	return
+		// }
 
 		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
 		if err != nil {
@@ -106,23 +105,23 @@ func (server *Server) allTransactions(ctx *gin.Context) {
 		}
 
 		var transactionProducts []productDataResponse
-		for idx, productID := range transactionData["products_id"] {
-			product, err := server.store.GetProduct(ctx, int64(productID))
-			if err != nil {
-				if err == sql.ErrNoRows {
-					ctx.JSON(http.StatusNotFound, errorResponse(err))
-					return
-				}
-				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-				return
-			}
+		// for idx, productID := range transactionData["products_id"] {
+		// 	product, err := server.store.GetProduct(ctx, int64(productID))
+		// 	if err != nil {
+		// 		if err == sql.ErrNoRows {
+		// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+		// 			return
+		// 		}
+		// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 		return
+		// 	}
 
-			totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
-			transactionProducts = append(transactionProducts, productDataResponse{
-				Product:  product.ProductName,
-				Quantity: int64(totalAmount),
-			})
-		}
+		// 	totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
+		// 	transactionProducts = append(transactionProducts, productDataResponse{
+		// 		Product:  product.ProductName,
+		// 		Quantity: int64(totalAmount),
+		// 	})
+		// }
 
 		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
@@ -188,11 +187,11 @@ func (server *Server) succussfulTransactions(ctx *gin.Context) {
 
 	var formatedTransaction []transactionResponse
 	for _, transaction := range succussfulTransactions {
-		var transactionData map[string][]int
-		if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-			return
-		}
+		// var transactionData map[string][]int
+		// if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
+		// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 	return
+		// }
 
 		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
 		if err != nil {
@@ -205,23 +204,23 @@ func (server *Server) succussfulTransactions(ctx *gin.Context) {
 		}
 
 		var transactionProducts []productDataResponse
-		for idx, productID := range transactionData["products_id"] {
-			product, err := server.store.GetProduct(ctx, int64(productID))
-			if err != nil {
-				if err == sql.ErrNoRows {
-					ctx.JSON(http.StatusNotFound, errorResponse(err))
-					return
-				}
-				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-				return
-			}
+		// for idx, productID := range transactionData["products_id"] {
+		// 	product, err := server.store.GetProduct(ctx, int64(productID))
+		// 	if err != nil {
+		// 		if err == sql.ErrNoRows {
+		// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+		// 			return
+		// 		}
+		// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 		return
+		// 	}
 
-			totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
-			transactionProducts = append(transactionProducts, productDataResponse{
-				Product:  product.ProductName,
-				Quantity: int64(totalAmount),
-			})
-		}
+		// 	totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
+		// 	transactionProducts = append(transactionProducts, productDataResponse{
+		// 		Product:  product.ProductName,
+		// 		Quantity: int64(totalAmount),
+		// 	})
+		// }
 
 		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
@@ -287,11 +286,11 @@ func (server *Server) failedTransactions(ctx *gin.Context) {
 
 	var formatedTransaction []transactionResponse
 	for _, transaction := range failedTransactions {
-		var transactionData map[string][]int
-		if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-			return
-		}
+		// var transactionData map[string][]int
+		// if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
+		// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 	return
+		// }
 
 		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
 		if err != nil {
@@ -304,23 +303,23 @@ func (server *Server) failedTransactions(ctx *gin.Context) {
 		}
 
 		var transactionProducts []productDataResponse
-		for idx, productID := range transactionData["products_id"] {
-			product, err := server.store.GetProduct(ctx, int64(productID))
-			if err != nil {
-				if err == sql.ErrNoRows {
-					ctx.JSON(http.StatusNotFound, errorResponse(err))
-					return
-				}
-				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-				return
-			}
+		// for idx, productID := range transactionData["products_id"] {
+		// 	product, err := server.store.GetProduct(ctx, int64(productID))
+		// 	if err != nil {
+		// 		if err == sql.ErrNoRows {
+		// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+		// 			return
+		// 		}
+		// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 		return
+		// 	}
 
-			totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
-			transactionProducts = append(transactionProducts, productDataResponse{
-				Product:  product.ProductName,
-				Quantity: int64(totalAmount),
-			})
-		}
+		// 	totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
+		// 	transactionProducts = append(transactionProducts, productDataResponse{
+		// 		Product:  product.ProductName,
+		// 		Quantity: int64(totalAmount),
+		// 	})
+		// }
 
 		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
@@ -397,11 +396,11 @@ func (server *Server) getUsersTransactions(ctx *gin.Context) {
 
 	var formatedTransaction []transactionResponse
 	for _, transaction := range userTransactions {
-		var transactionData map[string][]int
-		if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-			return
-		}
+		// var transactionData map[string][]int
+		// if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
+		// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 	return
+		// }
 
 		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
 		if err != nil {
@@ -414,23 +413,23 @@ func (server *Server) getUsersTransactions(ctx *gin.Context) {
 		}
 
 		var transactionProducts []productDataResponse
-		for idx, productID := range transactionData["products_id"] {
-			product, err := server.store.GetProduct(ctx, int64(productID))
-			if err != nil {
-				if err == sql.ErrNoRows {
-					ctx.JSON(http.StatusNotFound, errorResponse(err))
-					return
-				}
-				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-				return
-			}
+		// for idx, productID := range transactionData["products_id"] {
+		// 	product, err := server.store.GetProduct(ctx, int64(productID))
+		// 	if err != nil {
+		// 		if err == sql.ErrNoRows {
+		// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+		// 			return
+		// 		}
+		// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 		return
+		// 	}
 
-			totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
-			transactionProducts = append(transactionProducts, productDataResponse{
-				Product:  product.ProductName,
-				Quantity: int64(totalAmount),
-			})
-		}
+		// 	totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
+		// 	transactionProducts = append(transactionProducts, productDataResponse{
+		// 		Product:  product.ProductName,
+		// 		Quantity: int64(totalAmount),
+		// 	})
+		// }
 
 		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
@@ -503,11 +502,11 @@ func (server *Server) getUserSuccessfulTransaction(ctx *gin.Context) {
 
 	var formatedTransaction []transactionResponse
 	for _, transaction := range successfulUserTransactions {
-		var transactionData map[string][]int
-		if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-			return
-		}
+		// var transactionData map[string][]int
+		// if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
+		// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 	return
+		// }
 
 		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
 		if err != nil {
@@ -520,23 +519,23 @@ func (server *Server) getUserSuccessfulTransaction(ctx *gin.Context) {
 		}
 
 		var transactionProducts []productDataResponse
-		for idx, productID := range transactionData["products_id"] {
-			product, err := server.store.GetProduct(ctx, int64(productID))
-			if err != nil {
-				if err == sql.ErrNoRows {
-					ctx.JSON(http.StatusNotFound, errorResponse(err))
-					return
-				}
-				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-				return
-			}
+		// for idx, productID := range transactionData["products_id"] {
+		// 	product, err := server.store.GetProduct(ctx, int64(productID))
+		// 	if err != nil {
+		// 		if err == sql.ErrNoRows {
+		// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+		// 			return
+		// 		}
+		// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 		return
+		// 	}
 
-			totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
-			transactionProducts = append(transactionProducts, productDataResponse{
-				Product:  product.ProductName,
-				Quantity: int64(totalAmount),
-			})
-		}
+		// 	totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
+		// 	transactionProducts = append(transactionProducts, productDataResponse{
+		// 		Product:  product.ProductName,
+		// 		Quantity: int64(totalAmount),
+		// 	})
+		// }
 
 		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
@@ -609,11 +608,11 @@ func (server *Server) getUserFailedTransaction(ctx *gin.Context) {
 
 	var formatedTransaction []transactionResponse
 	for _, transaction := range failedUserTransactions {
-		var transactionData map[string][]int
-		if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-			return
-		}
+		// var transactionData map[string][]int
+		// if err := json.Unmarshal(transaction.DataSold, &transactionData); err != nil {
+		// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 	return
+		// }
 
 		user, err := server.store.GetUser(ctx, int64(transaction.TransactionUserID))
 		if err != nil {
@@ -626,23 +625,23 @@ func (server *Server) getUserFailedTransaction(ctx *gin.Context) {
 		}
 
 		var transactionProducts []productDataResponse
-		for idx, productID := range transactionData["products_id"] {
-			product, err := server.store.GetProduct(ctx, int64(productID))
-			if err != nil {
-				if err == sql.ErrNoRows {
-					ctx.JSON(http.StatusNotFound, errorResponse(err))
-					return
-				}
-				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-				return
-			}
+		// for idx, productID := range transactionData["products_id"] {
+		// 	product, err := server.store.GetProduct(ctx, int64(productID))
+		// 	if err != nil {
+		// 		if err == sql.ErrNoRows {
+		// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+		// 			return
+		// 		}
+		// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		// 		return
+		// 	}
 
-			totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
-			transactionProducts = append(transactionProducts, productDataResponse{
-				Product:  product.ProductName,
-				Quantity: int64(totalAmount),
-			})
-		}
+		// 	totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
+		// 	transactionProducts = append(transactionProducts, productDataResponse{
+		// 		Product:  product.ProductName,
+		// 		Quantity: int64(totalAmount),
+		// 	})
+		// }
 
 		newTransaction, err := newTransactionResponse(transaction, transactionProducts, user.Username)
 		if err != nil {
@@ -698,30 +697,30 @@ func (server *Server) getUserTransaction(ctx *gin.Context) {
 		return
 	}
 
-	var transactionData map[string][]int
-	if err := json.Unmarshal(transactions.DataSold, &transactionData); err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+	// var transactionData map[string][]int
+	// if err := json.Unmarshal(transactions.DataSold, &transactionData); err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
 
 	var transactionProducts []productDataResponse
-	for idx, productID := range transactionData["products_id"] {
-		product, err := server.store.GetProduct(ctx, int64(productID))
-		if err != nil {
-			if err == sql.ErrNoRows {
-				ctx.JSON(http.StatusNotFound, errorResponse(err))
-				return
-			}
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-			return
-		}
+	// for idx, productID := range transactionData["products_id"] {
+	// 	product, err := server.store.GetProduct(ctx, int64(productID))
+	// 	if err != nil {
+	// 		if err == sql.ErrNoRows {
+	// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+	// 			return
+	// 		}
+	// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 		return
+	// 	}
 
-		totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
-		transactionProducts = append(transactionProducts, productDataResponse{
-			Product:  product.ProductName,
-			Quantity: int64(totalAmount),
-		})
-	}
+	// 	totalAmount := product.UnitPrice * int32(transactionData["quantities"][idx])
+	// 	transactionProducts = append(transactionProducts, productDataResponse{
+	// 		Product:  product.ProductName,
+	// 		Quantity: int64(totalAmount),
+	// 	})
+	// }
 
 	rsp, err := newTransactionResponse(transactions, transactionProducts, user.Username)
 	if err != nil {

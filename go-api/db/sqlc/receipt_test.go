@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"testing"
@@ -32,29 +31,29 @@ func createReceiptTest() (CreateReceiptParams, Receipt, error) {
 		ReceiptPdf:          []byte(utils.RandomString(6)),
 	}
 
-	receiptData := []map[string]interface{}{
-		{
-			"userdata": "userdata stored here",
-		},
-		{
-			"productID":       2,
-			"productName":     "HIV testkit 2",
-			"productQuantity": 9,
-			"totalBill":       600,
-		},
-		{
-			"productID":       3,
-			"productName":     "HIV testkit 3",
-			"productQuantity": 5,
-			"totalBill":       250,
-		},
-	}
-	jsonReceiptData, err := json.Marshal(receiptData)
-	if err != nil {
-		fmt.Println("error marshaling recceipt data: ", err)
-	}
-	args.ReceiptData = jsonReceiptData
-	transactionParam.DataSold = jsonReceiptData
+	// receiptData := []map[string]interface{}{
+	// 	{
+	// 		"userdata": "userdata stored here",
+	// 	},
+	// 	{
+	// 		"productID":       2,
+	// 		"productName":     "HIV testkit 2",
+	// 		"productQuantity": 9,
+	// 		"totalBill":       600,
+	// 	},
+	// 	{
+	// 		"productID":       3,
+	// 		"productName":     "HIV testkit 3",
+	// 		"productQuantity": 5,
+	// 		"totalBill":       250,
+	// 	},
+	// }
+	// jsonReceiptData, err := json.Marshal(receiptData)
+	// if err != nil {
+	// 	fmt.Println("error marshaling recceipt data: ", err)
+	// }
+	// args.ReceiptData = jsonReceiptData
+	// transactionParam.DataSold = jsonReceiptData
 	_, _ = testStore.CreateTransaction(context.Background(), transactionParam)
 	newReceipt, err := testStore.CreateReceipt(context.Background(), args)
 	if err != nil {

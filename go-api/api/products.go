@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
 	_ "github.com/jackc/pgx/v5/pgxpool"
+	"github.com/lib/pq"
 	"github.com/rs/zerolog/log"
 )
 
@@ -34,6 +35,13 @@ func (server *Server) createProduct(ctx *gin.Context) {
 
 	product, err := server.store.CreateProduct(ctx, arg)
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code.Name() == "unique_violation" {
+				ctx.JSON(http.StatusConflict, errorResponse(err))
+				return
+			}
+		}
+
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -610,7 +618,31 @@ func (server *Server) searchAll(ctx *gin.Context) {
 			totalReceipts = totalReceipts + int32(totalReceipt)
 
 			for _, receipt := range receipts {
-				updatedReceipt, _ := newReceiptResponse(receipt)
+				// updatedReceipt, _ := newReceiptResponse(receipt)
+				mytime := receipt.CreatedAt.Format("02-January-2006")
+				transaction, err := server.store.GetTransaction(ctx, receipt.ReceiptNumber)
+				if err != nil {
+					ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+					return
+				}
+
+				updatedReceipt := receiptResponse{
+					ReceiptID:           receipt.ReceiptID,
+					ReceiptNumber:       receipt.ReceiptNumber,
+					UserreceiptID:       int64(receipt.UserReceiptID),
+					UserreceiptUsername: receipt.UserReceiptUsername,
+					ReceiptData: []map[string]interface{}{
+						{
+							"user_contact": "dummy_data",
+						},
+						{
+							"mpesa_ref":    transaction.MpesaReceiptNumber,
+							"amount":       transaction.Amount,
+							"phone_number": transaction.PhoneNumber,
+						},
+					},
+					ReceiptCreateTime: mytime,
+				}
 				rsp = append(rsp, updatedReceipt)
 			}
 

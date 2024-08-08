@@ -1,0 +1,34 @@
+{% extends 'index.html' %}
+{% block content %}
+<div class="d-inline-flex align-items-center justify-content-start">
+  <a href="{{ url_for('get_user', id=1) }}">
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+      </svg>
+  </a>
+  <p style="flex-grow: 1; align-items: center; text-align: center;font-size: large; font-weight: 500;color: black;">Create Purchase Order</p>
+</div>
+<div class="container-form-holder">
+  <form id="supplierForm">
+      <h2>Supplier Details</h2>
+      <div class="form-group">
+        <label for="supplier">Supplier Name</label>
+        <input class="form-control" type="text" id="supplier" name="supplier" value="" required>
+      </div>
+      <div class="form-group">
+        <label for="poBox">P.O Box</label>
+        <input class="form-control" type="text" id="poBox" name="poBox" value="" required>
+      </div>
+      <div class="form-group">
+        <label for="address">Address</label>
+        <input class="form-control" type="text" id="address" name="address" value="" required>
+      </div>
+      <button class="btn btn-primary" id="nextBtn">Next</button>
+    </form>
+</div>
+<div id="adminDataDiv" data-admin-data='{{ admin | tojson | safe }}'></div>
+
+<script src="{{ url_for('static', filename='js/purchase.js')}}"></script>
+
+
+{% endblock %}

@@ -20,6 +20,12 @@ func (store *Store) CreateUserTx(ctx context.Context, arg CreateUserTxParams) (C
 			return err
 		}
 
+		// create users stock value
+		_, err = q.CreateUserStockValue(ctx, int32(user.UserID))
+		if err != nil {
+			return err
+		}
+
 		return arg.AfterCreate(user)
 	})
 

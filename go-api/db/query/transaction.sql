@@ -14,9 +14,9 @@ SELECT COUNT(*) FROM transactions;
 
 -- name: CreateTransaction :one
 INSERT INTO transactions (
-    transaction_id, amount, data_sold, phone_number, transaction_user_id, result_description
+    transaction_id, amount, phone_number, transaction_user_id, result_description
 ) VALUES (
-    $1, $2, $3, $4, $5, $6
+    $1, $2, $3, $4, $5
 )
 RETURNING *;
 
@@ -46,6 +46,12 @@ WHERE transaction_user_id = $1
 ORDER BY created_at DESC
 LIMIT $2
 OFFSET $3;
+
+-- name: AllUserTransactionsNoLimit :many
+SELECT * FROM transactions
+WHERE transaction_user_id = $1
+AND status = TRUE
+ORDER BY created_at DESC;
 
 -- name: CountAllUserTransactions :one
 SELECT COUNT(*) FROM transactions

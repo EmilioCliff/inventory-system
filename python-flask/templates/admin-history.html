@@ -91,7 +91,7 @@
                                 <td class="text-start p-2">{{ detail.product_name }}</td>
                                 <td class="text-center p-2">{{ detail.total_quantity_added }}</td>
                                 <!-- <td class="text-center p-2">{{ detail.total_product_price }}</td> -->
-                                <td class="text-center p-2">{{ details.issued_date }}</td>
+                                <td class="text-center p-2">{{ details.issued_date[:10] }}</td>
                             </tr>
                         {% endfor %}
                     {% endfor %}

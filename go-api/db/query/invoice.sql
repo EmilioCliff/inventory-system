@@ -38,9 +38,9 @@ OFFSET $2;
 
 -- name: CreateInvoice :one
 INSERT INTO invoices (
-    invoice_number, user_invoice_id, invoice_data, user_invoice_username, invoice_pdf
+    invoice_number, user_invoice_id, invoice_data, user_invoice_username, invoice_pdf, invoice_date
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4, $5, $6
 )
 RETURNING *;
 

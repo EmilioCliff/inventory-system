@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const createUserBtn = document.getElementById('createUserBtn');
   const newProductBtn = document.getElementById('newProduct');
   const editProductBtns = document.querySelectorAll('.editProduct');
-  const addClientStockBtn = document.getElementById('addClientStockBtn');
+  const addClientStockBtn = document.getElementById('addClientStockBtnnnnnnnnn');
   const reduceButton = document.querySelector('#reduceClientStock');
   const waitViewButton = document.querySelector('#initializeSTK');
   const viewReceiptBtns = document.querySelectorAll('#viewReceipt');
@@ -129,24 +129,6 @@ receiptViewCloseBtns.forEach((receiptViewCloseBtn, index) => {
 const requestButton = document.getElementById('requestClientStockkk');
 const requestClientStockCloseBtn = document.getElementById('close-buttonRequest');
 
-// Adding event listener to request button
-// if (requestButton) {
-//     requestButton.addEventListener('click', function() {
-//         console.log("request button clicked");
-//         overlay_requestClientStock.style.display = 'block';
-//         popupFormRequestClientStock.style.display = 'block';
-//     });
-// }
-
-// // Adding event listener to close button
-// if (requestClientStockCloseBtn) {
-//     requestClientStockCloseBtn.addEventListener('click', function(){
-//         console.log("close button clicked");
-//         overlay_requestClientStock.style.display = 'none';
-//         popupFormRequestClientStock.style.display = 'none';
-//     });
-// }
-// });
 if (requestButton) {
   requestButton.addEventListener('click', function() {
     overlay_requestClientStock.style.display = 'block';
@@ -156,10 +138,12 @@ if (requestButton) {
 
 if (requestClientStockCloseBtn) {
   requestClientStockCloseBtn.addEventListener('click', function(){
-    overlay_requestClientStock.style.visibility = 'hidden';
-    overlay_requestClientStock.style.opacity = '0';
-    popupFormRequestClientStock.style.visibility = 'hidden';
-    popupFormRequestClientStock.style.opacity = '0';
+    // overlay_requestClientStock.style.visibility = 'hidden';
+    // overlay_requestClientStock.style.opacity = '0';
+    // popupFormRequestClientStock.style.visibility = 'hidden';
+    // popupFormRequestClientStock.style.opacity = '0';
+    overlay_requestClientStock.style.display = 'none';
+    popupFormRequestClientStock.style.display = 'none';
   });
 }
 
@@ -173,10 +157,12 @@ if (requestClientStockCloseBtn) {
   if (reduceClientStockCloseBtn) {
     reduceClientStockCloseBtn.addEventListener('click', function(event){
       event.preventDefault();
-      overlay_recudeClientStock.style.visibility = 'hidden';
-      overlay_recudeClientStock.style.opacity = '0';
-      popupFormReduceClientStock.style.visibility = 'hidden';
-      popupFormReduceClientStock.style.opacity = '0';
+      overlay_recudeClientStock.style.display = 'none';
+      popupFormReduceClientStock.style.display = 'none';
+      // overlay_recudeClientStock.style.visibility = 'hidden';
+      // overlay_recudeClientStock.style.opacity = '0';
+      // popupFormReduceClientStock.style.visibility = 'hidden';
+      // popupFormReduceClientStock.style.opacity = '0';
     });
   }
 
@@ -205,17 +191,25 @@ if (requestClientStockCloseBtn) {
   if (closeAddClientStockBtn) {
     closeAddClientStockBtn.addEventListener('click', function(event){
       event.preventDefault();
-      overlay_addClientStock.style.visibility = 'hidden';
-      overlay_addClientStock.style.opacity = '0';
-      popupFormAddClientStock.style.visibility = 'hidden';
-      popupFormAddClientStock.style.opacity = '0';
+      // overlay_addClientStock.style.visibility = 'hidden';
+      // overlay_addClientStock.style.opacity = '0';
+      // popupFormAddClientStock.style.visibility = 'hidden';
+      // popupFormAddClientStock.style.opacity = '0';
+      overlay_addClientStock.style.display = 'none';
+      popupFormAddClientStock.style.display = 'none';
+      console.log("Close Add Client Stock button clicked");
     })
   }
 
   if (addClientStockBtn) {
     addClientStockBtn.addEventListener('click', function() {
+      // overlay_addClientStock.style.visibility = 'visible';
+      // overlay_addClientStock.style.opacity = '1';
+      // popupFormAddClientStock.style.visibility = 'visible';
+      // popupFormAddClientStock.style.opacity = '1';
       overlay_addClientStock.style.display = 'block';
       popupFormAddClientStock.style.display = 'block';
+      console.log("Add Client Stock button clicked");
     })
   }
 
@@ -357,12 +351,12 @@ if (closeButton) {
       });
   }
 
-  const buttons = document.querySelectorAll('.btn:not(.delete-button):not(#editButton)');
+  // const buttons = document.querySelectorAll('.btn:not(.delete-button):not(#editButton)');
 
-  buttons.forEach(button => {
-    button.addEventListener('click', function() {
-    buttons.forEach(btn => btn.classList.remove('active'));
-    this.classList.add('active');
-  });
-});
+  // buttons.forEach(button => {
+  //   button.addEventListener('click', function() {
+  //   buttons.forEach(btn => btn.classList.remove('active'));
+  //   this.classList.add('active');
+  // });
+// });
 });

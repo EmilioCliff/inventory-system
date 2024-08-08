@@ -1,11 +1,11 @@
 {% extends 'index.html' %}
 {% block content %}
 <div class="d-inline-flex justify-content-start align-items-center">
-    {% if user_id == 1 %}
-        {% if request.view_args.get('id') is not none %}
-            <a href="{{ url_for('get_user', id=request.view_args['id']) }}">
+    {% if id == 1 %}
+        {% if user_id > 1 %}
+            <a href="{{ url_for('get_user', id=user_id) }}">
         {% else %}
-        <a href="{{ url_for('dashboard') }}">
+            <a href="{{ url_for('dashboard') }}">
         {% endif %}
     {% else %}
         <a href="{{ url_for('dashboard') }}">
@@ -65,9 +65,6 @@
                 <h2 style="text-decoration: underline;">Transaction Data</h2>
                 <ul>
                     <p>{{ transaction.transaction_id }}</p>
-                    {% for detail in transaction.data_sold %}
-                    <li>{{ detail.product }} - {{ detail.quantity }}</li>
-                    {% endfor %}
                     <p>Total: {{ transaction.amount }}</p>
                     <p>Status: {{ transaction.status }}</p>
                     <p>Mpesa Receipt Number: {{ transaction.mpesa_receipt_number }}</p>
@@ -97,9 +94,6 @@
                     <h2 style="text-decoration: underline;">Transaction Data</h2>
                     <ul>
                         <p>{{ transaction.transaction_id }}</p>
-                        {% for detail in transaction.data_sold %}
-                        <li>{{ detail.product }} - {{ detail.quantity }}</li>
-                        {% endfor %}
                         <p>Total: {{ transaction.amount }}</p>
                         <p>Status: {{ transaction.status }}</p>
                         <p>Mpesa Receipt Number: {{ transaction.mpesa_receipt_number }}</p>

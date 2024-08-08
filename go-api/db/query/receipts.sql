@@ -15,6 +15,11 @@ ORDER BY created_at DESC
 LIMIT $2
 OFFSET $3;
 
+-- name: GetAllUserReceiptsByID :many
+SELECT * FROM receipts
+WHERE user_receipt_id = $1
+ORDER BY created_at DESC;
+
 -- name: CountUserReceiptsByID :one
 SELECT COUNT(*) FROM receipts
 WHERE user_receipt_id = $1;
@@ -38,9 +43,9 @@ OFFSET $2;
 
 -- name: CreateReceipt :one
 INSERT INTO receipts(
-    receipt_number, user_receipt_id, receipt_data, user_receipt_username, receipt_pdf
+    receipt_number, user_receipt_id,  user_receipt_username, receipt_pdf
 ) VALUES (
-  $1, $2, $3, $4, $5
+  $1, $2, $3, $4
 )
 RETURNING *;
 

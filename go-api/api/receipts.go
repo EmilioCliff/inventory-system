@@ -5,8 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
+	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
+	"github.com/EmilioCliff/inventory-system/db/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/rs/zerolog/log"
@@ -76,7 +79,31 @@ func (server *Server) listReceipts(ctx *gin.Context) {
 
 	var rsp []receiptResponse
 	for _, receipt := range receipts {
-		updatedReceipt, _ := newReceiptResponse(receipt)
+		// updatedReceipt, _ := newReceiptResponse(receipt)
+		mytime := receipt.CreatedAt.Format("02-January-2006")
+		transaction, err := server.store.GetTransaction(ctx, receipt.ReceiptNumber)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		updatedReceipt := receiptResponse{
+			ReceiptID:           receipt.ReceiptID,
+			ReceiptNumber:       receipt.ReceiptNumber,
+			UserreceiptID:       int64(receipt.UserReceiptID),
+			UserreceiptUsername: receipt.UserReceiptUsername,
+			ReceiptData: []map[string]interface{}{
+				{
+					"user_contact": "dummy_data",
+				},
+				{
+					"mpesa_ref":    transaction.MpesaReceiptNumber,
+					"amount":       transaction.Amount,
+					"phone_number": transaction.PhoneNumber,
+				},
+			},
+			ReceiptCreateTime: mytime,
+		}
 		rsp = append(rsp, updatedReceipt)
 	}
 
@@ -282,6 +309,166 @@ func (server *Server) searchReceipt(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, rst)
 	return
+}
+
+type downloadStatementRequest struct {
+	ID int32 `uri:"id" binding:"required"`
+}
+
+func (server *Server) downloadStatement(ctx *gin.Context) {
+	var uri downloadStatementRequest
+	if err := ctx.ShouldBindUri(&uri); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	transactions, err := server.store.AllUserTransactionsNoLimit(ctx, uri.ID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if len(transactions) == 0 {
+		ctx.JSON(http.StatusAccepted, gin.H{"message": "user has no successful transactions"})
+		return
+	}
+
+	var statementData []map[string]interface{}
+	for _, transaction := range transactions {
+		data := map[string]interface{}{
+			"receipt_number": transaction.TransactionID,
+			"mpesa_number":   transaction.MpesaReceiptNumber,
+			"amount":         transaction.Amount,
+			"created_at":     transaction.CreatedAt.Format("2006-01-02 15:04"),
+		}
+
+		statementData = append(statementData, data)
+	}
+
+	user, err := server.store.GetUser(ctx, int64(uri.ID))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	// send data and user to generate statement pdf
+
+	userDetails := map[string]string{
+		"username": user.Username,
+		"phone":    user.PhoneNumber,
+		"email":    user.Email,
+		"date":     time.Now().Format("2006-01-02"),
+	}
+
+	result := make(chan struct {
+		pdfBytes []byte
+		err      error
+	}, 1)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func([]map[string]interface{}, map[string]string) {
+		defer wg.Done()
+		pdfBytes, err := utils.GenerateStatement(statementData, userDetails)
+		result <- struct {
+			pdfBytes []byte
+			err      error
+		}{pdfBytes: pdfBytes, err: err}
+	}(statementData, userDetails)
+
+	wg.Wait()
+	close(result)
+
+	data := <-result
+	if data.err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(data.err))
+		return
+	}
+
+	rsp := map[string]interface{}{
+		"statement_pdf": data.pdfBytes,
+		"data":          statementData,
+		"user":          userDetails,
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
+}
+
+type createPurchaseOrderRequest struct {
+	SupplierName string                   `json:"supplier_name" binding:"required"`
+	PoBox        string                   `json:"po_box" binding:"required"`
+	Address      string                   `json:"address" binding:"required"`
+	Data         []map[string]interface{} `json:"data" binding:"required"`
+}
+
+func (server *Server) createPurchaseOrder(ctx *gin.Context) {
+	var req createPurchaseOrderRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+	// data := map[string]interface{}{
+	// 	"supplier_name": "Eldohosp Pharmaceuticals LTD",
+	// 	"po_box":        "66859-00800",
+	// 	"address":       "epl plaza nairobi",
+	// 	"order_date":    time.Now().Format("2006-01-02"),
+	// 	"order_number":  time.Now().Format("20060102150405"),
+	// 	"Data": []map[string]interface{}{
+	// 		{
+	// 			"product_name": "HIV 1-2 Test Cassette (Self test)",
+	// 			"quantity":     100,
+	// 			"unit_price":   1000,
+	// 		},
+	// 	},
+	// }
+
+	data := map[string]interface{}{
+		"supplier_name": req.SupplierName,
+		"po_box":        req.PoBox,
+		"address":       req.Address,
+		"order_date":    time.Now().Format("2006-01-02"),
+		"order_number":  time.Now().Format("20060102150405"),
+		"Data":          req.Data,
+	}
+
+	result := make(chan struct {
+		pdfBytes []byte
+		err      error
+	}, 1)
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	go func(data map[string]interface{}) {
+		defer wg.Done()
+		pdfBytes, err := utils.GeneratePurchaseOrder(data)
+		result <- struct {
+			pdfBytes []byte
+			err      error
+		}{pdfBytes: pdfBytes, err: err}
+	}(data)
+
+	wg.Wait()
+	close(result)
+
+	lpoResult := <-result
+	if lpoResult.err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(lpoResult.err))
+		return
+	}
+
+	rsp := map[string]interface{}{
+		"statement_pdf": lpoResult.pdfBytes,
+		"data":          data,
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
 }
 
 // func (server *Server) searchUserReceipt(ctx *gin.Context) {

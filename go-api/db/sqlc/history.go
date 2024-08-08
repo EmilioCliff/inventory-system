@@ -12,7 +12,7 @@ type StoreGetInvoicesByDateRow struct {
 }
 
 func (q *Queries) StoreGetInvoicesByDate(ctx context.Context) ([]StoreGetInvoicesByDateRow, error) {
-	rows, err := q.db.Query(ctx, getInvoicesByDate)
+	rows, err := q.db.Query(ctx, getInvoicesByDateReverse)
 	if err != nil {
 		return nil, err
 	}

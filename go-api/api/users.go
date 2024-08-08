@@ -8,7 +8,6 @@ import (
 	"io"
 
 	"net/http"
-	"strconv"
 	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -53,6 +52,7 @@ type userResponse struct {
 	PhoneNumber string                   `json:"phone_number" binding:"required"`
 	Address     string                   `json:"address" binding:"required"`
 	Stock       []map[string]interface{} `json:"stock"`
+	StockValue  int64                    `json:"stock_value,omitempty"`
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
@@ -227,6 +227,25 @@ func (server *Server) getUser(ctx *gin.Context) {
 
 	resp, _ := newUserResponse(user)
 
+	var value db.StockValue
+	if req.ID == 1 {
+		count, err := server.store.TotalStockValue(ctx)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		resp.StockValue = count
+	} else {
+		value, err = server.store.GetUserStockValue(ctx, int32(req.ID))
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		resp.StockValue = value.Value
+	}
+
 	err = server.setCache(ctx, GetUser+fmt.Sprintf("%v", req.ID), resp)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -249,7 +268,7 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 		return
 	}
 
-	err := server.store.DeleteUser(ctx, int64(req.ID))
+	err := server.store.DeleteUserTx(ctx, req.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
@@ -258,6 +277,16 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+
+	// err := server.store.DeleteUser(ctx, int64(req.ID))
+	// if err != nil {
+	// 	if err == sql.ErrNoRows {
+	// 		ctx.JSON(http.StatusNotFound, errorResponse(err))
+	// 		return
+	// 	}
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
 
 	if err := server.redis.Del(ctx, ListUsers+fmt.Sprintf(":1")).Err(); err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -602,8 +631,9 @@ type addClientStockURIRequest struct {
 }
 
 type addClientStockJSONRequest struct {
-	ProductsID []int64 `json:"products_id" binding:"required"`
-	Quantities []int64 `json:"quantities" binding:"required"`
+	ProductsID  []int64 `json:"products_id" binding:"required"`
+	Quantities  []int64 `json:"quantities" binding:"required"`
+	InvoiceDate string  `json:"invoice_date" binding:"required"`
 }
 
 func (server *Server) addClientStock(ctx *gin.Context) {
@@ -683,6 +713,13 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 
 		newProducts = append(newProducts, addProduct)
 	}
+
+	invoiceDate, err := time.Parse("2006-01-02", req.InvoiceDate)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	updatedData, err := server.store.AddClientStockTx(ctx, db.AddClientStockParams{
 		FromAdmin:   admin,
 		ToClient:    user,
@@ -690,9 +727,10 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 		Amount:      req.Quantities,
 		AfterProcess: func() error {
 			invoiceTaskPayload := &worker.GenerateInvoiceAndSendEmailPayload{
-				User:     user,
-				Products: newProducts,
-				Amount:   req.Quantities,
+				User:        user,
+				Products:    newProducts,
+				Amount:      req.Quantities,
+				InvoiceDate: invoiceDate,
 			}
 
 			opts := []asynq.Option{
@@ -724,8 +762,9 @@ type reduceClientStockURIRequest struct {
 }
 
 type reduceClientStockJSONRequest struct {
-	ProductsID []int8  `json:"products_id" biding:"required"`
-	Quantities []int64 `json:"quantities" biding:"required"`
+	Amount int64 `json:"amount" biding:"required"`
+	// ProductsID []int8  `json:"products_id" biding:"required"`
+	// Quantities []int64 `json:"quantities" biding:"required"`
 }
 
 func (server *Server) reduceClientStock(ctx *gin.Context) {
@@ -752,49 +791,49 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 		return
 	}
 
-	var jsonUserStock []map[string]interface{}
-	if err := json.Unmarshal(user.Stock, &jsonUserStock); err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+	// var jsonUserStock []map[string]interface{}
+	// if err := json.Unmarshal(user.Stock, &jsonUserStock); err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
 
-	var amount int
-	for idx, id := range req.ProductsID {
-		removeProduct, err := server.store.GetProduct(ctx, int64(id))
-		if err != nil {
-			if err == sql.ErrNoRows {
-				ctx.JSON(http.StatusNotFound, errorResponse(err))
-				return
-			}
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-			return
-		}
-		amount += int(removeProduct.UnitPrice) * int(req.Quantities[idx])
+	// var amount int
+	// for idx, id := range req.ProductsID {
+	// 	removeProduct, err := server.store.GetProduct(ctx, int64(id))
+	// 	if err != nil {
+	// 		if err == sql.ErrNoRows {
+	// 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+	// 			return
+	// 		}
+	// 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 		return
+	// 	}
+	// 	amount += int(removeProduct.UnitPrice) * int(req.Quantities[idx])
 
-		for _, data := range jsonUserStock {
-			dataID := int8(data["productID"].(float64))
-			if dataID == id {
-				// if id == int8(data["productID"].(float64)) {
-				if int64(data["productQuantity"].(float64)) < int64(req.Quantities[idx]) {
-					log.Info().Int("productId", int(id)).Int("quantity", int(req.Quantities[idx])).Msg("reduce client stock log")
-					ctx.JSON(http.StatusNotAcceptable, errorResponse(fmt.Errorf("Not enough in stock to sell: Product: %v InStock: %v", data["productName"], data["productQuantity"])))
-					return
-				}
-				// }
-			}
-		}
-	}
+	// 	for _, data := range jsonUserStock {
+	// 		dataID := int8(data["productID"].(float64))
+	// 		if dataID == id {
+	// 			// if id == int8(data["productID"].(float64)) {
+	// 			if int64(data["productQuantity"].(float64)) < int64(req.Quantities[idx]) {
+	// 				log.Info().Int("productId", int(id)).Int("quantity", int(req.Quantities[idx])).Msg("reduce client stock log")
+	// 				ctx.JSON(http.StatusNotAcceptable, errorResponse(fmt.Errorf("Not enough in stock to sell: Product: %v InStock: %v", data["productName"], data["productQuantity"])))
+	// 				return
+	// 			}
+	// 			// }
+	// 		}
+	// 	}
+	// }
 
-	jsonSoldProduct, err := json.Marshal(req)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
+	// jsonSoldProduct, err := json.Marshal(req)
+	// if err != nil {
+	// 	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	// 	return
+	// }
 
 	sendSTKPayload := &worker.SendSTKPayload{
-		User:            user,
-		Amount:          strconv.Itoa(amount),
-		TransactionData: jsonSoldProduct,
+		User:   user,
+		Amount: req.Amount,
+		// TransactionData: jsonSoldProduct,
 	}
 
 	opts := []asynq.Option{

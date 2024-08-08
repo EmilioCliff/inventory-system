@@ -32,7 +32,7 @@
     </a>
     <p style="flex-grow: 1; align-items: center; text-align: center;font-size: large; font-weight: 500;color: black;">{{ user.username|title}}</p>
 </div>
-<div class="d-flex list--container">
+<div class="d-flex list--container" style="justify-content: space-between;">
     <div class="d-inline-flex justify-content-start p-3">
         <div style="display: flex; flex-direction: column; align-items: center;">
             <div class="d-inline-flex align-items-center">
@@ -48,6 +48,12 @@
             </div>
         </div>
     </div>
+    {% if user.id != 1 and user_id == 1 %}
+    <div style="margin-top: -2rem; padding-inline: 3rem;">
+        <p>Stock Value</p>
+        <p style="font-size: 1rem;margin-top: .5rem;color: black;font-weight: 600;"><sup style="position: relative;top: -15px; font-size: .7rem;">KES</sup>{{ invoice_date }}</p>
+    </div>
+    {% endif %}
     <!-- <div>
         <img src="../static/images/piano.jpg" alt="piano" style="width: 100%; height: 100%; border-radius: 10%;">
     </div> -->
@@ -56,19 +62,20 @@
     <!-- {% if ct not in ['receipts', 'invoices'] %} -->
     {% if user.id != 1 and user_id != 1 %}
     <!-- <a href="{{ url_for('getUserAllTransactions', user_id=user.id) }}" class="btn btn-outline-primary" id="nnn">Transactions</a> -->
-    <a href="#" class="btn btn-outline-primary" id="reduceClientStock">Sold Products
+    <a href="#" class="btn btn-outline-primary" id="reduceClientStock">Sold Products</a>
         <div class="overlay" id="reduceClientStockOverlay">
-            <div class="form-container p-1" id="popupformreduceClientStock">
+            <div class="form-container p-1" id="popupformreduceClientStock" style="display: block; padding-inline: .5rem;">
                 <button id="close-buttonReduce" class="close-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                     </svg>
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" onclick="reduceProduct()">Add</button>
-                <form id="productForm" method="POST" action="{{ url_for('reduce_client_stock', id=user.id) }}" autocomplete="off">
+                <!-- <p></p> -->
+                <!-- <button type="button" class="btn btn-sm btn-primary" onclick="reduceProduct()">Add</button> -->
+                <form id="productForm" method="POST" action="{{ url_for('reduce_client_stock', id=user.id) }}" style="margin-top: 2rem;" autocomplete="off">
                     <div id="stockList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden">
                         <div class="d-flex">
-                        <select class="product me-1" name="products_id">
+                        <!-- <select class="product me-1" name="products_id">
                             {% if user.stock is none %}
                             <option value="-100">No Products To Sell</option>
                             {% else %}
@@ -76,12 +83,11 @@
                             <option value="{{ stock.productID }}">{{ stock.productName }}:{{ stock.productQuantity }}</option>
                             {% endfor %}
                             {% endif %}
-                        </select>
-                        <input type="number" class="quantity" name="quantities" placeholder="Quantity" required style="width: auto;">
-                        <label for="quantities">Quantity</label>
+                        </select> -->
+                        <input type="number" class="quantity" id="amount" name="amount" placeholder="Enter Amount To Pay (Ksh)" required style="width: 100%;border: 1px solid black;padding: .5rem;">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary" style="display: block; margin-inline: auto;">Submit</button>
                 </form>
             </div>
         </div>
@@ -91,30 +97,32 @@
                 <button id="close-buttonWait" class="btn btn-success">close</button>
             </div>
         </div> -->
-    </a>
+    
     {% endif %}
     <!-- {% endif %} -->
-    <a href="{{ url_for('get_user', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user' %}active{% endif %}">Products</a>
+    <!-- <a href="{{ url_for('get_user', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user' %}active{% endif %}">Products</a> -->
     {% if user.id == 1 %}
     {% else %}
     <a href="{{ url_for('get_user_invoices', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user_invoices' %}active{% endif %}">Invoices</a>
     <a href="{{ url_for('get_user_receipts', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user_receipts' %}active{% endif %}">Receipts</a>
+    <a href="{{ url_for('statement_download', id=user.id) }}" class="btn btn-outline-primary">Download Statement</a>
     {% endif %}
     <!-- change to 1 -->
     {% if user_id == 1 %}
     {% if user.id != 1 %}
     <a href="{{ url_for('getUserAllTransactions', user_id=user.id) }}" class="btn btn-outline-primary" id="nnn">User Transactions</a>
-    <a href="#" class="btn btn-outline-primary" id="addClientStockBtn">Add User Stock
+    <a href="#" class="btn btn-outline-primary" id="addClientStockBtnnnnnnnnn">Add User Stock</a>
         <div class="overlay" id="addClientStockOverlay">
-            <div class="form-container p-1" id="popupformAddClientStock">
+            <div class="form-container p-1" id="popupformAddClientStock" style="display: block; padding-inline: .5rem;">
                 <button name="close-button" id="close-btnnnn" class="close-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                     </svg>
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" onclick="addProduct()">Add</button>
+                <button type="button" class="btn btn-sm btn-primary" id="add_input_adding" style="display: block; margin: auto;">Add</button>
                 <form id="productForm" method="POST" action="{{ url_for('add_client_stock', id=user.id) }}" autocomplete="off">
-                    <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden">
+                    <input type="date" id="invoiceDate" class="quantity me-5" name="invoiceDate" placeholder="Quantity" style="display: block; width: 70%; margin-block: .5rem; margin-inline: auto; border: 1px solid black; padding: .25rem;" required>
+                    <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
                         <div class="d-flex">
                             <select class="product me-1" name="products_id" id="products_id">
                                 {% if admin.stock is none %}
@@ -125,20 +133,20 @@
                                     {% endfor %}
                                 {% endif %}
                             </select>
-                            <input type="number" class="quantity me-5" name="quantities" id="quantities" placeholder="Quantity" style="width: auto;">
+                            <input type="number" class="quantity" name="quantities" id="quantities" placeholder="Quantity" style="width: auto;" required>
                             <!-- <label for="quantities">Quantity</label> -->
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary" style="display: block; margin-inline: auto;">Submit</button>
                 </form>
             </div>
         </div>
-        </a>
         {% endif %}
     {% if user.id != 1 %}
     <a href="#" class="btn btn-outline-primary" id="editButton">Edit User Profile</a>
     {% else %}
     <a href="#" class="btn btn-outline-primary" id="editButton">Edit Profile</a>
+    <a href="{{ url_for('create_purchase_order') }}" class="btn btn-outline-primary" id="">Purchase Order</a>
     {% endif %}
     <div id="overlayedit" class="overlay">
         <div id="popupFormEdit" class="form-container">
@@ -198,9 +206,10 @@
 </div>
 {% if ct == 'user' %}
 {% if user.stock is none %}
-<p>No Products Yet</p>
+<p></p>
 {% else %}
 {% for data in user.stock %}
+    {% if user_id == 1 and user.id == 1 %}
     {% if (data.productQuantity) < 4 %}
     <div class="d-flex justify-content-between list--container mb-3 p-3 row" style="background-color: #F7D060;">
     {% else %}
@@ -210,7 +219,6 @@
                 <p style="font-size: 18px; font-weight: 500;"> {{ data.productName }}</p>
                 <p style="font-size: 12px;"> Quantity: {{ data.productQuantity }}</p>
         </div>
-        {% if user_id == 1 and user.id == 1 %}
         <a href="#" class="btn btn-primary btn-add-stock" data-product-name="{{ data.productName }}" data-product-id="{{ data.productID }}">Add Stock</a>
         <div id="overlay_add" class="overlay">
             <div id="add-form-container" class="form-container">
@@ -280,6 +288,15 @@
 {% endif %}
 </div>
 <script>
+    let btnToAdd = document.getElementById("add_input_adding")
+
+    if (btnToAdd) {
+        btnToAdd.addEventListener("click", () => {
+            addProduct();
+            console.log("Button clicked");
+        });
+    }
+
     function addProduct() {
         // Create new product selection and quantity input elements
         var newProduct = document.createElement('select');

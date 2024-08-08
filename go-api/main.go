@@ -9,7 +9,9 @@ import (
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/EmilioCliff/inventory-system/db/utils"
 	"github.com/EmilioCliff/inventory-system/worker"
-	"github.com/golang-migrate/migrate"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/hibiken/asynq"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/redis/go-redis/v9"
@@ -22,7 +24,7 @@ func main() {
 		log.Fatal().Msgf("Could not log config file: %s", err)
 	}
 
-	// runMigration(config.MIGRATION_SOURCE, config.DB_SOURCE_DEVELOPMENT)
+	runMigration("file://db/migration", config.DB_SOURCE_DEVELOPMENT)
 	conn, err := pgxpool.New(context.Background(), config.DB_SOURCE_DEVELOPMENT)
 	if err != nil {
 		log.Fatal().Msgf("Couldnt connect to db: %s", err)
@@ -32,14 +34,14 @@ func main() {
 
 	store := db.NewStore(conn)
 	redisOpt := asynq.RedisClientOpt{
-		// Addr: "0.0.0.0:6379",
+		// Addr: "redis:6379",
 		Addr:     config.REDIS_URI,
 		Password: config.REDIS_PASSWORD,
 		DB:       1,
 	}
 
 	redisClient := redis.NewClient(&redis.Options{
-		// Addr: "0.0.0.0:6379",
+		// Addr: "redis:6379",
 		Addr:     config.REDIS_URI,
 		Password: config.REDIS_PASSWORD,
 		DB:       2,
@@ -56,6 +58,9 @@ func main() {
 	fmt.Println(accessToken)
 
 	port := os.Getenv("PORT")
+
+	// port remove
+	port = "8080"
 	go runRedisTaskProcessor(redisOpt, *store, *emailSender, config, taskDistributor)
 	log.Info().Msgf("starting server at port: %s", port)
 	err = server.Start(fmt.Sprintf("0.0.0.0:%s", port))
@@ -72,6 +77,8 @@ func runRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 	if err != nil {
 		log.Fatal().Msgf("could not start task processor: %s", err)
 	}
+
+	// here
 	// ctx := context.Background()
 	// opts := []asynq.Option{
 	// 	asynq.MaxRetry(2),

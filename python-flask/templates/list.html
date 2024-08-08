@@ -170,17 +170,17 @@
     {% else %}
     {% if user_id != 1 %}
     <div class="d-inline-flex justify-content-start align-items-center mb-3">
-    <a href="#" class="btn btn-sm btn-outline-primary" id="requestClientStockkk">Request Stock
+    <a href="#" class="btn btn-sm btn-outline-primary" id="requestClientStockkk">Request Stock</a>
         <div class="overlay" id="requestClientStockOverlay">
-            <div class="form-container p-1" id="popupformrequestClientStock">
+            <div class="form-container p-1" id="popupformrequestClientStock" style="display: block; padding-inline: .5rem;">
                 <button id="close-buttonRequest"  class="close-button">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                     </svg>
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" onclick="requestProduct()">Add</button>
+                <button type="button" style="display: block; margin: auto;" class="btn btn-sm btn-primary" onclick="requestProduct()">Add</button>
                 <form id="productForm" method="POST" action="{{ url_for('request_stock', id=user_id) }}" autocomplete="off">
-                    <div id="requestStockList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden">
+                    <div id="requestStockList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
                         <div class="d-flex">
                         <select class="product_request me-1" name="products_id_request">
                             {% if all_products is none %}
@@ -192,14 +192,13 @@
                             {% endif %}
                         </select>
                         <input type="number" class="quantity" name="quantities" placeholder="Quantity" required style="width: auto;">
-                        <label for="quantities">Quantity</label>
+                        <!-- <label for="quantities">Quantity</label> -->
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="submit" class="btn btn-primary" style="display: block; margin-inline: auto;">Submit</button>
                 </form>
             </div>
         </div>
-    </a>
     </div>
     {% endif %}
     {% for data in data_sent.data %}
@@ -289,7 +288,9 @@
                 <p>{{ data.receipt_number }}</p>
                 <p>{{ data.receipt_create_time }}</p>
                 {% else %}
-                <li>{{ detail.productName }} - {{ detail.productQuantity }} - {{ detail.totalBill }}</li>
+                <li>Mpesa Ref: {{ detail.mpesa_ref }}</li>
+                <li>Amount: {{ detail.amount }}</li>
+                <li>Payment Number: {{ detail.phone_number }}</li>
                 {% endif %}
                 {% endfor %}
             </ul>
@@ -354,7 +355,7 @@
                 <p>{{ data.invoice_number }}</p>
                 <p>{{ data.invoice_create_time }}</p>
                 {% else %}
-                <li>{{ detail.productName }} - {{ detail.productQuantity }} - {{ detail.totalBill }}</li>
+                <li>{{ detail.productName }} - QTY {{ detail.productQuantity }} - Price {{ detail.totalBill }}</li>
                 {% endif %}
                 {% endfor %}
             </ul>

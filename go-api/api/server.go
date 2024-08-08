@@ -110,6 +110,8 @@ func (server *Server) setRoutes() {
 	cacheAuth.GET("/user/transactions/successful/:id", server.getUserSuccessfulTransaction)
 	cacheAuth.GET("/user/transactions/failed/:id", server.getUserFailedTransaction)
 	cacheAuth.GET("/user/transactions/:id", server.getUserTransaction)
+	auth.GET("/statements/:id", server.downloadStatement) // added
+	auth.POST("/admin/purchase-order", server.createPurchaseOrder)
 
 	cacheAuth.GET("/history/received/:id", server.getUserReceivedHistory)
 	cacheAuth.GET("/history/all_received", server.getAllUsersReceivedHistory)
