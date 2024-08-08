@@ -37,4 +37,5 @@ COPY go-api/db/sqlc/Kokomed-Logo-small.png .
 COPY go-api/start.sh .
 
 EXPOSE 8080
+CMD ["/app/main"]
 ENTRYPOINT ["/app/start.sh"]
