@@ -24,7 +24,7 @@ func main() {
 		log.Fatal().Msgf("Could not log config file: %s", err)
 	}
 
-	runMigration("file://db/migration", config.DB_SOURCE_DEVELOPMENT)
+	// runMigration("file://db/migration", config.DB_SOURCE_DEVELOPMENT)
 	conn, err := pgxpool.New(context.Background(), config.DB_SOURCE_DEVELOPMENT)
 	if err != nil {
 		log.Fatal().Msgf("Couldnt connect to db: %s", err)
@@ -59,8 +59,6 @@ func main() {
 
 	port := os.Getenv("PORT")
 
-	// port remove
-	port = "8080"
 	go runRedisTaskProcessor(redisOpt, *store, *emailSender, config, taskDistributor)
 	log.Info().Msgf("starting server at port: %s", port)
 	err = server.Start(fmt.Sprintf("0.0.0.0:%s", port))
