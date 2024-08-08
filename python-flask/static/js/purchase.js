@@ -24,7 +24,7 @@ const adminDataDiv = document.getElementById('adminDataDiv');
         <p>Purchase Order Products</p>
         <button type="button" class="btn btn-sm btn-primary" onclick="addOrderProduct()">Add</button>
         <form id="productForm" autocomplete="off">
-            <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
+            <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: scroll; row-gap: .25rem;">
                 <div class="d-flex">
                     <input type="text" class="productName_0" name="productName_0" id="productName_0" placeholder="Product Name" style="width: 12rem; margin-right: 2rem" required>
                     <input type="number" class="quantity_0" min="1" name="quantities_0" id="quantities_0" placeholder="Quantity" style="width: 5.2rem; margin-right: 1rem" required>
@@ -75,12 +75,30 @@ const adminDataDiv = document.getElementById('adminDataDiv');
             if (empty) {
                 alert("Please fill all the fields")
             } else {
-                sendDataFunc(sendData)
+                // sendDataFunc(sendData)
+                sendDataFuncDirect(sendData)
             }
             
             // console.log(sendData)
         })
     })
+
+function sendDataFuncDirect(sendData) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '/download/purchase-order';
+    form.target = '_blank';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'data';
+    input.value = JSON.stringify(sendData);
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+    document.body.removeChild(form);
+}
 
 function sendDataFunc(sendData) {
     fetch("/download/purchase-order", {

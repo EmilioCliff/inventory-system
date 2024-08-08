@@ -3,6 +3,7 @@ from flask_bootstrap import Bootstrap5
 from forms import ChangePasswordForm
 import requests
 import base64
+import json
 from io import BytesIO
 from requests.exceptions import ConnectionError
 from werkzeug.exceptions import InternalServerError
@@ -706,8 +707,18 @@ def create_purchase_order():
 
 @app.route("/download/purchase-order", methods=['POST'])
 def purchase_order_download():
+    form_data = request.form.get('data')
+    if not form_data:
+        flash("No data provided", "error")
+        return redirect(url_for("get_user", id=1))
+    
+    try:
+        body = json.loads(form_data)
+    except ValueError:
+        flash("Invalid data format", "error")
+        return redirect(url_for("get_user", id=1))
+
     url = f"{BASE_URL}/admin/purchase-order"
-    body = request.json
     response = requests.post(url=url, json=body, headers={"Authorization": f"Bearer {session['token']}"})
     data = response.json()
 
@@ -719,6 +730,20 @@ def purchase_order_download():
     else:
         flash("Failed to download statement", "error")
         return redirect(url_for("get_user", id=1))
+
+    # url = f"{BASE_URL}/admin/purchase-order"
+    # body = request.json
+    # response = requests.post(url=url, json=body, headers={"Authorization": f"Bearer {session['token']}"})
+    # data = response.json()
+
+    # if response.status_code == 200:
+    #     pdf_bytes = base64.b64decode(data['statement_pdf'])
+    #     return send_file(BytesIO(pdf_bytes), as_attachment=True, mimetype='application/pdf', download_name="purchase_order.pdf")
+    # elif response.status_code == 202:
+    #     return redirect(url_for("get_user", id=1))
+    # else:
+    #     flash("Failed to download statement", "error")
+    #     return redirect(url_for("get_user", id=1))
 
 @app.route("/request_stock/<int:id>", methods=["POST", "GET"])
 def request_stock(id):
