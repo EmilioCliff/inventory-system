@@ -31,9 +31,9 @@
         </svg>
     </a>
     {% if user.id != 1 and user_id == 1 %}
+        <p style="flex-grow: 1; align-items: center; text-align: center;font-size: large; font-weight: 500;color: black;">{{ user.username|title}}</p>
         <p style="font-size: 1rem;margin-top: .5rem;color: black;font-weight: 600;"><sup style="position: relative;top: -15px; font-size: .7rem;">KES</sup>{{ invoice_date }}</p>
     {% endif %}
-    <p style="flex-grow: 1; align-items: center; text-align: center;font-size: large; font-weight: 500;color: black;">{{ user.username|title}}</p>
 </div>
 <div class="d-flex list--container" style="justify-content: space-between;">
     <div class="d-inline-flex justify-content-start p-3">
