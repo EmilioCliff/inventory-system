@@ -15,8 +15,7 @@ RUN echo "$GPG_KEY" > /app/gpg_key
 RUN gpg --import /app/gpg_key
 RUN rm -r /app/gpg_key
 RUN git secret reveal -f
-# RUN git secret cat go-api/app.env
-RUN git secret cat app.env
+RUN git secret cat go-api/app.env
 
 # install migrate
 RUN apk add curl
