@@ -16,8 +16,9 @@
         Error {{ error_code }}! 
     </div>
     <div class="card-body">
-        <span class="p-0 m-0">Something went wrong. Please try again.</span>
-        <p>{{ error }}</p>
+        <span class="p-0 m-0">Login To Continue</span>
+        <a href="{{ url_for('login') }}" class="btn btn-lg btn-danger m-1">Back To Login</a>
+        <!-- <p></p> -->
     </div>
     {% endif %}
 </div>

@@ -882,7 +882,7 @@ def handle_connection_error(error):
 
 @app.errorhandler(InternalServerError)
 def handle_server_error(error):
-    return render_template('failed.html', error_code=500, error=str(error), connection=False)
+    return render_template('failed.html', error_code=401, error=str(error), connection=False)
 
 if __name__ == '__main__':
     app.run(debug=True)
