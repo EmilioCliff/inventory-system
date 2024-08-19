@@ -192,6 +192,8 @@ func (r *ReportStore) GenerateUserExcel(ctx context.Context, payload ReportsPayl
 		fmt.Println(err)
 	}
 
+	// return nil, nil
+
 	return buf.Bytes(), nil
 }
 
@@ -417,5 +419,7 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 	if err := f.Close(); err != nil {
 		fmt.Println(err)
 	}
+	// return nil, nil
+
 	return buf.Bytes(), nil
 }

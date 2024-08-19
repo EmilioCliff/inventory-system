@@ -785,13 +785,13 @@ def statement_download(id):
 @app.route("/download/reports", methods=['POST', 'GET'])
 def report_download():
     selected_option = request.form.get('products_id')
-    type = "admin"
+    reportType = "admin"
     if selected_option == "0":
-        type = "users"
+        reportType = "users"
     from_date =request.form.get("from_date")
     to_date = request.form.get("to_date")
     params = {"start_date": from_date, "end_date": to_date}
-    url = f"{BASE_URL}/admin/{type}_reports"
+    url = f"{BASE_URL}/admin/{reportType}_reports"
     response = requests.post(url=url, json=params, headers={"Authorization": f"Bearer {session['token']}"})
     data = response.json()
     if response.status_code == 200:

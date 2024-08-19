@@ -1,6 +1,7 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -32,6 +33,8 @@ func (server *Server) downloadUserReports(ctx *gin.Context) {
 		return
 	}
 
+	log.Printf("from: %v, to: %v", fromDate, toDate)
+
 	excelBytes, err := server.reportMaker.GenerateUserExcel(ctx, reports.ReportsPayload{
 		FromDate: fromDate,
 		ToDate:   toDate,
@@ -62,6 +65,8 @@ func (server *Server) downloadAdminReports(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
+	log.Printf("from: %v, to: %v", fromDate, toDate)
 
 	excelBytes, err := server.reportMaker.GenerateManagerReports(ctx, reports.ReportsPayload{
 		FromDate: fromDate,
