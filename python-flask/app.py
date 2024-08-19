@@ -785,10 +785,9 @@ def statement_download(id):
 @app.route("/download/reports", methods=['POST', 'GET'])
 def report_download():
     selected_option = request.form.get('products_id')
+    type = "admin"
     if selected_option == "0":
         type = "users"
-    else:
-        type = "admin"
     from_date =request.form.get("from_date")
     to_date = request.form.get("to_date")
     params = {"start_date": from_date, "end_date": to_date}
