@@ -7,30 +7,38 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createEntry = `-- name: CreateEntry :one
 INSERT INTO entries (
-    product_name, product_price, quantity_added
+    product_id, product_name, product_price, quantity_added
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4
 )
-RETURNING entry_id, product_name, product_price, quantity_added, created_at
+RETURNING entry_id, product_id, product_name, product_price, quantity_added, created_at
 `
 
 type CreateEntryParams struct {
+	ProductID     int32  `json:"product_id"`
 	ProductName   string `json:"product_name"`
 	ProductPrice  int32  `json:"product_price"`
 	QuantityAdded int32  `json:"quantity_added"`
 }
 
 func (q *Queries) CreateEntry(ctx context.Context, arg CreateEntryParams) (Entry, error) {
-	row := q.db.QueryRow(ctx, createEntry, arg.ProductName, arg.ProductPrice, arg.QuantityAdded)
+	row := q.db.QueryRow(ctx, createEntry,
+		arg.ProductID,
+		arg.ProductName,
+		arg.ProductPrice,
+		arg.QuantityAdded,
+	)
 	var i Entry
 	err := row.Scan(
 		&i.EntryID,
+		&i.ProductID,
 		&i.ProductName,
 		&i.ProductPrice,
 		&i.QuantityAdded,
@@ -74,6 +82,43 @@ func (q *Queries) GetEntryByName(ctx context.Context) ([]GetEntryByNameRow, erro
 			&i.ProductName,
 			&i.TotalProductPrice,
 			&i.TotalQuantityAdded,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listEntries = `-- name: ListEntries :many
+SELECT entry_id, product_id, product_name, product_price, quantity_added, created_at FROM entries
+WHERE created_at BETWEEN $1 AND $2
+`
+
+type ListEntriesParams struct {
+	FromDate time.Time `json:"from_date"`
+	ToDate   time.Time `json:"to_date"`
+}
+
+func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error) {
+	rows, err := q.db.Query(ctx, listEntries, arg.FromDate, arg.ToDate)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Entry{}
+	for rows.Next() {
+		var i Entry
+		if err := rows.Scan(
+			&i.EntryID,
+			&i.ProductID,
+			&i.ProductName,
+			&i.ProductPrice,
+			&i.QuantityAdded,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}

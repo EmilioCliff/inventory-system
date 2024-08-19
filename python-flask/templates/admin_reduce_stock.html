@@ -1,0 +1,101 @@
+{% extends 'index.html' %}
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% for category, message in messages %}
+<div role="alert" class="alert alert-dismissible fade show flash-messages {{ 'alert-success' if category == 'success' else 'alert-danger' }}">
+  <div class="d-flex align-items-center"> <!-- Make the icon and text flex items -->
+      <div>
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check-circle-fill" viewBox="0 0 16 16">
+          <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0m-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+        </svg>
+      </div>
+      <div class="ms-2">
+          {{ message }}
+      </div>
+  </div>
+  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endwith %}
+<div class="d-inline-flex align-items-center justify-content-start">
+  <a href="{{ url_for('get_user', id=user.id) }}">
+      <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor" class="bi bi-arrow-left" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+      </svg>
+  </a>
+  <p style="flex-grow: 1; align-items: center; text-align: center;font-size: large; font-weight: 500;color: black;">Enter Payment Details</p>
+</div>
+<div class="container-form-holder">
+  <form method="POST" action="{{ url_for('reduce_client_stock_by_admin', id=user.id) }}" autocomplete="off">
+        <!-- <h2>Supplier Details</h2> -->
+        <div class="form-group">
+        <label for="amount">Amount Paid</label>
+        <input class="form-control" type="number" id="amount" name="amount" value="" required>
+        </div>
+        <div class="form-group">
+        <label for="mpesa_receipt_number">Mpesa Recipt Number</label>
+        <input class="form-control" type="text" id="mpesa_receipt_number" name="mpesa_receipt_number" value="" required>
+        </div>
+        <div class="form-group">
+        <label for="phone_number">Phone Number</label>
+        <input class="form-control" type="text" id="phone_number" name="phone_number" value="" required>
+        </div>
+        <div class="form-group">
+        <label for="description">Description</label>
+        <input class="form-control" type="text" id="description" name="description" value="" required>
+        </div>
+        <button type="button" class="btn btn-sm btn-primary"  style="display: block; margin: auto;" onclick="reduceProductAdmin()">Add</button>
+        <div class="d-flex">
+        <div id="stockList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
+            <div class="d-flex">
+                <select class="product me-1" name="products_id" id="products_id">
+                    {% if user.stock is none %}
+                        <option value="-100">{{ user.username }} has no stock</option>
+                    {% else %}
+                        {% for product in user.stock %}
+                            <option value="{{ product.productID }}">{{ product.productName }}:{{ product.productQuantity }}</option>
+                        {% endfor %}
+                    {% endif %}
+                </select>
+                <input type="number" class="quantity" name="quantities" id="quantities" placeholder="Quantity" style="width: auto;" required>
+            </div>
+        </div>
+        </div>
+
+        <button class="btn btn-primary" id="nextBtn" style="margin-top: 1rem;">Submit</button>
+    </form>
+</div>
+<script>
+    function reduceProductAdmin() {
+
+        var newStock = document.createElement('select');
+        newStock.name = 'products_id';
+        newStock.className = 'product me-1';
+
+        var originalOptions = document.querySelector('.product').options;
+        for (var i = 0; i < originalOptions.length; i++) {
+            var option = document.createElement('option');
+            option.value = originalOptions[i].value;
+            option.text = originalOptions[i].text;
+            newStock.add(option);
+        }
+
+        var newQuantity = document.createElement('input');
+        newQuantity.style.width = 'auto';
+        newQuantity.type = 'number';
+        newQuantity.className = 'quantity';
+        newQuantity.name = 'quantities';
+        newQuantity.placeholder = 'Quantity';
+        newQuantity.required = true;
+
+        var newStockDiv = document.createElement('div');
+        newStockDiv.className = 'd-flex';
+        newStockDiv.appendChild(newStock);
+        newStockDiv.appendChild(newQuantity);
+
+        document.getElementById('stockList').appendChild(newStockDiv);
+    }
+</script>
+
+
+{% endblock %}

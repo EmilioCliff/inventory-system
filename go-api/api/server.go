@@ -7,6 +7,7 @@ import (
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
 	"github.com/EmilioCliff/inventory-system/db/utils"
+	"github.com/EmilioCliff/inventory-system/reports"
 	"github.com/EmilioCliff/inventory-system/token"
 	"github.com/EmilioCliff/inventory-system/worker"
 	"github.com/gin-gonic/gin"
@@ -32,6 +33,7 @@ type Server struct {
 	emailSender     utils.GmailSender
 	taskDistributor worker.TaskDistributor
 	redis           *redis.Client
+	reportMaker     reports.ReportMaker // added
 }
 
 func NewServer(config utils.Config, store *db.Store, emailSender utils.GmailSender, taskDistributor worker.TaskDistributor, redis *redis.Client) (*Server, error) {
@@ -46,6 +48,7 @@ func NewServer(config utils.Config, store *db.Store, emailSender utils.GmailSend
 		emailSender:     emailSender,
 		taskDistributor: taskDistributor,
 		redis:           redis,
+		reportMaker:     reports.NewReportMaker(store),
 	}
 
 	server.setRoutes()
@@ -87,6 +90,7 @@ func (server *Server) setRoutes() {
 	cacheAuth.GET("/users/invoices/:id", server.getUserInvoices)
 	cacheAuth.GET("/users/receipts/:id", server.getUserReceipts)
 	auth.POST("/users/request_stock/:id", server.requestStock)
+	auth.POST("/users/admin/reduce_client_stock/:id", server.reduceClientProductByAdmin)
 
 	auth.GET("/search/users", server.searchUser)
 	auth.GET("/search/products", server.searchProduct)
@@ -110,8 +114,12 @@ func (server *Server) setRoutes() {
 	cacheAuth.GET("/user/transactions/successful/:id", server.getUserSuccessfulTransaction)
 	cacheAuth.GET("/user/transactions/failed/:id", server.getUserFailedTransaction)
 	cacheAuth.GET("/user/transactions/:id", server.getUserTransaction)
-	auth.GET("/statements/:id", server.downloadStatement) // added
+	auth.GET("/statements/:id", server.downloadStatement)
+
 	auth.POST("/admin/purchase-order", server.createPurchaseOrder)
+	auth.DELETE("/admin/purchase-orders/:id", server.deletePurchaseOrders)
+	cacheAuth.GET("/admin/purchase-orders", server.listPurchaseOrders)
+	auth.GET("/admin/purchase-orders/:id", server.downloadPurchaseOrders)
 
 	cacheAuth.GET("/history/received/:id", server.getUserReceivedHistory)
 	cacheAuth.GET("/history/all_received", server.getAllUsersReceivedHistory)
@@ -120,6 +128,9 @@ func (server *Server) setRoutes() {
 	cacheAuth.GET("/history/all_debt", server.getAllUserDebt)
 	cacheAuth.GET("/history/admin", server.adminHistory)
 	cacheAuth.GET("/history/test", server.testGroup)
+
+	auth.POST("/admin/users_reports", server.downloadUserReports)
+	auth.POST("/admin/admin_reports", server.downloadAdminReports)
 
 	server.router = router
 }

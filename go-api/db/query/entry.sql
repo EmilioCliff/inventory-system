@@ -1,8 +1,8 @@
 -- name: CreateEntry :one
 INSERT INTO entries (
-    product_name, product_price, quantity_added
+    product_id, product_name, product_price, quantity_added
 ) VALUES (
-    $1, $2, $3
+    $1, $2, $3, $4
 )
 RETURNING *;
 
@@ -18,3 +18,7 @@ GROUP BY
     issued_date, product_name
 ORDER BY
     issued_date, product_name DESC;
+
+-- name: ListEntries :many
+SELECT * FROM entries
+WHERE created_at BETWEEN @from_date AND @to_date;

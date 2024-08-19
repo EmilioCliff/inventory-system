@@ -6,16 +6,15 @@ package db
 
 import (
 	"time"
-
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Entry struct {
-	EntryID       int64              `json:"entry_id"`
-	ProductName   string             `json:"product_name"`
-	ProductPrice  int32              `json:"product_price"`
-	QuantityAdded int32              `json:"quantity_added"`
-	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+	EntryID       int64     `json:"entry_id"`
+	ProductID     int32     `json:"product_id"`
+	ProductName   string    `json:"product_name"`
+	ProductPrice  int32     `json:"product_price"`
+	QuantityAdded int32     `json:"quantity_added"`
+	CreatedAt     time.Time `json:"created_at"`
 }
 
 type Invoice struct {
@@ -37,6 +36,15 @@ type Product struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
+type PurchaseOrder struct {
+	ID              string    `json:"id"`
+	SupplierName    string    `json:"supplier_name"`
+	SupplierAddress string    `json:"supplier_address"`
+	LpoData         []byte    `json:"lpo_data"`
+	LpoPdf          []byte    `json:"lpo_pdf"`
+	CreatedAt       time.Time `json:"created_at"`
+}
+
 type Receipt struct {
 	ReceiptID           int64     `json:"receipt_id"`
 	ReceiptNumber       string    `json:"receipt_number"`
@@ -45,6 +53,7 @@ type Receipt struct {
 	ReceiptData         []byte    `json:"receipt_data"`
 	ReceiptPdf          []byte    `json:"receipt_pdf"`
 	CreatedAt           time.Time `json:"created_at"`
+	PaymentMethod       string    `json:"payment_method"`
 }
 
 type StockValue struct {
@@ -62,6 +71,7 @@ type Transaction struct {
 	MpesaReceiptNumber string    `json:"mpesa_receipt_number"`
 	ResultDescription  string    `json:"result_description"`
 	CreatedAt          time.Time `json:"created_at"`
+	PaymentMethod      string    `json:"payment_method"`
 }
 
 type User struct {

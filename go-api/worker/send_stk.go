@@ -15,9 +15,9 @@ import (
 const SendSTKTask = "task:send_stk_push"
 
 type SendSTKPayload struct {
-	User   db.User `json:"user"`
-	Amount int64   `json:"amount"`
-	// TransactionData []byte `json:"transaction_data"`
+	User            db.User `json:"user"`
+	Amount          int64   `json:"amount"`
+	TransactionData []byte  `json:"transaction_data"`
 }
 
 func (distributor *RedisTaskDistributor) DistributeSendSTK(ctx context.Context, payload SendSTKPayload, opts ...asynq.Option) error {
@@ -63,7 +63,7 @@ func (processor *RedisTaskProcessor) ProcessSendSTK(ctx context.Context, task *a
 		TransactionUserID: int32(sendSTKPayload.User.UserID),
 		Amount:            int32(sendSTKPayload.Amount),
 		PhoneNumber:       sendSTKPayload.User.PhoneNumber,
-		// DataSold:          []byte("changed"),
+		DataSold:          sendSTKPayload.TransactionData,
 		ResultDescription: rescDescription,
 	})
 	if err != nil {

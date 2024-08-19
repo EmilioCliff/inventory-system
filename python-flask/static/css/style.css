@@ -107,8 +107,10 @@ html, body {
     position: absolute;
     top: 0;
     left: 0;
+    right: 0;
+    bottom: -10rem;
     width: 100%;
-    height: 100%;
+    /* height: 100%; */
     background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black overlay */
     display: none; /* Initially hidden */
     z-index: 999;
@@ -210,4 +212,19 @@ p {
   z-index: 1000;
   width: 80%; 
   max-width: 600px; 
+}
+
+.action-btn-users {
+  flex-wrap: wrap;
+  gap: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  margin-left: -1rem;
+}
+
+@media screen and (max-width: 485px) { 
+  .action-btn-users{
+    gap: 5px;
+    display: flex;
+  }
 }

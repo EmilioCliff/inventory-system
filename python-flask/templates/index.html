@@ -71,13 +71,25 @@
                         <li><a class="dropdown-item" href="{{ url_for('getSuccessfulTransactions') }}">Successful Transactions</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('getFailedTransactions') }}">Failed Transactions</a></li>
                         {% else %}
-                        <li><a class="dropdown-item" href="{{ url_for('getUserAllTransactions', user_id=user.id) }}">All Transactions</a></li>
+                        <!-- <li><a class="dropdown-item" href="{{ url_for('getUserAllTransactions', user_id=user.id) }}">All Transactions</a></li>
                         <li><a class="dropdown-item" href="{{ url_for('getUserSuccessfulTransactions', user_id=user.id) }}">Successful Transactions</a></li>
-                        <li><a class="dropdown-item" href="{{ url_for('getUserFailedTransactions', user_id=user.id) }}">Failed Transactions</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('getUserFailedTransactions', user_id=user.id) }}">Failed Transactions</a></li> -->
                         {% endif %}                        
                     </ul>
                 </div>
             </div>
+            <!-- <form action="{{ url_for('report_download', type='users')}}" method="post">
+                <input type="date" id="from_date" name="from_date" required>
+                <p>To User</p>
+                <input type="date" id="to_date" name="to_date" required>
+                <button type="submit">User</button>
+            </form>
+            <form action="{{ url_for('report_download', type='admin')}}" method="post">
+                <input type="date" id="from_date" name="from_date" required>
+                <p>To Admin</p>
+                <input type="date" id="to_date" name="to_date" required>
+                <button type="submit">Admin</button>
+            </form> -->
             <div class="card-body d-inline-flex justify-content-between">
                     <div class="dropdown">
                     <a href="#" style="font-size: 13px;" data-bs-toggle="dropdown" aria-expanded="false">View History
@@ -85,7 +97,7 @@
                                 {% if user.id == 1%}
                                 <li><a class="dropdown-item" href="{{ url_for('user_received_history', user_id=user_id) }}">Purchase History</a></li>
                                 <li><a class="dropdown-item" href="{{ url_for('user_sold_history', user_id=user_id) }}">Sold History</a></li>
-                                <!-- <li><a class="dropdown-item" href="{{ url_for('user_debt_history', user_id=user_id) }}">Users In-Stock Debt</a></li> -->
+                                <li><a class="dropdown-item" href="{{ url_for('user_debt_history', user_id=user_id) }}">Users In-Stock Debt</a></li>
                                 {% else %}
                                 <li><a class="dropdown-item" href="{{ url_for('user_received_history', user_id=user_id) }}">Purchase History</a></li>
                                 {% endif%}

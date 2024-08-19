@@ -47,6 +47,11 @@ type TaskDistributor interface {
 		payload RequestStockPayload,
 		opts ...asynq.Option,
 	) error
+	DistributeSendReduceClientStockAdmin(
+		ctx context.Context,
+		payload ReduceClientStockByAdminPayload,
+		opts ...asynq.Option,
+	) error
 }
 
 type RedisTaskDistributor struct {

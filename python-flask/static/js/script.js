@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const viewTransactionBtns = document.querySelectorAll('#viewTransaction');
   const viewUserTransactionBtns = document.querySelectorAll('#viewUserTransaction');
   const viewDebtBtns = document.querySelectorAll('#viewDebt');
+  const reportBtn = document.getElementById("reportButton")
 
   const overlay_create = document.getElementById('overlay_create');
   const overlay_product = document.getElementById('overlay_product');
@@ -23,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const overlay_viewTransaction = document.querySelectorAll('#overlay_transactionview');
   const overlay_viewUserTransaction = document.querySelectorAll('#overlay_transactionuserview');
   const overlay_viewDebt = document.querySelectorAll('#overlay_debtview');
+  const overlay_report = document.getElementById('reportOverlay');
 
   const popupFormCreate = document.getElementById('popupFormCreate');
   const popupFormProduct = document.getElementById('popupFormProduct');
@@ -36,6 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const popupFormTransactionView = document.querySelectorAll('#popupFormTransactionView');
   const popupFormUserTransactionView = document.querySelectorAll('#popupFormUserTransactionView');
   const popupFormDebtView = document.querySelectorAll('#popupFormDebtView');
+  const popupFormReportDown = document.getElementById("popupformReport");
 
   const deleteButton = document.querySelector('.delete-button');
   const overlay_delete = document.getElementById('overlay_delete');
@@ -49,6 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const transactionViewCloseBtns = document.querySelectorAll('#transactionViewCloseBtn');
   const transactionViewUserCloseBtns = document.querySelectorAll('#transactionViewUserCloseBtn');
   const debtViewUserCloseBtns = document.querySelectorAll('#debtViewUserCloseBtn');
+  const reportCloseBtn = document.getElementById("close-btnnnn-report");
 
   const editButton = document.getElementById('editButton');
   const overlay_edit = document.getElementById('overlayedit');
@@ -165,6 +169,33 @@ if (requestClientStockCloseBtn) {
       // popupFormReduceClientStock.style.opacity = '0';
     });
   }
+
+  if (reportBtn) {
+    reportBtn.addEventListener('click', function() {
+      overlay_report.style.display = 'block';
+      popupFormReportDown.style.display = 'block';
+    });
+  }
+
+  if (reportCloseBtn) {
+    reportCloseBtn.addEventListener('click', function(){
+      overlay_report.style.display = 'none';
+      popupFormReportDown.style.display = 'none';
+    });
+  }
+
+  const reportDownload = document.getElementById("reportDownload")
+  if (reportDownload) {
+    reportDownload.addEventListener('click', function() {
+      overlay_report.style.display = 'none';
+      popupFormReportDown.style.display = 'none';
+    });
+  }
+
+//   reportBtn 
+// overlay_report
+// popupFormReportDown
+// reportCloseBtn
 
   if (waitViewButton) {
     waitViewButton.addEventListener('click', function() {

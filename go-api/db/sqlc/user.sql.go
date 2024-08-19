@@ -165,6 +165,18 @@ func (q *Queries) GetUserForUpdate(ctx context.Context, userID int64) (User, err
 	return i, err
 }
 
+const getUserUsername = `-- name: GetUserUsername :one
+SELECT username FROM users
+WHERE user_id = $1 LIMIT 1
+`
+
+func (q *Queries) GetUserUsername(ctx context.Context, userID int64) (string, error) {
+	row := q.db.QueryRow(ctx, getUserUsername, userID)
+	var username string
+	err := row.Scan(&username)
+	return username, err
+}
+
 const listUser = `-- name: ListUser :many
 SELECT user_id, username, password, email, phone_number, address, stock, role, created_at FROM users
 ORDER BY username

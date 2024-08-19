@@ -46,7 +46,7 @@
                 </div>
                 <div class="ms-3" style="display: flex;flex-direction: column;">
                     <p style="font-size: 18px; font-weight: 500;color: black;">{{ user.username}}</p>
-                    <p>{{ user.email }}</p>
+                    <p style="overflow-wrap: break-word; width: 13rem;">{{ user.email }}</p>
                     <p>{{ user.address }}</p>
                     <p>{{ user.phone_number }}</p>
                 </div>
@@ -57,7 +57,7 @@
         <img src="../static/images/piano.jpg" alt="piano" style="width: 100%; height: 100%; border-radius: 10%;">
     </div> -->
 </div>
-<div class="d-inline-flex justify-content-around" style="flex-wrap: wrap; gap: 10px;">
+<div class="action-btn-users">
     <!-- {% if ct not in ['receipts', 'invoices'] %} -->
     {% if user.id != 1 and user_id != 1 %}
     <!-- <a href="{{ url_for('getUserAllTransactions', user_id=user.id) }}" class="btn btn-outline-primary" id="nnn">Transactions</a> -->
@@ -70,20 +70,21 @@
                     </svg>
                 </button>
                 <!-- <p></p> -->
-                <!-- <button type="button" class="btn btn-sm btn-primary" onclick="reduceProduct()">Add</button> -->
+                <button type="button" class="btn btn-sm btn-primary"  style="display: block; margin: auto;" onclick="reduceProduct()">Add</button>
                 <form id="productForm" method="POST" action="{{ url_for('reduce_client_stock', id=user.id) }}" style="margin-top: 2rem;" autocomplete="off">
-                    <div id="stockList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden">
+                    <div id="stockList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
                         <div class="d-flex">
-                        <!-- <select class="product me-1" name="products_id">
-                            {% if user.stock is none %}
-                            <option value="-100">No Products To Sell</option>
-                            {% else %}
-                            {% for stock in user.stock %}
-                            <option value="{{ stock.productID }}">{{ stock.productName }}:{{ stock.productQuantity }}</option>
-                            {% endfor %}
-                            {% endif %}
-                        </select> -->
-                        <input type="number" class="quantity" id="amount" name="amount" placeholder="Enter Amount To Pay (Ksh)" required style="width: 100%;border: 1px solid black;padding: .5rem;">
+                            <select class="product me-1" name="products_id">
+                                {% if user.stock is none %}
+                                <option value="-100">No Products To Sell</option>
+                                {% else %}
+                                {% for stock in user.stock %}
+                                <option value="{{ stock.productID }}">{{ stock.productName }}:{{ stock.productQuantity }}</option>
+                                {% endfor %}
+                                {% endif %}
+                            </select>
+                            <input type="number" class="quantity" name="quantities" id="quantities" placeholder="Quantity" style="width: auto;" required>
+                            <!-- <input type="number" class="quantity" id="amount" name="amount" placeholder="Enter Amount To Pay (Ksh)" required style="width: 100%;border: 1px solid black;padding: .5rem;"> -->
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary" style="display: block; margin-inline: auto;">Submit</button>
@@ -99,7 +100,7 @@
     
     {% endif %}
     <!-- {% endif %} -->
-    <!-- <a href="{{ url_for('get_user', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user' %}active{% endif %}">Products</a> -->
+    <a href="{{ url_for('get_user', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user' %}active{% endif %}">Products</a>
     {% if user.id == 1 %}
     {% else %}
     <a href="{{ url_for('get_user_invoices', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user_invoices' %}active{% endif %}">Invoices</a>
@@ -140,12 +141,39 @@
                 </form>
             </div>
         </div>
+        <a href="{{ url_for('reduce_client_stock_by_admin', id=user.id) }}" class="btn btn-outline-primary" id="">3rd Party Payments</a>
         {% endif %}
     {% if user.id != 1 %}
     <a href="#" class="btn btn-outline-primary" id="editButton">Edit User Profile</a>
     {% else %}
     <a href="#" class="btn btn-outline-primary" id="editButton">Edit Profile</a>
-    <a href="{{ url_for('create_purchase_order') }}" class="btn btn-outline-primary" id="">Purchase Order</a>
+    <a href="{{ url_for('purchase_orders') }}" class="btn btn-outline-primary {% if request.endpoint == 'purchase_orders' %}active{% endif %}" id="">Purchase Orders</a>
+    <a href="#" class="btn btn-outline-primary" id="reportButton">Reports</a>
+    <div class="overlay" id="reportOverlay">
+        <div class="form-container p-1" id="popupformReport" style="display: block; padding-inline: .5rem;">
+            <button name="close-button" id="close-btnnnn-report" class="close-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                </svg>
+            </button>
+            <form id="productForm" method="POST" action="{{ url_for('report_download') }}" autocomplete="off">
+                <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 1.5rem;">
+                    <input type="date" id="from_date" name="from_date" required style="margin-block: .5rem; border: 1px solid black; padding: .25rem;">
+                    <p>TO</p>
+                    <input type="date" id="to_date" name="to_date" required style="margin-block: .5rem; border: 1px solid black; padding: .25rem;">
+                </div>
+                <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
+                    <div style="align-self: center;">
+                        <select class="product me-1" name="products_id" id="products_id" required>
+                                <option value="0">User Based Report</option>
+                                <option value="1">Admin Based Report</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" id="reportDownload" class="btn btn-primary" style="display: block; margin-inline: auto;">Download</button>
+            </form>
+        </div>
+    </div>
     {% endif %}
     <div id="overlayedit" class="overlay">
         <div id="popupFormEdit" class="form-container">
@@ -205,19 +233,19 @@
 </div>
 {% if ct == 'user' %}
 {% if user.stock is none %}
-<p></p>
+<p>No Products Yet</p>
 {% else %}
 {% for data in user.stock %}
-    {% if user_id == 1 and user.id == 1 %}
     {% if (data.productQuantity) < 4 %}
-    <div class="d-flex justify-content-between list--container mb-3 p-3 row" style="background-color: #F7D060;">
+        <div class="d-flex justify-content-between list--container mb-3 p-3 row" style="background-color: #F7D060;">
     {% else %}
-    <div class="d-flex justify-content-between list--container mb-3 p-3 row">
+        <div class="d-flex justify-content-between list--container mb-3 p-3 row">
     {% endif %}
         <div style="flex-direction: column;">
-                <p style="font-size: 18px; font-weight: 500;"> {{ data.productName }}</p>
-                <p style="font-size: 12px;"> Quantity: {{ data.productQuantity }}</p>
+            <p style="font-size: 18px; font-weight: 500;"> {{ data.productName }}</p>
+            <p style="font-size: 12px;"> Quantity: {{ data.productQuantity }}</p>
         </div>
+        {% if user_id == 1 and user.id == 1 %}
         <a href="#" class="btn btn-primary btn-add-stock" data-product-name="{{ data.productName }}" data-product-id="{{ data.productID }}">Add Stock</a>
         <div id="overlay_add" class="overlay">
             <div id="add-form-container" class="form-container">
@@ -262,6 +290,67 @@
 {% if invoice.metadata.current_page < invoice.metadata.total_pages %}
     <a class="btn" href="{{ url_for('get_user_invoices', id=user.id, page_id=invoice.metadata.current_page + 1) }}">Next</a>
 {% endif %}
+</div>
+{% endif %}
+{% elif ct == 'orders' %}
+<a href="{{ url_for('create_purchase_order') }}" id="createUserBtn">Create Purchase Order
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-plus" viewBox="0 0 16 16">
+        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+    </svg>
+</a>
+{% if order.data is none %}
+<p>No Purchase Orders Yet</p>
+{% else %}
+{% for data in order.data %}
+<a href="#" id="viewReceipt" class="d-flex justify-content-between list--container mb-3 p-3">
+    <div class="new_data">
+        <div>
+            <p style="font-size: 18px; font-weight: 500;color: black;">{{ data.supplier_name }}</p>
+            <p style="font-size: 12px;">LPO NO - {{ data.id }} </p>
+        </div>
+    </div>
+    <p style="overflow: auto; white-space: nowrap;">{{ data.created_at[:10] }}</p>
+</a>
+<div id="overlay_receiptview" class="overlay">
+    <div id="popupFormReceiptView" class="form-container p-1">
+        <button id="receiptViewCloseBtn" class="close-button" data-productid="{{ data.product_id }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+              </svg>
+        </button>
+        <h2 style="text-decoration: underline;">Purchase Order</h2>
+        <ul style="padding-right: 1.5rem;">
+                <li style="opacity: .7;">{{ data.id }}</li>
+                <li style="opacity: .7;">{{ data.supplier_name }}</li>
+                <li style="opacity: .7;">{{ data.supplier_addres }}</li>
+                
+            {% for detail in data.order_data %}
+                <li>Product Name: {{ detail.product_name }}</li>
+                <li>Quantity: {{ detail.quantity }}</li>
+                <li>Unit Price: {{ detail.unit_price }}</li>
+                <hr style="margin-block: .25rem; color: gray; opacity: .8;">
+            {% endfor %}
+                <li>{{ data.created_at[:10] }}</li>
+        </ul>
+        <div style="display: flex; justify-content: space-evenly;">
+            <a href="{{ url_for('purchaseOrderDownload', id_param=data.id) }}" target="_blank" class="btn btn-success text-uppercase m-2" id="submitButton" style="text-decoration: none;" type="submit">
+                Download
+            </a>
+            <a href="{{ url_for('deletePurchaseOrder', id_param=data.id) }}" target="_blank" class="btn btn-danger text-uppercase m-2" id="submitButton" style="text-decoration: none;" type="submit">
+                Delete
+            </a>
+        </div>
+    </div>
+</div>
+{% endfor %}
+<div class="d-inline-flex justify-content-between w-100">
+    {% if order.metadata.current_page > 1 %}
+        <a class="btn" href="{{ url_for('purchase_orders',  page_id=order.metadata.current_page - 1) }}">Previous</a>
+    {% endif %}
+
+    {% if order.metadata.current_page < order.metadata.total_pages %}
+        <a class="btn" href="{{ url_for('purchase_orders',  page_id=order.metadata.current_page + 1) }}">Next</a>
+    {% endif %}
 </div>
 {% endif %}
 {% else %}
@@ -318,19 +407,12 @@
         newQuantity.placeholder = 'Quantity';
         newQuantity.required = true;
 
-        // Append line break for better formatting (optional)
-        // var lineBreak = document.createElement('br');
-
         var newProductDiv = document.createElement('div');
         newProductDiv.className = 'd-flex';
         newProductDiv.appendChild(newProduct);
         newProductDiv.appendChild(newQuantity);
 
         document.getElementById('productList').appendChild(newProductDiv);
-        // Append the new fields to the existing product list
-        // document.getElementById('productList').appendChild(lineBreak);
-        // document.getElementById('productList').appendChild(newProduct);
-        // document.getElementById('productList').appendChild(newQuantity);
     }
 </script>
 <script>

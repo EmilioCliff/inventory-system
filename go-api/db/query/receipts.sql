@@ -43,11 +43,16 @@ OFFSET $2;
 
 -- name: CreateReceipt :one
 INSERT INTO receipts(
-    receipt_number, user_receipt_id,  user_receipt_username, receipt_pdf
+    receipt_number, user_receipt_id,  user_receipt_username, receipt_data, receipt_pdf
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
 RETURNING *;
+
+-- name: ChangePaymentMethodReceipt :exec
+UPDATE receipts 
+    SET payment_method = $1
+WHERE receipt_id = $2;
 
 -- name: SearchILikeReceipts :many
 SELECT receipt_number FROM receipts

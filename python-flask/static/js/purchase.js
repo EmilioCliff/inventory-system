@@ -98,6 +98,10 @@ function sendDataFuncDirect(sendData) {
     document.body.appendChild(form);
     form.submit();
     document.body.removeChild(form);
+
+    setTimeout(function() {
+        window.location.href = "/get_user/1";
+    }, 1000);
 }
 
 function sendDataFunc(sendData) {

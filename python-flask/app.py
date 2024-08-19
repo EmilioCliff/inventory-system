@@ -13,9 +13,9 @@ HEADERS={
     "Authorization": "Bearer "
 }
 
-# BASE_URL="http://backend:8080" # When Testing
+BASE_URL="http://backend:8080" # When Testing
 # BASE_URL = "http://inventory-system-api-1:8080" When using Docker Compose
-BASE_URL = "http://secretive-window.railway.internal:8080"  #  Production
+# BASE_URL = "http://secretive-window.railway.internal:8080"  #  Production
    
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "32e234353t4rffbfbfgxx"
@@ -127,6 +127,9 @@ def edit_product(id):
         if rsp.status_code == 200:
             flash("Products Details Changed Successfully", "success")
             return redirect(url_for('list_products'))
+        elif rsp.status_code == 409:
+            flash("Products Already Exists", "error")
+            return redirect(url_for('login'))
         elif rsp.status_code == 401:
             flash("Please login", "error")
             return redirect(url_for('login'))
@@ -490,7 +493,33 @@ def get_user_receipts(id):
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
+
+@app.route('/purchase_orders')
+def purchase_orders():
+    params = {'page_id': request.args.get('page_id', 1)}
+    getPurchaseOrdersURL = f"{BASE_URL}/admin/purchase-orders"
+    rsp = requests.get(url=getPurchaseOrdersURL, params=params, headers={"Authorization": f"Bearer {session['token']}"})
+    if rsp.status_code != 200:
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
+
+    rspAdmin = requests.get(url=f"{BASE_URL}/users/1", headers={"Authorization": f"Bearer {session['token']}"})
+    if rspAdmin.status_code != 200:
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     
+    adminData = rspAdmin.json()
+
+    return render_template("user.html", order=rsp.json(), user=adminData, admin="", user_id=session['user_id'], ct='orders', invoice_date="")
+
+# auth.DELETE("/admin/purchase-orders/:id", server.deletePurchaseOrders)
+@app.route('/purchase_orders/<string:id_param>')
+def deletePurchaseOrder(id_param):
+    deletePurchaseOrderUrl = f"{BASE_URL}/admin/purchase-orders/{id_param}"   
+    rsp = requests.delete(url=deletePurchaseOrderUrl, headers={"Authorization": f"Bearer {session['token']}"})
+    if rsp.status_code != 200:
+        return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
+    flash("Purchase order deleted successfully", "success")
+    return redirect(url_for('purchase_orders'))
+
 @app.route('/get_user_products/<int:id>')
 def get_user_products(id):
     getUserProductsUrl = f"{BASE_URL}/users/products/{id}"
@@ -553,26 +582,24 @@ def add_client_stock(id):
 @app.route('/users/products/sell/<int:id>', methods=['POST', 'GET'])
 def reduce_client_stock(id):
     if request.method == 'POST':
-        # products_id = request.form.getlist('products_id')
-        # product_list = [int(num) for num in products_id]
-        # quantities = request.form.getlist('quantities')
-        # quantities_list = [int(num) for num in quantities]
-        amount = request.form.get('amount')
+        products_id = request.form.getlist('products_id')
+        product_list = [int(num) for num in products_id]
+        quantities = request.form.getlist('quantities')
+        quantities_list = [int(num) for num in quantities]
+        # amount = request.form.get('amount')
 
         # print(product_list, quantities_list, products_id, quantities, id)
         data = {
-            # "products_id": product_list,
-            # "quantities": quantities_list
-            "amount": int(amount)
+            "products_id": product_list,
+            "quantities": quantities_list
+            # "amount": int(amount)
         }
 
         url = f"{BASE_URL}/users/products/sell/{id}"
         rsp = requests.post(url, json=data, headers={"Authorization": f"Bearer {session['token']}"})
 
         if rsp.status_code == 200:
-            # flash("Please wait to enter M-PESA PIN")
             return render_template("wait.html", user_id=id)
-            # return redirect(url_for('get_user', id=id))  # Redirect to some success page
         elif rsp.status_code == 401:
             flash("Please login", "error")
             return redirect(url_for('login'))
@@ -582,6 +609,46 @@ def reduce_client_stock(id):
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
     return render_template("reduce_client_stock.html")
+
+@app.route('/users/products/sell/admin/<int:id>', methods=['POST', 'GET'])
+def reduce_client_stock_by_admin(id):
+    getUserUri = f"{BASE_URL}/users/{id}"
+    rsp = requests.get(url=getUserUri, headers={"Authorization": f"Bearer {session['token']}"})
+    if request.method == 'POST':
+        products_id = request.form.getlist('products_id')
+        product_list = [int(num) for num in products_id]
+        quantities = request.form.getlist('quantities')
+        quantities_list = [int(num) for num in quantities]
+        phone_number = request.form.get('phone_number')
+        mpese_receipt_number = request.form.get('mpesa_receipt_number')
+        description = request.form.get('description')
+        amount = request.form.get('amount')
+
+        # print(product_list, quantities_list, products_id, quantities, id)
+        data = {
+            "products_id": product_list,
+            "quantities": quantities_list,
+            "phone_number": phone_number,
+            "mpesa_receipt_number": mpese_receipt_number,
+            "description": description,
+            "amount": int(amount)
+        }
+
+        url = f"{BASE_URL}/users/admin/reduce_client_stock/{id}"
+        rsp = requests.post(url, json=data, headers={"Authorization": f"Bearer {session['token']}"})
+
+        if rsp.status_code == 200:
+            flash("User 3rd Party Payment Recorded", "success")
+            return redirect(url_for('get_user', id=id))
+        elif rsp.status_code == 401:
+            flash("Please login", "error")
+            return redirect(url_for('login'))
+        elif rsp.status_code == 406:
+            flash(rsp.json()["error"], "error")
+            return redirect(url_for('reduce_client_stock_by_admin', id=id))
+        else:
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
+    return render_template("admin_reduce_stock.html", user=rsp.json())
 
 @app.route("/search/transactions", methods=['POST', 'GET'])
 def search_transactions():
@@ -681,6 +748,22 @@ def receiptDownload(id_param):
         return redirect(url_for('login'))
     else:
         return render_template('failed.html', error_code=response.status_code, error=response.json()['error'])
+    
+    # auth.GET("/admin/purchase-orders/:id", server.downloadPurchaseOrders)
+@app.route("/download/purchase-order/<string:id_param>", methods=['POST', 'GET'])
+def purchaseOrderDownload(id_param):
+    url = f"{BASE_URL}/admin/purchase-orders/{id_param}"
+    response = requests.get(url=url, headers={"Authorization": f"Bearer {session['token']}"})
+    data = response.json()
+
+    if response.status_code == 200:
+        pdf_bytes = base64.b64decode(data['purchase_order_pdf'])
+        return send_file(BytesIO(pdf_bytes), as_attachment=True, mimetype='application/pdf', download_name=f"PO-{id_param}.pdf")
+    elif response.status_code == 401:
+        flash("Please login", "error")
+        return redirect(url_for('login'))
+    else:
+        return render_template('failed.html', error_code=response.status_code, error=response.json()['error'])
 
 @app.route("/download/statement/<int:id>", methods=['POST', 'GET'])
 def statement_download(id):
@@ -698,6 +781,27 @@ def statement_download(id):
     else:
         flash("Failed to download statement", "error")
         return redirect(url_for("get_user", id=id))
+    
+@app.route("/download/reports", methods=['POST', 'GET'])
+def report_download():
+    selected_option = request.form.get('products_id')
+    if selected_option == "0":
+        type = "users"
+    else:
+        type = "admin"
+    from_date =request.form.get("from_date")
+    to_date = request.form.get("to_date")
+    params = {"start_date": from_date, "end_date": to_date}
+    url = f"{BASE_URL}/admin/{type}_reports"
+    response = requests.post(url=url, json=params, headers={"Authorization": f"Bearer {session['token']}"})
+    data = response.json()
+    if response.status_code == 200:
+        excel_bytes = base64.b64decode(data['data'])
+        return send_file(BytesIO(excel_bytes), as_attachment=True, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', download_name=f"report.xlsx")
+    else:
+        flash("Failed to download statement", "error")
+        return redirect(url_for("get_user", id=id))
+
 
 @app.route("/purchase_order")
 def create_purchase_order():
@@ -723,7 +827,7 @@ def purchase_order_download():
     data = response.json()
 
     if response.status_code == 200:
-        pdf_bytes = base64.b64decode(data['statement_pdf'])
+        pdf_bytes = base64.b64decode(data['purchase_order_pdf'])
         return send_file(BytesIO(pdf_bytes), as_attachment=True, mimetype='application/pdf', download_name="purchase_order.pdf")
     elif response.status_code == 202:
         return redirect(url_for("get_user", id=1))

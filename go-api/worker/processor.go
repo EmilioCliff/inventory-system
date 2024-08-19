@@ -26,6 +26,7 @@ type TaskProcessor interface {
 	ProcessMpesaCallback(ctx context.Context, task *asynq.Task) error
 	ProcessTakeAndSendDBsnapshots(ctx context.Context, task *asynq.Task) error
 	ProcessSendRequestStock(ctx context.Context, task *asynq.Task) error
+	ProcessReduceClientStockByAdmin(ctx context.Context, task *asynq.Task) error
 }
 
 type RedisTaskProcessor struct {
@@ -73,6 +74,7 @@ func (processor *RedisTaskProcessor) Start() error {
 	mux.HandleFunc(ProcessMpesaCallbackTask, processor.ProcessMpesaCallback)
 	mux.HandleFunc(TakeAndSendDBsnpashotsTask, processor.ProcessTakeAndSendDBsnapshots)
 	mux.HandleFunc(SendRequestStockTask, processor.ProcessSendRequestStock)
+	mux.HandleFunc(ReduceClientStockAdminTask, processor.ProcessReduceClientStockByAdmin)
 
 	return processor.server.Start(mux)
 }

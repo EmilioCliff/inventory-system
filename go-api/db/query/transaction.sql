@@ -14,17 +14,21 @@ SELECT COUNT(*) FROM transactions;
 
 -- name: CreateTransaction :one
 INSERT INTO transactions (
-    transaction_id, amount, phone_number, transaction_user_id, result_description
+    transaction_id, amount, phone_number, transaction_user_id, result_description, data_sold
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4, $5, $6
 )
 RETURNING *;
 
--- name: ChangeStatus :one
+-- name: ChangeStatus :exec
 UPDATE transactions
     set status = $2
-WHERE transaction_id = $1
-RETURNING *;
+WHERE transaction_id = $1;
+
+-- name: ChangePaymentMethod :exec
+UPDATE transactions 
+    SET payment_method = $1
+WHERE transaction_id = $2;
 
 -- name: UpdateResultDescription :one
 UPDATE transactions

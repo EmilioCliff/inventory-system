@@ -8,7 +8,7 @@
     <div class="card-body">
         <span class="p-0 m-0">An error occurred while trying to connect to a remote server</span>
         <p style="color: #dc3545;">ERROR:</p>
-        <!-- <p class="mt-2">{{ error }}</p> -->
+        <p class="mt-2">{{ error }}</p>
         <a href="{{ url_for('login') }}" class="btn btn-lg btn-danger m-1">Back To Login</a>
     </div>
     {% else %}
@@ -17,6 +17,7 @@
     </div>
     <div class="card-body">
         <span class="p-0 m-0">Login To Continue</span>
+        <p class="mt-2">{{ error }}</p>
         <a href="{{ url_for('login') }}" class="btn btn-lg btn-danger m-1">Back To Login</a>
         <!-- <p></p> -->
     </div>

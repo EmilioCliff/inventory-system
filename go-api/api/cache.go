@@ -28,4 +28,5 @@ const (
 	AdminHistory               = "/history/admin"
 	TestGroup                  = "/history/test"
 	Random                     = "//image/migration-2/2"
+	ListPurchaseOrders         = "/admin/purchase-orders"
 )

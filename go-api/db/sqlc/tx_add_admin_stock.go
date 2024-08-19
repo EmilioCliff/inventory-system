@@ -63,6 +63,7 @@ func (store *Store) AddAdminStockTx(ctx context.Context, arg AddAdminStockParams
 
 		if arg.Amount != 0 {
 			_, err = q.CreateEntry(ctx, CreateEntryParams{
+				ProductID:     int32(arg.ProducToAdd.ProductID),
 				ProductName:   arg.ProducToAdd.ProductName,
 				ProductPrice:  arg.ProducToAdd.UnitPrice * int32(arg.Amount),
 				QuantityAdded: int32(arg.Amount),

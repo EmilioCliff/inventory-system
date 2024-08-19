@@ -59,7 +59,7 @@ func (processor *RedisTaskProcessor) ProcessSendVerifyEmail(ctx context.Context,
 	}
 
 	resetPasswordLink := fmt.Sprintf("%v/resetit?token=%v", processor.config.PUBLIC_URL, accessToken)
-	emailBody := fmt.Sprintf(`
+	_ = fmt.Sprintf(`
 	<h1>Hello %s</h1>
 	<p>A new account has been created for the Kokomed Supplies System. Please create your Password and Login to check it out</p>
 	<a href="%s" style="display:inline-block; padding:10px 20px; background-color:#007BFF; color:#fff; text-decoration:none; border-radius:5px;">Create Password</a>
@@ -67,10 +67,10 @@ func (processor *RedisTaskProcessor) ProcessSendVerifyEmail(ctx context.Context,
 	<a href="https://inventory-system-production-378e.up.railway.app/">https://inventory-system-production-378e.up.railway.app/</a>
 `, user.Username, resetPasswordLink)
 
-	err = processor.sender.SendMail("Create Password", emailBody, "application/pdf", []string{user.Email}, nil, nil, nil, nil)
-	if err != nil {
-		return fmt.Errorf("failed to send email: %w", err)
-	}
+	// err = processor.sender.SendMail("Create Password", emailBody, "application/pdf", []string{user.Email}, nil, nil, nil, nil)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to send email: %w", err)
+	// }
 
 	log.Info().
 		Str("type", task.Type()).

@@ -31,6 +31,7 @@ func newReceiptResponse(receipt db.Receipt) (receiptResponse, error) {
 		UserreceiptUsername: receipt.UserReceiptUsername,
 		ReceiptData:         receiptData,
 		ReceiptCreateTime:   mytime,
+		PaymentMethod:       receipt.PaymentMethod,
 	}, nil
 }
 
@@ -40,6 +41,7 @@ type receiptResponse struct {
 	UserreceiptID       int64                    `json:"user_receipt_id"`
 	UserreceiptUsername string                   `json:"user_receipt_username"`
 	ReceiptData         []map[string]interface{} `json:"receipt_data"`
+	PaymentMethod       string                   `json:"payment_method"`
 	ReceiptCreateTime   string                   `json:"receipt_create_time"`
 }
 
@@ -77,33 +79,43 @@ func (server *Server) listReceipts(ctx *gin.Context) {
 		return
 	}
 
+	// return to receipt details
 	var rsp []receiptResponse
 	for _, receipt := range receipts {
-		// updatedReceipt, _ := newReceiptResponse(receipt)
-		mytime := receipt.CreatedAt.Format("02-January-2006")
+		updatedReceipt, _ := newReceiptResponse(receipt)
 		transaction, err := server.store.GetTransaction(ctx, receipt.ReceiptNumber)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 			return
 		}
 
-		updatedReceipt := receiptResponse{
-			ReceiptID:           receipt.ReceiptID,
-			ReceiptNumber:       receipt.ReceiptNumber,
-			UserreceiptID:       int64(receipt.UserReceiptID),
-			UserreceiptUsername: receipt.UserReceiptUsername,
-			ReceiptData: []map[string]interface{}{
-				{
-					"user_contact": "dummy_data",
-				},
-				{
-					"mpesa_ref":    transaction.MpesaReceiptNumber,
-					"amount":       transaction.Amount,
-					"phone_number": transaction.PhoneNumber,
-				},
+		additionalData1 := []map[string]interface{}{
+			{
+				"mpesa_ref":    transaction.MpesaReceiptNumber,
+				"amount":       transaction.Amount,
+				"phone_number": transaction.PhoneNumber,
 			},
-			ReceiptCreateTime: mytime,
 		}
+
+		// updatedReceipt.ReceiptData = append(updatedReceipt.ReceiptData, additionalData1)
+		updatedReceipt.ReceiptData = append(additionalData1, updatedReceipt.ReceiptData...)
+		// updatedReceipt := receiptResponse{
+		// 	ReceiptID:           receipt.ReceiptID,
+		// 	ReceiptNumber:       receipt.ReceiptNumber,
+		// 	UserreceiptID:       int64(receipt.UserReceiptID),
+		// 	UserreceiptUsername: receipt.UserReceiptUsername,
+		// 	ReceiptData: []map[string]interface{}{
+		// 		{
+		// 			"user_contact": "dummy_data",
+		// 		},
+		// 		{
+		// 			"mpesa_ref":    transaction.MpesaReceiptNumber,
+		// 			"amount":       transaction.Amount,
+		// 			"phone_number": transaction.PhoneNumber,
+		// 		},
+		// 	},
+		// 	ReceiptCreateTime: mytime,
+		// }
 		rsp = append(rsp, updatedReceipt)
 	}
 
@@ -396,76 +408,6 @@ func (server *Server) downloadStatement(ctx *gin.Context) {
 		"statement_pdf": data.pdfBytes,
 		"data":          statementData,
 		"user":          userDetails,
-	}
-
-	ctx.JSON(http.StatusOK, rsp)
-}
-
-type createPurchaseOrderRequest struct {
-	SupplierName string                   `json:"supplier_name" binding:"required"`
-	PoBox        string                   `json:"po_box" binding:"required"`
-	Address      string                   `json:"address" binding:"required"`
-	Data         []map[string]interface{} `json:"data" binding:"required"`
-}
-
-func (server *Server) createPurchaseOrder(ctx *gin.Context) {
-	var req createPurchaseOrderRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-	// data := map[string]interface{}{
-	// 	"supplier_name": "Eldohosp Pharmaceuticals LTD",
-	// 	"po_box":        "66859-00800",
-	// 	"address":       "epl plaza nairobi",
-	// 	"order_date":    time.Now().Format("2006-01-02"),
-	// 	"order_number":  time.Now().Format("20060102150405"),
-	// 	"Data": []map[string]interface{}{
-	// 		{
-	// 			"product_name": "HIV 1-2 Test Cassette (Self test)",
-	// 			"quantity":     100,
-	// 			"unit_price":   1000,
-	// 		},
-	// 	},
-	// }
-
-	data := map[string]interface{}{
-		"supplier_name": req.SupplierName,
-		"po_box":        req.PoBox,
-		"address":       req.Address,
-		"order_date":    time.Now().Format("2006-01-02"),
-		"order_number":  time.Now().Format("20060102150405"),
-		"Data":          req.Data,
-	}
-
-	result := make(chan struct {
-		pdfBytes []byte
-		err      error
-	}, 1)
-	var wg sync.WaitGroup
-
-	wg.Add(1)
-	go func(data map[string]interface{}) {
-		defer wg.Done()
-		pdfBytes, err := utils.GeneratePurchaseOrder(data)
-		result <- struct {
-			pdfBytes []byte
-			err      error
-		}{pdfBytes: pdfBytes, err: err}
-	}(data)
-
-	wg.Wait()
-	close(result)
-
-	lpoResult := <-result
-	if lpoResult.err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(lpoResult.err))
-		return
-	}
-
-	rsp := map[string]interface{}{
-		"statement_pdf": lpoResult.pdfBytes,
-		"data":          data,
 	}
 
 	ctx.JSON(http.StatusOK, rsp)

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/EmilioCliff/inventory-system/api"
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -34,17 +33,17 @@ func main() {
 
 	store := db.NewStore(conn)
 	redisOpt := asynq.RedisClientOpt{
-		// Addr: "redis:6379",
-		Addr:     config.REDIS_URI,
-		Password: config.REDIS_PASSWORD,
-		DB:       1,
+		Addr: "redis:6379",
+		// Addr:     config.REDIS_URI,
+		// Password: config.REDIS_PASSWORD,
+		// DB:       1,
 	}
 
 	redisClient := redis.NewClient(&redis.Options{
-		// Addr: "redis:6379",
-		Addr:     config.REDIS_URI,
-		Password: config.REDIS_PASSWORD,
-		DB:       2,
+		Addr: "redis:6379",
+		// Addr:     config.REDIS_URI,
+		// Password: config.REDIS_PASSWORD,
+		// DB:       2,
 	})
 
 	taskDistributor := worker.NewRedisTaskDistributor(redisOpt)
@@ -57,7 +56,8 @@ func main() {
 	accessToken, err := server.GeneratePythonToken("pythonApp")
 	fmt.Println(accessToken)
 
-	port := os.Getenv("PORT")
+	// port := os.Getenv("PORT")
+	port := "8080"
 
 	go runRedisTaskProcessor(redisOpt, *store, *emailSender, config, taskDistributor)
 	log.Info().Msgf("starting server at port: %s", port)

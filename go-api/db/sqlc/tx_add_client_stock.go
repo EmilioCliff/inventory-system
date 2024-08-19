@@ -11,7 +11,7 @@ type AddClientStockParams struct {
 	ToClient     User      `json:"touser"`
 	ProducToAdd  []Product `json:"productoadd"`
 	Amount       []int64   `json:"amount"`
-	AfterProcess func() error
+	AfterProcess func([]map[string]interface{}) error
 }
 
 type AddClientStockResult struct {
@@ -39,12 +39,12 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 			return err
 		}
 
-		// var clientProducts []map[string]interface{}
-		// if client.Stock != nil {
-		// 	if unerr := json.Unmarshal(client.Stock, &clientProducts); unerr != nil {
-		// 		return unerr
-		// 	}
-		// }
+		var clientProducts []map[string]interface{}
+		if client.Stock != nil {
+			if unerr := json.Unmarshal(client.Stock, &clientProducts); unerr != nil {
+				return unerr
+			}
+		}
 
 		invoiceData := []map[string]interface{}{
 			{
@@ -72,30 +72,30 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 				}
 			}
 
-			// found := false
-			// for _, clientProduct := range clientProducts {
-			// 	// Add Client's Product
-			// 	if id, ok := clientProduct["productID"].(float64); ok {
-			// 		idInt := int64(id)
-			// 		if idInt == addProduct.ProductID {
-			// 			if quantity, ok := clientProduct["productQuantity"].(float64); ok {
-			// 				quantityInt := quantity
-			// 				clientProduct["productQuantity"] = quantityInt + float64(arg.Amount[index])
-			// 				found = true
-			// 				break
-			// 			}
-			// 		}
-			// 	}
-			// }
+			found := false
+			for _, clientProduct := range clientProducts {
+				// Add Client's Product
+				if id, ok := clientProduct["productID"].(float64); ok {
+					idInt := int64(id)
+					if idInt == addProduct.ProductID {
+						if quantity, ok := clientProduct["productQuantity"].(float64); ok {
+							quantityInt := quantity
+							clientProduct["productQuantity"] = quantityInt + float64(arg.Amount[index])
+							found = true
+							break
+						}
+					}
+				}
+			}
 
 			// If product not found in client's stock, add it
-			// if !found {
-			// 	clientProducts = append(clientProducts, map[string]interface{}{
-			// 		"productID":       addProduct.ProductID,
-			// 		"productName":     addProduct.ProductName,
-			// 		"productQuantity": arg.Amount[index],
-			// 	})
-			// }
+			if !found {
+				clientProducts = append(clientProducts, map[string]interface{}{
+					"productID":       addProduct.ProductID,
+					"productName":     addProduct.ProductName,
+					"productQuantity": arg.Amount[index],
+				})
+			}
 
 			// Update invoice data
 			invoiceData = append(invoiceData, map[string]interface{}{
@@ -121,18 +121,18 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 			return err
 		}
 
-		// jsonClientProducts, err := json.Marshal(clientProducts)
-		// if err != nil {
-		// 	return err
-		// }
+		jsonClientProducts, err := json.Marshal(clientProducts)
+		if err != nil {
+			return err
+		}
 
-		// result.ToUser, err = q.UpdateUserStock(ctx, UpdateUserStockParams{
-		// 	UserID: arg.ToClient.UserID,
-		// 	Stock:  jsonClientProducts,
-		// })
-		// if err != nil {
-		// 	return err
-		// }
+		result.ToUser, err = q.UpdateUserStock(ctx, UpdateUserStockParams{
+			UserID: arg.ToClient.UserID,
+			Stock:  jsonClientProducts,
+		})
+		if err != nil {
+			return err
+		}
 
 		// update users stock value
 		q.UpdateUserStockValue(ctx, UpdateUserStockValueParams{
@@ -140,7 +140,7 @@ func (store *Store) AddClientStockTx(ctx context.Context, arg AddClientStockPara
 			Value:  totalStockValue,
 		})
 
-		return arg.AfterProcess()
+		return arg.AfterProcess(invoiceData)
 	})
 
 	return result, err

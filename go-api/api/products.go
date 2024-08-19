@@ -144,6 +144,13 @@ func (server *Server) editProduct(ctx *gin.Context) {
 		ProductToEdit: product,
 	})
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			if pqErr.Code == "23505" {
+				ctx.JSON(http.StatusConflict, errorResponse(err))
+				return
+			}
+		}
+
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

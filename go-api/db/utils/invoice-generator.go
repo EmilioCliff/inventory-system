@@ -263,11 +263,8 @@ func generateInvoice(data [][]string, user map[string]string) ([]byte, error) {
 	pdf.Cell(60, 8.0, fmt.Sprintf("Safaricom Lipa na M-Pesa"))
 	pdf.Ln(4.5)
 	pdf.Cell(60, 8.0, fmt.Sprintf("Till Number: %s", "9090757"))
-	// pdf.SetFont("Arial", "", 8.0)
-	// pdf.MultiCell(75.0, height, "Payment should be strictly paid to Till Number 9090757", "0", "", false)
-	// pdf.SetFont("Arial", "", 12)
 
-	pdf.SetY(-40)
+	pdf.Ln(30)
 
 	pdf.SetFont("Times", "B", 12.0)
 	pdf.Cell(40, 8.0, "TERMS AND CONDITIONS")

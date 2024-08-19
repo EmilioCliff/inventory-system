@@ -15,10 +15,11 @@ import (
 const GenerateInvoiceAndSendEmailTask = "task:generate_invoice_and_send_email"
 
 type GenerateInvoiceAndSendEmailPayload struct {
-	User        db.User      `json:"username"`
-	Products    []db.Product `json:"products"`
-	Amount      []int64      `json:"amount"`
-	InvoiceDate time.Time    `json:"invoice_date"`
+	User db.User `json:"username"`
+	// Products    []db.Product             `json:"products"`
+	// Amount      []int64                  `json:"amount"`
+	InvoiceDate time.Time                `json:"invoice_date"`
+	InvoiceData []map[string]interface{} `json:"invoice_data"`
 }
 
 func (distributor *RedisTaskDistributor) DistributeGenerateAndSendInvoice(ctx context.Context, payload GenerateInvoiceAndSendEmailPayload, opt ...asynq.Option) error {
@@ -49,30 +50,24 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendInvoice(ctx context.C
 		return fmt.Errorf("Failed to unmarshal payload: %w", err)
 	}
 
-	invoiceData := []map[string]interface{}{
-		{
-			"user_contact": invoiceDataPayload.User.PhoneNumber,
-			"user_address": invoiceDataPayload.User.Address,
-			"user_email":   invoiceDataPayload.User.Email,
-		},
-	}
-
-	for index, addProduct := range invoiceDataPayload.Products {
-		invoiceData = append(invoiceData, map[string]interface{}{
-			"productID":       float64(addProduct.ProductID),
-			"productName":     addProduct.ProductName,
-			"productQuantity": invoiceDataPayload.Amount[index],
-			"totalBill":       int32(invoiceDataPayload.Amount[index]) * addProduct.UnitPrice,
-		})
-	}
-
-	timestamp := time.Now().Format("20060102150405")
-	// timestampUUID, err := uuid.NewRandom()
-	// if err != nil {
-	// 	return fmt.Errorf("Failed to generate uuid: %w", err)
+	// invoiceData := []map[string]interface{}{
+	// 	{
+	// 		"user_contact": invoiceDataPayload.User.PhoneNumber,
+	// 		"user_address": invoiceDataPayload.User.Address,
+	// 		"user_email":   invoiceDataPayload.User.Email,
+	// 	},
 	// }
 
-	// timestamp := timestampUUID.String()[:10]
+	// for index, addProduct := range invoiceDataPayload.Products {
+	// 	invoiceData = append(invoiceData, map[string]interface{}{
+	// 		"productID":       float64(addProduct.ProductID),
+	// 		"productName":     addProduct.ProductName,
+	// 		"productQuantity": invoiceDataPayload.Amount[index],
+	// 		"totalBill":       int32(invoiceDataPayload.Amount[index]) * addProduct.UnitPrice,
+	// 	})
+	// }
+
+	timestamp := time.Now().Format("20060102150405")
 
 	invoiceC := map[string]string{
 		"invoice_number":   timestamp,
@@ -80,12 +75,12 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendInvoice(ctx context.C
 		"invoice_username": invoiceDataPayload.User.Username,
 	}
 
-	pdfBytes, err := utils.SetInvoiceVariables(invoiceC, invoiceData)
+	pdfBytes, err := utils.SetInvoiceVariables(invoiceC, invoiceDataPayload.InvoiceData)
 	if err != nil {
 		return fmt.Errorf("Error creating invoice: %w", err)
 	}
 
-	jsonInvoiceData, err := json.Marshal(invoiceData)
+	jsonInvoiceData, err := json.Marshal(invoiceDataPayload.InvoiceData)
 	if err != nil {
 		return fmt.Errorf("Failed to marshal invoice data: %w", err)
 	}
@@ -99,17 +94,17 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendInvoice(ctx context.C
 		InvoiceDate:         invoiceDataPayload.InvoiceDate,
 	})
 
-	emailBody := fmt.Sprintf(`
+	_ = fmt.Sprintf(`
 	<h1>Hello %s</h1>
 	<p>We've issued products. Find the invoice attached below</p>
 	<h5>Thank You For Choosing Us.</h5>
 	<a href="https://inventory-system-production-378e.up.railway.app/">https://inventory-system-production-378e.up.railway.app/</a>
 	`, invoiceDataPayload.User.Username)
 
-	err = processor.sender.SendMail("Invoice Issued", emailBody, "application/pdf", []string{invoiceDataPayload.User.Email}, nil, nil, []string{"Invoice.pdf"}, [][]byte{invoiceGenerated.InvoicePdf})
-	if err != nil {
-		return fmt.Errorf("Failed to send email: %w", err)
-	}
+	// err = processor.sender.SendMail("Invoice Issued", emailBody, "application/pdf", []string{invoiceDataPayload.User.Email}, nil, nil, []string{"Invoice.pdf"}, [][]byte{invoiceGenerated.InvoicePdf})
+	// if err != nil {
+	// 	return fmt.Errorf("Failed to send email: %w", err)
+	// }
 
 	log.Info().
 		Str("type", task.Type()).

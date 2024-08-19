@@ -11,6 +11,22 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const changePaymentMethodReceipt = `-- name: ChangePaymentMethodReceipt :exec
+UPDATE receipts 
+    SET payment_method = $1
+WHERE receipt_id = $2
+`
+
+type ChangePaymentMethodReceiptParams struct {
+	PaymentMethod string `json:"payment_method"`
+	ReceiptID     int64  `json:"receipt_id"`
+}
+
+func (q *Queries) ChangePaymentMethodReceipt(ctx context.Context, arg ChangePaymentMethodReceiptParams) error {
+	_, err := q.db.Exec(ctx, changePaymentMethodReceipt, arg.PaymentMethod, arg.ReceiptID)
+	return err
+}
+
 const countReceipts = `-- name: CountReceipts :one
 SELECT COUNT(*) FROM receipts
 `
@@ -48,17 +64,18 @@ func (q *Queries) CountUserReceiptsByUsername(ctx context.Context, userReceiptUs
 
 const createReceipt = `-- name: CreateReceipt :one
 INSERT INTO receipts(
-    receipt_number, user_receipt_id,  user_receipt_username, receipt_pdf
+    receipt_number, user_receipt_id,  user_receipt_username, receipt_data, receipt_pdf
 ) VALUES (
-  $1, $2, $3, $4
+  $1, $2, $3, $4, $5
 )
-RETURNING receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at
+RETURNING receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at, payment_method
 `
 
 type CreateReceiptParams struct {
 	ReceiptNumber       string `json:"receipt_number"`
 	UserReceiptID       int32  `json:"user_receipt_id"`
 	UserReceiptUsername string `json:"user_receipt_username"`
+	ReceiptData         []byte `json:"receipt_data"`
 	ReceiptPdf          []byte `json:"receipt_pdf"`
 }
 
@@ -67,6 +84,7 @@ func (q *Queries) CreateReceipt(ctx context.Context, arg CreateReceiptParams) (R
 		arg.ReceiptNumber,
 		arg.UserReceiptID,
 		arg.UserReceiptUsername,
+		arg.ReceiptData,
 		arg.ReceiptPdf,
 	)
 	var i Receipt
@@ -78,12 +96,13 @@ func (q *Queries) CreateReceipt(ctx context.Context, arg CreateReceiptParams) (R
 		&i.ReceiptData,
 		&i.ReceiptPdf,
 		&i.CreatedAt,
+		&i.PaymentMethod,
 	)
 	return i, err
 }
 
 const getAllUserReceiptsByID = `-- name: GetAllUserReceiptsByID :many
-SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
+SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at, payment_method FROM receipts
 WHERE user_receipt_id = $1
 ORDER BY created_at DESC
 `
@@ -105,6 +124,7 @@ func (q *Queries) GetAllUserReceiptsByID(ctx context.Context, userReceiptID int3
 			&i.ReceiptData,
 			&i.ReceiptPdf,
 			&i.CreatedAt,
+			&i.PaymentMethod,
 		); err != nil {
 			return nil, err
 		}
@@ -117,7 +137,7 @@ func (q *Queries) GetAllUserReceiptsByID(ctx context.Context, userReceiptID int3
 }
 
 const getReceipt = `-- name: GetReceipt :one
-SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
+SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at, payment_method FROM receipts
 WHERE receipt_number = $1 
 LIMIT 1
 `
@@ -133,12 +153,13 @@ func (q *Queries) GetReceipt(ctx context.Context, receiptNumber string) (Receipt
 		&i.ReceiptData,
 		&i.ReceiptPdf,
 		&i.CreatedAt,
+		&i.PaymentMethod,
 	)
 	return i, err
 }
 
 const getReceiptByID = `-- name: GetReceiptByID :one
-SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
+SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at, payment_method FROM receipts
 WHERE receipt_id = $1 
 LIMIT 1
 `
@@ -154,12 +175,13 @@ func (q *Queries) GetReceiptByID(ctx context.Context, receiptID int64) (Receipt,
 		&i.ReceiptData,
 		&i.ReceiptPdf,
 		&i.CreatedAt,
+		&i.PaymentMethod,
 	)
 	return i, err
 }
 
 const getUserReceiptsByID = `-- name: GetUserReceiptsByID :many
-SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
+SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at, payment_method FROM receipts
 WHERE user_receipt_id = $1
 ORDER BY created_at DESC
 LIMIT $2
@@ -189,6 +211,7 @@ func (q *Queries) GetUserReceiptsByID(ctx context.Context, arg GetUserReceiptsBy
 			&i.ReceiptData,
 			&i.ReceiptPdf,
 			&i.CreatedAt,
+			&i.PaymentMethod,
 		); err != nil {
 			return nil, err
 		}
@@ -201,7 +224,7 @@ func (q *Queries) GetUserReceiptsByID(ctx context.Context, arg GetUserReceiptsBy
 }
 
 const getUserReceiptsByUsername = `-- name: GetUserReceiptsByUsername :many
-SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
+SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at, payment_method FROM receipts
 WHERE user_receipt_username = $1
 ORDER BY created_at DESC
 LIMIT $2
@@ -231,6 +254,7 @@ func (q *Queries) GetUserReceiptsByUsername(ctx context.Context, arg GetUserRece
 			&i.ReceiptData,
 			&i.ReceiptPdf,
 			&i.CreatedAt,
+			&i.PaymentMethod,
 		); err != nil {
 			return nil, err
 		}
@@ -243,7 +267,7 @@ func (q *Queries) GetUserReceiptsByUsername(ctx context.Context, arg GetUserRece
 }
 
 const listReceipts = `-- name: ListReceipts :many
-SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at FROM receipts
+SELECT receipt_id, receipt_number, user_receipt_id, user_receipt_username, receipt_data, receipt_pdf, created_at, payment_method FROM receipts
 ORDER BY created_at DESC
 LIMIT $1
 OFFSET $2
@@ -271,6 +295,7 @@ func (q *Queries) ListReceipts(ctx context.Context, arg ListReceiptsParams) ([]R
 			&i.ReceiptData,
 			&i.ReceiptPdf,
 			&i.CreatedAt,
+			&i.PaymentMethod,
 		); err != nil {
 			return nil, err
 		}
