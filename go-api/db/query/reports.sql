@@ -1,8 +1,7 @@
 -- name: GetUserStockDistributed :one
 SELECT COALESCE(SUM((elem->>'totalBill')::integer), 0) AS invoice_total
 FROM invoices i, LATERAL (
-    SELECT jsonb_array_elements(i.invoice_data) AS elem
-    OFFSET 1
+    SELECT jsonb_array_elements(i.invoice_data) AS elem 
 ) AS elems
 WHERE i.user_invoice_id = @user_id AND i.invoice_date BETWEEN @from_date
 AND @to_date;
@@ -11,8 +10,7 @@ AND @to_date;
 SELECT invoice_number, invoice_data, 
 	(SELECT COALESCE(SUM((elem->>'totalBill')::integer), 0)
      	FROM LATERAL (
-            SELECT jsonb_array_elements(invoice_data) AS elem 
-            OFFSET 1
+            SELECT jsonb_array_elements(invoice_data) AS elem  
         ) AS elem) AS total, invoice_date
 FROM invoices WHERE user_invoice_id = @user_id AND invoice_date BETWEEN @from_date AND @to_date;
 
@@ -20,8 +18,7 @@ FROM invoices WHERE user_invoice_id = @user_id AND invoice_date BETWEEN @from_da
 SELECT i.invoice_number, i.invoice_data, 
 	(SELECT COALESCE(SUM((elem->>'totalBill')::integer), 0)
      	FROM LATERAL (
-            SELECT jsonb_array_elements(i.invoice_data) AS elem 
-            OFFSET 1
+            SELECT jsonb_array_elements(i.invoice_data) AS elem  
         ) AS elem) AS total, i.invoice_date, u.username
 FROM invoices i JOIN users u ON u.user_id = i.user_invoice_id
 WHERE invoice_date BETWEEN @from_date AND @to_date;

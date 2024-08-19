@@ -59,8 +59,7 @@ const getAllInvoiceSummaryBtwnPeriod = `-- name: GetAllInvoiceSummaryBtwnPeriod 
 SELECT i.invoice_number, i.invoice_data, 
 	(SELECT COALESCE(SUM((elem->>'totalBill')::integer), 0)
      	FROM LATERAL (
-            SELECT jsonb_array_elements(i.invoice_data) AS elem 
-            OFFSET 1
+            SELECT jsonb_array_elements(i.invoice_data) AS elem  
         ) AS elem) AS total, i.invoice_date, u.username
 FROM invoices i JOIN users u ON u.user_id = i.user_invoice_id
 WHERE invoice_date BETWEEN $1 AND $2
@@ -161,8 +160,7 @@ const getUserInvoiceSummaryBtwnPeriod = `-- name: GetUserInvoiceSummaryBtwnPerio
 SELECT invoice_number, invoice_data, 
 	(SELECT COALESCE(SUM((elem->>'totalBill')::integer), 0)
      	FROM LATERAL (
-            SELECT jsonb_array_elements(invoice_data) AS elem 
-            OFFSET 1
+            SELECT jsonb_array_elements(invoice_data) AS elem  
         ) AS elem) AS total, invoice_date
 FROM invoices WHERE user_invoice_id = $1 AND invoice_date BETWEEN $2 AND $3
 `
@@ -277,8 +275,7 @@ func (q *Queries) GetUserReceiptSummaryBtwnPeriod(ctx context.Context, arg GetUs
 const getUserStockDistributed = `-- name: GetUserStockDistributed :one
 SELECT COALESCE(SUM((elem->>'totalBill')::integer), 0) AS invoice_total
 FROM invoices i, LATERAL (
-    SELECT jsonb_array_elements(i.invoice_data) AS elem
-    OFFSET 1
+    SELECT jsonb_array_elements(i.invoice_data) AS elem 
 ) AS elems
 WHERE i.user_invoice_id = $1 AND i.invoice_date BETWEEN $2
 AND $3
