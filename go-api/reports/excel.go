@@ -101,7 +101,7 @@ func (r *ReportStore) GenerateUserExcel(ctx context.Context, payload ReportsPayl
 		return nil, err
 	}
 
-	ch := make(chan error)
+	ch := make(chan error, 1)
 	wg := sync.WaitGroup{}
 
 	rowNumber := 1
@@ -171,8 +171,11 @@ func (r *ReportStore) GenerateUserExcel(ctx context.Context, payload ReportsPayl
 		}(user)
 	}
 
-	wg.Wait()
-	close(ch)
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
 	for err := range ch {
 		if err != nil {
 			return nil, err
@@ -285,7 +288,7 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 		return nil, err
 	}
 
-	ch := make(chan error)
+	ch := make(chan error, 1)
 	wg := sync.WaitGroup{}
 
 	// writes this sheet in a go routine
@@ -399,8 +402,11 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 		}
 	}
 
-	wg.Wait()
-	close(ch)
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
 	for err := range ch {
 		if err != nil {
 			return nil, err
