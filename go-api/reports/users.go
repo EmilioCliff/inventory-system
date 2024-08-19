@@ -156,6 +156,7 @@ func (store *ReportStore) GetAdminPurchaseHistory(ctx context.Context, payload R
 
 		rsp = append(rsp, data)
 	}
+
 	return rsp, nil
 }
 

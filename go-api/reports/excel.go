@@ -310,6 +310,8 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 			return
 		}
 
+		log.Printf("Entries response: %v", entries)
+
 		// purchase history
 		rowNumber := 1
 		for _, entry := range entries {
@@ -336,6 +338,8 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 			}
 		}
 
+		log.Println("Done with purchase history")
+
 		// in stock history
 		err = r.userAvailableStock(f, sheet, []string{"F", "G"}, admin.Stock, []int{headerStyle, quantityStyle})
 		if err != nil {
@@ -343,6 +347,7 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 			return
 		}
 
+		log.Println("Done with in stock history")
 	}()
 
 	sheets := []string{"Invoices", "Receipts", "lpo"}
@@ -364,6 +369,7 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 					ch <- err
 					return
 				}
+				log.Println("Done with invoices")
 			}()
 
 		case "Receipts":
@@ -381,6 +387,7 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 					ch <- err
 					return
 				}
+				log.Println("Done with receipts")
 			}()
 
 		case "lpo":
@@ -398,6 +405,7 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 					ch <- err
 					return
 				}
+				log.Println("Done with lpo")
 			}()
 		}
 	}
@@ -405,12 +413,14 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 	go func() {
 		wg.Wait()
 		close(ch)
+		log.Println("Done waiting")
 	}()
 
 	for err := range ch {
 		if err != nil {
 			return nil, err
 		}
+		log.Println("Done with error")
 	}
 
 	var buf bytes.Buffer
