@@ -197,7 +197,7 @@ func (store *ReportStore) GetUserHistorySummary(ctx context.Context, payload Rep
 	if err != nil {
 		return GetAdminSalesHistoryResponse{}, fmt.Errorf("failed to get user username: %w", err)
 	}
-	log.Printf("totalInvoice: %v; totalReceipt: %v", totalInvoice, totalReceipt)
+	log.Printf("totalInvoice 1: %v; totalReceipt: %v", totalInvoice, totalReceipt)
 
 	rsp := GetAdminSalesHistoryResponse{
 		Username:          username,
