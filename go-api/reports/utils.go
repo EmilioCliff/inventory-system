@@ -425,7 +425,7 @@ func (r *ReportStore) localPurchaseOrders(payload ReportsPayload, f *excelize.Fi
 
 	orders, err := r.dbStore.GetAdminPurchaseOrders(ctx, db.GetAdminPurchaseOrdersParams{
 		FromDate: payload.FromDate,
-		ToDate:   payload.ToDate,
+		ToDate:   formartDate(payload.ToDate),
 	})
 	if err != nil {
 		return err

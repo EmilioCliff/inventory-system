@@ -170,7 +170,7 @@ func (store *ReportStore) GetUserHistorySummary(ctx context.Context, payload Rep
 	totalInvoice, err := store.dbStore.GetUserStockDistributed(ctx, db.GetUserStockDistributedParams{
 		UserID:   int32(payload.UserID),
 		FromDate: payload.FromDate,
-		ToDate:   payload.ToDate,
+		ToDate:   formartDate(payload.ToDate),
 	})
 	if err != nil {
 		log.Printf("error 1: %v, value: %v", err, totalInvoice)
