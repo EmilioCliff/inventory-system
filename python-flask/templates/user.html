@@ -123,7 +123,7 @@
                 <form id="productForm" method="POST" action="{{ url_for('add_client_stock', id=user.id) }}" autocomplete="off">
                     <input type="date" id="invoiceDate" class="quantity me-5" name="invoiceDate" placeholder="Quantity" style="display: block; width: 70%; margin-block: .5rem; margin-inline: auto; border: 1px solid black; padding: .25rem;" required>
                     <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
-                        <div class="d-flex">
+                        <div class="d-flex" style="overflow-x: auto;">
                             <select class="product me-1" name="products_id" id="products_id">
                                 {% if admin.stock is none %}
                                     <option value="-100">No Products To Sell</option>
@@ -409,6 +409,7 @@
 
         var newProductDiv = document.createElement('div');
         newProductDiv.className = 'd-flex';
+        newProductDiv.style.overflowX = 'auto';
         newProductDiv.appendChild(newProduct);
         newProductDiv.appendChild(newQuantity);
 

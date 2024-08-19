@@ -47,7 +47,7 @@
         <button type="button" class="btn btn-sm btn-primary"  style="display: block; margin: auto;" onclick="reduceProductAdmin()">Add</button>
         <div class="d-flex">
         <div id="stockList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
-            <div class="d-flex">
+            <div class="d-flex" style="overflow-x: auto;">
                 <select class="product me-1" name="products_id" id="products_id">
                     {% if user.stock is none %}
                         <option value="-100">{{ user.username }} has no stock</option>
@@ -90,6 +90,7 @@
 
         var newStockDiv = document.createElement('div');
         newStockDiv.className = 'd-flex';
+        newStockDiv.style.overflowX = 'auto';
         newStockDiv.appendChild(newStock);
         newStockDiv.appendChild(newQuantity);
 
