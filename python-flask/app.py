@@ -13,9 +13,9 @@ HEADERS={
     "Authorization": "Bearer "
 }
 
-BASE_URL="http://backend:8080" # When Testing
+# BASE_URL="http://backend:8080" # When Testing
 # BASE_URL = "http://inventory-system-api-1:8080" When using Docker Compose
-# BASE_URL = "http://secretive-window.railway.internal:8080"  #  Production
+BASE_URL = "http://secretive-window.railway.internal:8080"  #  Production
    
 app = Flask(__name__)
 app.config['SECRET_KEY'] = "32e234353t4rffbfbfgxx"

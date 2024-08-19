@@ -13,4 +13,4 @@ CREATE TABLE "entries" (
 );
 
 -- Set the time zone to Nairobi for the current database
--- ALTER DATABASE railway SET timezone TO 'Africa/Nairobi';
+ALTER DATABASE railway SET timezone TO 'Africa/Nairobi';
