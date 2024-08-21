@@ -46,13 +46,14 @@ type CreateUserRequest struct {
 }
 
 type userResponse struct {
-	UserID      int64                    `json:"id" binding:"required"`
-	Username    string                   `json:"username" binding:"required"`
-	Email       string                   `json:"email" binding:"required,email"`
-	PhoneNumber string                   `json:"phone_number" binding:"required"`
-	Address     string                   `json:"address" binding:"required"`
-	Stock       []map[string]interface{} `json:"stock"`
-	StockValue  int64                    `json:"stock_value,omitempty"`
+	UserID          int64                    `json:"id" binding:"required"`
+	Username        string                   `json:"username" binding:"required"`
+	Email           string                   `json:"email" binding:"required,email"`
+	PhoneNumber     string                   `json:"phone_number" binding:"required"`
+	Address         string                   `json:"address" binding:"required"`
+	Stock           []map[string]interface{} `json:"stock"`
+	StockValue      int64                    `json:"stock_value,omitempty"`
+	AdminStockValue float64                  `json:"admin_stock_value,omitempty"`
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
@@ -236,6 +237,23 @@ func (server *Server) getUser(ctx *gin.Context) {
 		}
 
 		resp.StockValue = count
+		// also add the admins total amount of money
+		totalAdminStock := 0.0
+		for _, d := range resp.Stock {
+			productID := d["productID"].(float64)
+			quantity := d["productQuantity"].(float64)
+
+			product, err := server.store.GetProduct(ctx, int64(productID))
+			if err != nil {
+				ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+				return
+			}
+
+			totalAdminStock += float64(product.UnitPrice) * quantity
+		}
+
+		resp.AdminStockValue = totalAdminStock
+
 	} else {
 		value, err = server.store.GetUserStockValue(ctx, int32(req.ID))
 		if err != nil {

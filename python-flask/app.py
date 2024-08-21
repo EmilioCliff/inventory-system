@@ -259,7 +259,9 @@ def get_user(id):
                 formatted_value = "{:,}".format(stock_value)
             else:
                 formatted_value = 0.00
-            return render_template('user.html', user=data, admin=rspAdmin.json(), user_id=session['user_id'], ct="user", invoice_date=formatted_value)
+            admin_stock_value = data.get("admin_stock_value", 0.00)
+            formatted_value_admin_stock = "{:,}".format(admin_stock_value)
+            return render_template('user.html', user=data, admin=rspAdmin.json(), user_id=session['user_id'], ct="user", invoice_date=formatted_value, admin_stock_vale=formatted_value_admin_stock)
         return render_template('user.html', user=rsp.json(), admin="none", user_id=session['user_id'], ct="user")
     elif rsp.status_code == 401:
         flash("Please login", "error")
