@@ -39,15 +39,15 @@ func (distributor *RedisTaskDistributor) DistributeTakeAndSendDBsnapshots(ctx co
 func (processor *RedisTaskProcessor) ProcessTakeAndSendDBsnapshots(ctx context.Context, task *asynq.Task) error {
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 
-	snapshotSchemaFilename := timestamp + "_schema_snapshot.sql"
+	snapshotSchemaFilename := timestamp + "_schema_snapshot.tar"
 
 	cmd := exec.Command(
 		"pg_dump",
-		"-U", processor.config.PGUSER,
-		"-h", processor.config.PGHOST,
-		"-p", processor.config.PGPORT,
-		"-d", processor.config.POSTGRES_DB,
-		"-F", "p",
+		"-U", os.Getenv("PGUSER"),
+		"-h", os.Getenv("PGHOST"),
+		"-p", os.Getenv("PGPORT"),
+		"-d", os.Getenv("POSTGRES_DB"),
+		"-F", "t",
 	)
 
 	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", os.Getenv("POSTGRES_PASSWORD")))
