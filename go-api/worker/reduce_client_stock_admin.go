@@ -38,7 +38,6 @@ func (distributor *RedisTaskDistributor) DistributeSendReduceClientStockAdmin(ct
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("queue", info.Queue).
 		Int("max_retry", info.MaxRetry).
 		Msg("Enqueued task")
@@ -113,7 +112,6 @@ func (processor *RedisTaskProcessor) ProcessReduceClientStockByAdmin(ctx context
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("receipt_generated_no", transaction.TransactionID).
 		Str("mpesa_receipt_number", transaction.MpesaReceiptNumber).
 		Str("info", "transaction successful").

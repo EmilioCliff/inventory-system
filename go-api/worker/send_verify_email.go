@@ -31,7 +31,6 @@ func (distributor RedisTaskDistributor) DistributeTaskSendVerifyEmail(ctx contex
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("queue", info.Queue).
 		Int("max_retry", info.MaxRetry).
 		Msg("Enqueued task")
@@ -74,7 +73,6 @@ func (processor *RedisTaskProcessor) ProcessSendVerifyEmail(ctx context.Context,
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("email", user.Email).
 		Msg("tasked processed successfull")
 

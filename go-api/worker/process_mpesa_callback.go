@@ -38,7 +38,6 @@ func (distributor *RedisTaskDistributor) DistributeProcessMpesaCallback(ctx cont
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("queue", info.Queue).
 		Int("max_retry", info.MaxRetry).
 		Msg("Enqueued task")
@@ -100,7 +99,6 @@ func (processor *RedisTaskProcessor) ProcessMpesaCallback(ctx context.Context, t
 
 		log.Error().
 			Str("type", task.Type()).
-			Bytes("body", task.Payload()).
 			Str("transaction_id", transaction.TransactionID).
 			Str("mpesa_receipt_number", transaction.MpesaReceiptNumber).
 			Str("info", issue).

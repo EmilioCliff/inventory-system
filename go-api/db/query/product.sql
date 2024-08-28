@@ -8,6 +8,11 @@ SELECT * FROM products
 WHERE product_name = $1 
 LIMIT 1;
 
+-- name: GetProductPrice :one
+SELECT unit_price FROM products
+WHERE product_id = $1 
+LIMIT 1;
+
 -- name: GetProductForUpdate :one
 SELECT * FROM products
 WHERE product_id = $1 LIMIT 1

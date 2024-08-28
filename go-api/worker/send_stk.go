@@ -34,7 +34,6 @@ func (distributor *RedisTaskDistributor) DistributeSendSTK(ctx context.Context, 
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("queue", info.Queue).
 		Int("max_retry", info.MaxRetry).
 		Msg("Enqueued task")
@@ -73,7 +72,6 @@ func (processor *RedisTaskProcessor) ProcessSendSTK(ctx context.Context, task *a
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("transaction", transaction.TransactionID).
 		Str("username", sendSTKPayload.User.Username).
 		Msg("tasked processed successfull")

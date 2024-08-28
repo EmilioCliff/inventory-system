@@ -34,7 +34,6 @@ func (distributor *RedisTaskDistributor) DistributeSendRequestToAdmin(ctx contex
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("queue", info.Queue).
 		Int("max_retry", info.MaxRetry).
 		Msg("Enqueued task")

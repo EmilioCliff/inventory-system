@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const viewUserTransactionBtns = document.querySelectorAll('#viewUserTransaction');
   const viewDebtBtns = document.querySelectorAll('#viewDebt');
   const reportBtn = document.getElementById("reportButton")
+  const calculateBtn = document.getElementById("calculateButton")
 
   const overlay_create = document.getElementById('overlay_create');
   const overlay_product = document.getElementById('overlay_product');
@@ -25,6 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const overlay_viewUserTransaction = document.querySelectorAll('#overlay_transactionuserview');
   const overlay_viewDebt = document.querySelectorAll('#overlay_debtview');
   const overlay_report = document.getElementById('reportOverlay');
+  const overlay_calculate_total = document.getElementById('calculateTotalOverlay');
 
   const popupFormCreate = document.getElementById('popupFormCreate');
   const popupFormProduct = document.getElementById('popupFormProduct');
@@ -39,6 +41,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const popupFormUserTransactionView = document.querySelectorAll('#popupFormUserTransactionView');
   const popupFormDebtView = document.querySelectorAll('#popupFormDebtView');
   const popupFormReportDown = document.getElementById("popupformReport");
+  const popupFormCalculateTotal = document.getElementById("popupformCalculateTotal");
 
   const deleteButton = document.querySelector('.delete-button');
   const overlay_delete = document.getElementById('overlay_delete');
@@ -53,10 +56,25 @@ document.addEventListener('DOMContentLoaded', function() {
   const transactionViewUserCloseBtns = document.querySelectorAll('#transactionViewUserCloseBtn');
   const debtViewUserCloseBtns = document.querySelectorAll('#debtViewUserCloseBtn');
   const reportCloseBtn = document.getElementById("close-btnnnn-report");
+  const calculateCloseBtn = document.getElementById("close-calculateTotal");
 
   const editButton = document.getElementById('editButton');
   const overlay_edit = document.getElementById('overlayedit');
   const editFormContainer = document.getElementById('popupFormEdit');
+
+  if (calculateBtn) {
+    calculateBtn.addEventListener('click', function() {
+      overlay_calculate_total.style.display = 'block';
+      popupFormCalculateTotal.style.display = 'block';
+    })
+  }
+
+  if (calculateCloseBtn) {
+    calculateCloseBtn.addEventListener('click', function() {
+      overlay_calculate_total.style.display = 'none';
+      popupFormCalculateTotal.style.display = 'none';
+    })
+  }
 
   viewInvoiceBtns.forEach((viewInvoiceBtn, index) => {
     viewInvoiceBtn.addEventListener('click', function() {

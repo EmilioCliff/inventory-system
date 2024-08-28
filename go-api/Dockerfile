@@ -2,7 +2,6 @@
 FROM golang:1.22.0-alpine3.19 AS builder
 WORKDIR /app
 COPY . .
-# RUN mkdir /app/snapshots
 
 RUN echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
 RUN apk update
@@ -26,11 +25,14 @@ RUN cd /app/go-api &&  go build -o main main.go
 FROM alpine:3.19
 WORKDIR /app
 
+RUN apk update && \
+    apk add --no-cache postgresql-client postgresql16-client
+
+
 ARG DB_SOURCE
 COPY --from=builder /app/go-api/main .
 COPY --from=builder /app/migrate ./migrate
 COPY --from=builder /app/go-api/app.env .
-# COPY --from=builder /app/snapshots/*.sql /app/snapshots
 COPY go-api/db/migration ./migration
 COPY go-api/db/sqlc/Kokomed-Logo.png .
 COPY go-api/db/sqlc/Kokomed-Logo-small.png .

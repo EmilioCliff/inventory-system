@@ -2,6 +2,8 @@ package worker
 
 import (
 	"context"
+	"fmt"
+	"log"
 	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -46,6 +48,7 @@ func NewRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 			QueueLow:      2,
 		},
 		RetryDelayFunc: CustomRetryDelayFunc,
+		ErrorHandler:   asynq.ErrorHandlerFunc(ReportError),
 	})
 
 	tokenMaker, _ := token.NewPaseto(config.TOKEN_SYMMETRY_KEY)
@@ -77,4 +80,15 @@ func (processor *RedisTaskProcessor) Start() error {
 	mux.HandleFunc(ReduceClientStockAdminTask, processor.ProcessReduceClientStockByAdmin)
 
 	return processor.server.Start(mux)
+}
+
+func ReportError(ctx context.Context, task *asynq.Task, err error) {
+	retried, _ := asynq.GetRetryCount(ctx)
+	maxRetry, _ := asynq.GetMaxRetry(ctx)
+	if retried >= maxRetry {
+		err = fmt.Errorf("retry exhausted for task %s: %w", task.Type(), err)
+	}
+	log.Println(err)
+	// log it or something
+	// errorReportingService.Notify(err)
 }

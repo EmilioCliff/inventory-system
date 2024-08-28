@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -174,7 +173,7 @@ func (store *ReportStore) GetUserHistorySummary(ctx context.Context, payload Rep
 		ToDate:   formartDate(payload.ToDate),
 	})
 	if err != nil {
-		log.Printf("error 1: %v, value: %v", err, totalInvoice)
+		// log.Printf("error 1: %v, value: %v", err, totalInvoice)
 		return GetAdminSalesHistoryResponse{}, NoInvoiceData
 	}
 
@@ -184,13 +183,13 @@ func (store *ReportStore) GetUserHistorySummary(ctx context.Context, payload Rep
 		ToDate:   formartDate(payload.ToDate),
 	})
 	if err != nil {
-		log.Printf("error 2: %v", err)
+		// log.Printf("error 2: %v", err)
 		return GetAdminSalesHistoryResponse{}, fmt.Errorf("failed to get user receipt paid: %w", err)
 	}
 
 	userCurrentStockValue, err := store.dbStore.GetUserStockValue(ctx, int32(payload.UserID))
 	if err != nil {
-		log.Printf("error 3: %v", err)
+		// log.Printf("error 3: %v", err)
 		return GetAdminSalesHistoryResponse{}, fmt.Errorf("failed to get user current stock value: %w", err)
 	}
 
@@ -198,7 +197,7 @@ func (store *ReportStore) GetUserHistorySummary(ctx context.Context, payload Rep
 	if err != nil {
 		return GetAdminSalesHistoryResponse{}, fmt.Errorf("failed to get user username: %w", err)
 	}
-	log.Printf("totalInvoice 1: %v; totalReceipt: %v", totalInvoice, totalReceipt)
+	// log.Printf("totalInvoice 1: %v; totalReceipt: %v", totalInvoice, totalReceipt)
 
 	rsp := GetAdminSalesHistoryResponse{
 		Username:          username,

@@ -8,6 +8,11 @@ import (
 
 type Config struct {
 	DB_DRIVER                 string        `mapstructure:"DB_DRIVER"`
+	PG_USER                   string        `mapstructure:"PG_USER"`
+	PG_HOST                   string        `mapstructure:"PG_HOST"`
+	PG_PORT                   string        `mapstructure:"PG_PORT"`
+	PG_DB                     string        `mapstructure:"PG_DB"`
+	PG_PASSWORD               string        `mapstructure:"PG_PASSWORD"`
 	DB_SOURCE                 string        `mapstructure:"DB_SOURCE"`
 	DB_SOURCE_DEVELOPMENT     string        `mapstructure:"DB_SOURCE_DEVELOPMENT"`
 	MIGRATION_SOURCE          string        `mapstructure:"MIGRATION_SOURCE"`

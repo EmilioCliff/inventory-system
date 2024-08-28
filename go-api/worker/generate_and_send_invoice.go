@@ -36,7 +36,6 @@ func (distributor *RedisTaskDistributor) DistributeGenerateAndSendInvoice(ctx co
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("queue", info.Queue).
 		Int("max_retry", info.MaxRetry).
 		Msg("Enqueued task")
@@ -49,23 +48,6 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendInvoice(ctx context.C
 	if err := json.Unmarshal(task.Payload(), &invoiceDataPayload); err != nil {
 		return fmt.Errorf("Failed to unmarshal payload: %w", err)
 	}
-
-	// invoiceData := []map[string]interface{}{
-	// 	{
-	// 		"user_contact": invoiceDataPayload.User.PhoneNumber,
-	// 		"user_address": invoiceDataPayload.User.Address,
-	// 		"user_email":   invoiceDataPayload.User.Email,
-	// 	},
-	// }
-
-	// for index, addProduct := range invoiceDataPayload.Products {
-	// 	invoiceData = append(invoiceData, map[string]interface{}{
-	// 		"productID":       float64(addProduct.ProductID),
-	// 		"productName":     addProduct.ProductName,
-	// 		"productQuantity": invoiceDataPayload.Amount[index],
-	// 		"totalBill":       int32(invoiceDataPayload.Amount[index]) * addProduct.UnitPrice,
-	// 	})
-	// }
 
 	timestamp := time.Now().Format("20060102150405")
 
@@ -108,7 +90,6 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendInvoice(ctx context.C
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("email", invoiceDataPayload.User.Email).
 		Str("invoice_number", invoiceGenerated.InvoiceNumber).
 		Msg("tasked processed successfull")

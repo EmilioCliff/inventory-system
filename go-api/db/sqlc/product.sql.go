@@ -117,6 +117,19 @@ func (q *Queries) GetProductForUpdate(ctx context.Context, productID int64) (Pro
 	return i, err
 }
 
+const getProductPrice = `-- name: GetProductPrice :one
+SELECT unit_price FROM products
+WHERE product_id = $1 
+LIMIT 1
+`
+
+func (q *Queries) GetProductPrice(ctx context.Context, productID int64) (int32, error) {
+	row := q.db.QueryRow(ctx, getProductPrice, productID)
+	var unit_price int32
+	err := row.Scan(&unit_price)
+	return unit_price, err
+}
+
 const listAllProduct = `-- name: ListAllProduct :many
 SELECT product_id, product_name, unit_price, packsize, created_at FROM products
 ORDER BY product_name

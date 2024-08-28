@@ -58,6 +58,7 @@ type Querier interface {
 	GetProduct(ctx context.Context, productID int64) (Product, error)
 	GetProductByProductName(ctx context.Context, productName string) (Product, error)
 	GetProductForUpdate(ctx context.Context, productID int64) (Product, error)
+	GetProductPrice(ctx context.Context, productID int64) (int32, error)
 	GetPurchaseOrder(ctx context.Context, id string) (PurchaseOrder, error)
 	GetReceipt(ctx context.Context, receiptNumber string) (Receipt, error)
 	GetReceiptByID(ctx context.Context, receiptID int64) (Receipt, error)

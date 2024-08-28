@@ -72,6 +72,7 @@ func (server *Server) setRoutes() {
 	auth.POST("/products/admin/add", server.createProduct)
 	auth.DELETE("/products/admin/delete/:id", server.deleteProduct)
 	auth.PUT("/products/admin/edit/:id", server.editProduct)
+	auth.POST("/products/calculate", server.calculatePrice)
 
 	router.POST("/users/login", server.loginUser)
 	router.POST("/reset", server.resetPassword)

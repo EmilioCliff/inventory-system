@@ -269,6 +269,29 @@ def get_user(id):
     else:
         return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
 
+@app.route('/calculate/<int:id>', methods=['POST'])
+def calculateProduct(id):
+    if request.method == 'POST':
+        quantities = request.form.getlist('quantities')
+        quantities_list = [int(quantity) for quantity in quantities]
+        products_id = request.form.getlist('products_id')
+        products_list = [int(product_id) for product_id in products_id]
+        data = {
+            "product_ids": products_list,
+            "quantities": quantities_list
+        }
+
+        url = f"{BASE_URL}/products/calculate"
+        rsp = requests.post(url, json=data, headers={"Authorization": f"Bearer {session['token']}"})
+        if rsp.status_code == 200:
+            flash(f"Total Amount: {rsp.json()['total_amount']}", "success")
+            return redirect(url_for('get_user', id=id))
+        elif rsp.status_code == 401:
+            flash("Please login", "error")
+            return redirect(url_for('login'))
+        else:
+            return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])
+
 @app.route('/get_product/<int:id>')
 def get_product(id):
     getProductUri = f"{BASE_URL}/products/{id}"
@@ -560,7 +583,6 @@ def add_client_stock(id):
         products_list = [int(product_id) for product_id in products_id]
         invoice_date = request.form.get('invoiceDate')
 
-        print(quantities_list, products_list, id)
         data = {
             "products_id": products_list,
             "quantities": quantities_list,

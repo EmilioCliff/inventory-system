@@ -134,6 +134,38 @@ func (server *Server) createUser(ctx *gin.Context) {
 	return
 }
 
+type calculatePriceRequest struct {
+	ProductIDs []int64 `json:"product_ids" binding:"required"`
+	Quantities []int64 `json:"quantities" binding:"required"`
+}
+
+type calculatePriceResponse struct {
+	TotalAmount int64 `json:"total_amount" binding:"required"`
+}
+
+func (server *Server) calculatePrice(ctx *gin.Context) {
+	var req calculatePriceRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	var amount int64
+	for idx, productID := range req.ProductIDs {
+		unitPrice, err := server.store.GetProductPrice(ctx, productID)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
+
+		amount += int64(unitPrice) * req.Quantities[idx]
+	}
+
+	ctx.JSON(http.StatusOK, calculatePriceResponse{
+		TotalAmount: amount,
+	})
+}
+
 type userLoginRequest struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"os"
 	"os/exec"
 	"time"
@@ -41,138 +40,63 @@ func (processor *RedisTaskProcessor) ProcessTakeAndSendDBsnapshots(ctx context.C
 	timestamp := time.Now().Format("2006-01-02_15-04-05")
 
 	snapshotSchemaFilename := timestamp + "_schema_snapshot.sql"
-	snapshotDataAndSchemaFilename := timestamp + "_data_schema_snapshot.sql"
-	// docker exec inventorydb /bin/bash -c "PGUSER=root pg_dump -U root -d inventorydb -s -f now_schema.sql"
-	cmd1 := exec.Command("docker", "exec", "inventorydb", "/bin/sh", "-c", fmt.Sprintf("PGUSER=root pg_dump -U root -d inventorydb -s -f %s%s", processor.config.POSTGRES_SNAPSHOTS, snapshotSchemaFilename))
-	cmd2 := exec.Command("docker", "exec", "inventorydb", "/bin/sh", "-c", fmt.Sprintf("PGUSER=root pg_dump -U root -d inventorydb -f %s%s --create", processor.config.POSTGRES_SNAPSHOTS, snapshotDataAndSchemaFilename))
-	cmd3 := exec.Command("docker", "cp", fmt.Sprintf("inventorydb:%s%s", processor.config.POSTGRES_SNAPSHOTS, snapshotSchemaFilename), fmt.Sprintf("%s/%s", processor.config.HOST_SNAPSHOTS, snapshotSchemaFilename))
-	cmd4 := exec.Command("docker", "cp", fmt.Sprintf("inventorydb:%s%s", processor.config.POSTGRES_SNAPSHOTS, snapshotDataAndSchemaFilename), fmt.Sprintf("%s/%s", processor.config.HOST_SNAPSHOTS, snapshotDataAndSchemaFilename))
 
-	if err := cmd1.Run(); err != nil {
-		return fmt.Errorf("failed to dump schema snapshot: %w", err)
+	cmd := exec.Command(
+		"pg_dump",
+		"-U", processor.config.PG_USER,
+		"-h", processor.config.PG_HOST,
+		"-p", processor.config.PG_PORT,
+		"-d", processor.config.PG_DB,
+		"-F", "t",
+		// "-f", fmt.Sprintf("./%s", snapshotSchemaFilename),
+	)
+
+	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", processor.config.PG_PASSWORD))
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("Failed to run pg_dump: %v\nOutput: %s", err, output)
 	}
 
-	if err := cmd2.Run(); err != nil {
-		return fmt.Errorf("failed to dump data and schema snapshot: %w", err)
+	cmd.Env = os.Environ()
+
+	if err := os.WriteFile(snapshotSchemaFilename, output, 0644); err != nil {
+		return fmt.Errorf("Failed to write snapshot to file: %v", err)
 	}
 
-	if err := cmd3.Run(); err != nil {
-		return fmt.Errorf("failed to cp schema snapshot: %w", err)
+	fileContent, err := os.ReadFile(snapshotSchemaFilename)
+	if err != nil {
+		return fmt.Errorf("Failed to read file content: %w", err)
 	}
 
-	if err := cmd4.Run(); err != nil {
-		return fmt.Errorf("failed to cp data and schema snapshot: %w", err)
-	}
-
-	var fileContents [][]byte
-	for _, file := range []string{snapshotDataAndSchemaFilename, snapshotSchemaFilename} {
-		fileToAttach, err := os.Open(fmt.Sprintf("%s/%s", processor.config.HOST_SNAPSHOTS, file))
-		if err != nil {
-			return fmt.Errorf("failed to open file: %w", err)
-		}
-		defer fileToAttach.Close()
-
-		fileContent, err := io.ReadAll(fileToAttach)
-		if err != nil {
-			return fmt.Errorf("failed to read file content: %w", err)
-		}
-		fileContents = append(fileContents, fileContent)
-	}
 	emailBody := fmt.Sprintf(`
 		<h1>Hello Emilio Cliff</h1>
 		<p>Your 3 days database snapshot</p>`)
 
-	err := processor.sender.SendMail("Database Snapshot", emailBody, "text/plain", []string{"emiliocliff@gmail.com"}, nil, nil, []string{snapshotDataAndSchemaFilename, snapshotSchemaFilename}, fileContents)
+	err = processor.sender.SendMail("Database Snapshot", emailBody, "text/plain", []string{"clifftest33@gmail.com"}, nil, nil, []string{snapshotSchemaFilename}, [][]byte{fileContent})
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
 
+	if err := os.Remove(snapshotSchemaFilename); err != nil {
+		return fmt.Errorf("Failed to delete snapshot file: %w", err)
+	}
+
 	// Uncomment and adjust as needed
-	// opts := []asynq.Option{
-	// 	asynq.MaxRetry(2),
-	// 	asynq.ProcessIn(72 * time.Hour),
-	// 	asynq.Queue(QueueLow),
-	// }
-	// err = processor.distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...)
-	// if err != nil {
-	// 	return fmt.Errorf("Failed to schedule next snapshot: %w", err)
-	// }
+	opts := []asynq.Option{
+		asynq.MaxRetry(2),
+		asynq.ProcessIn(24 * time.Hour),
+		asynq.Queue(QueueLow),
+	}
+	err = processor.distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...)
+	if err != nil {
+		return fmt.Errorf("Failed to schedule next snapshot: %w", err)
+	}
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("Success", "snapshot was successfully sent to your email").
 		Msg("task processed successfully")
 
 	return nil
 }
-
-// func (processor *RedisTaskProcessor) ProcessTakeAndSendDBsnapshots(ctx context.Context, task *asynq.Task) error {
-// 	timestamp := time.Now().Format("2006-01-02_15-04-05")
-
-// 	snapshotSchemaFilename := timestamp + "_schema_snapshot.sql"
-// 	snapshotDataAndSchemaFilename := timestamp + "_data_schema_snapshot.sql"
-
-// 	cmd1 := exec.Command("docker", "exec", "postgres3", "/bin/bash", "-c", fmt.Sprintf("pg_dump -U root -d inventorydb -s -f %s%s", processor.config.POSTGRES_SNAPSHOTS, snapshotSchemaFilename))
-// 	cmd2 := exec.Command("docker", "exec", "postgres3", "/bin/bash", "-c", fmt.Sprintf("pg_dump -U root -d inventorydb -f %s%s --create", processor.config.POSTGRES_SNAPSHOTS, snapshotDataAndSchemaFilename))
-// 	cmd3 := exec.Command("docker", "cp", fmt.Sprintf("postgres3:%s%s", processor.config.POSTGRES_SNAPSHOTS, snapshotSchemaFilename), fmt.Sprintf("%s", processor.config.HOST_SNAPSHOTS))
-// 	cmd4 := exec.Command("docker", "cp", fmt.Sprintf("postgres3:%s%s", processor.config.POSTGRES_SNAPSHOTS, snapshotDataAndSchemaFilename), fmt.Sprintf("%s", processor.config.HOST_SNAPSHOTS))
-
-// 	if err := cmd1.Run(); err != nil {
-// 		return fmt.Errorf("failed to dump schema snapshot: %w", err)
-// 	}
-
-// 	if err := cmd2.Run(); err != nil {
-// 		return fmt.Errorf("failed to dump data and schema snapshot: %w", err)
-// 	}
-
-// 	if err := cmd3.Run(); err != nil {
-// 		return fmt.Errorf("failed to cp schema snapshot: %w", err)
-// 	}
-
-// 	if err := cmd4.Run(); err != nil {
-// 		return fmt.Errorf("failed to cp data and schema snapshot: %w", err)
-// 	}
-
-// 	var fileContents [][]byte
-// 	for _, file := range []string{snapshotDataAndSchemaFilename, snapshotSchemaFilename} {
-// 		fileToAttach, err := os.Open(fmt.Sprintf("%s%s", processor.config.HOST_SNAPSHOTS, file))
-// 		if err != nil {
-// 			return fmt.Errorf("failed to open file: %w", err)
-// 		}
-// 		defer fileToAttach.Close()
-
-// 		fileContent, err := io.ReadAll(fileToAttach)
-// 		if err != nil {
-// 			return fmt.Errorf("failed to read file content: %w", err)
-// 		}
-// 		fileContents = append(fileContents, fileContent)
-// 	}
-// 	emailBody := fmt.Sprintf(`
-// 		<h1>Hello Emilio Cliff</h1>
-// 		<p>Your 3 days database snapshot</p>`)
-
-// 	err := processor.sender.SendMail("Database Snapshot", emailBody, "text/plain", []string{"emiliocliff@gmail.com"}, nil, nil, []string{snapshotDataAndSchemaFilename, snapshotSchemaFilename}, fileContents)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to send email: %w", err)
-// 	}
-
-// 	// opts := []asynq.Option{
-// 	// 	asynq.MaxRetry(2),
-// 	// 	asynq.ProcessIn(72 * time.Hour),
-// 	// 	asynq.Queue(QueueLow),
-// 	// }
-
-// 	// err = processor.distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...)
-// 	// if err != nil {
-// 	// 	return fmt.Errorf("Failed to schedule next snapshot: %w", err)
-// 	// }
-
-// 	log.Info().
-// 		Str("type", task.Type()).
-// 		Bytes("body", task.Payload()).
-// 		Str("Success", "snapshot was succefuly sent to your email").
-// 		Msg("tasked processed successfull")
-
-// 	return nil
-// }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/EmilioCliff/inventory-system/api"
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -34,14 +35,14 @@ func main() {
 
 	store := db.NewStore(conn)
 	redisOpt := asynq.RedisClientOpt{
-		// Addr: "redis:6379",
+		// Addr: "redis-inventory:6379",
 		Addr:     config.REDIS_URI,
 		Password: config.REDIS_PASSWORD,
 		DB:       1,
 	}
 
 	redisClient := redis.NewClient(&redis.Options{
-		// Addr: "redis:6379",
+		// Addr: "redis-inventory:6379",
 		Addr:     config.REDIS_URI,
 		Password: config.REDIS_PASSWORD,
 		DB:       2,
@@ -77,15 +78,15 @@ func runRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 	}
 
 	// here
-	// ctx := context.Background()
-	// opts := []asynq.Option{
-	// 	asynq.MaxRetry(2),
-	// 	asynq.ProcessIn(30 * time.Second),
-	// 	asynq.Queue(worker.QueueLow),
-	// }
-	// if err := distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...); err != nil {
-	// 	log.Fatal().Msgf("Failed to distribute task: %s", err)
-	// }
+	ctx := context.Background()
+	opts := []asynq.Option{
+		asynq.MaxRetry(2),
+		asynq.ProcessIn(10 * time.Second),
+		asynq.Queue(worker.QueueLow),
+	}
+	if err := distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...); err != nil {
+		log.Fatal().Msgf("Failed to distribute task: %s", err)
+	}
 }
 
 func runMigration(mirationUrl string, db_source string) {

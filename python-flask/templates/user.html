@@ -109,6 +109,35 @@
     <a href="{{ url_for('get_user_invoices', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user_invoices' %}active{% endif %}">Invoices</a>
     <a href="{{ url_for('get_user_receipts', id=user.id) }}" class="btn btn-outline-primary {% if request.endpoint == 'get_user_receipts' %}active{% endif %}">Receipts</a>
     <a href="{{ url_for('statement_download', id=user.id) }}" class="btn btn-outline-primary">Download Statement</a>
+    <a href="#" class="btn btn-outline-primary" id="calculateButton">Calculate Price</a>
+    <div class="overlay" id="calculateTotalOverlay">
+        <div class="form-container p-1" id="popupformCalculateTotal" style="display: block; padding-inline: .5rem;">
+            <button name="close-button" id="close-calculateTotal" class="close-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                    <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                </svg>
+            </button>
+            <button type="button" class="btn btn-sm btn-primary"  style="display: block; margin: auto;" onclick="calculateTotalAdd()">Add</button>
+            <form id="productForm" method="POST" action="{{ url_for('calculateProduct', id=user.id) }}" style="margin-top: 2rem;" autocomplete="off">
+                <div id="calculateList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
+                    <div class="d-flex">
+                        <select class="product me-1" name="products_id">
+                            {% if user.stock is none %}
+                            <option value="-100">No Products To Sell</option>
+                            {% else %}
+                            {% for stock in user.stock %}
+                            <option value="{{ stock.productID }}">{{ stock.productName }}:{{ stock.productQuantity }}</option>
+                            {% endfor %}
+                            {% endif %}
+                        </select>
+                        <input type="number" class="quantity" name="quantities" id="quantities" placeholder="Quantity" style="width: auto;" required>
+                        <!-- <input type="number" class="quantity" id="amount" name="amount" placeholder="Enter Amount To Pay (Ksh)" required style="width: 100%;border: 1px solid black;padding: .5rem;"> -->
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="display: block; margin-inline: auto;">Submit</button>
+            </form>
+        </div>
+    </div>
     {% endif %}
     <!-- change to 1 -->
     {% if user_id == 1 %}
@@ -384,7 +413,6 @@
     if (btnToAdd) {
         btnToAdd.addEventListener("click", () => {
             addProduct();
-            console.log("Button clicked");
         });
     }
 
@@ -448,6 +476,37 @@
         newStockDiv.appendChild(newQuantity);
 
         document.getElementById('stockList').appendChild(newStockDiv);
+    }
+</script>
+<script>
+    function calculateTotalAdd() {
+
+        var newStock = document.createElement('select');
+        newStock.name = 'products_id';
+        newStock.className = 'product me-1';
+
+        var originalOptions = document.querySelector('.product').options;
+        for (var i = 0; i < originalOptions.length; i++) {
+            var option = document.createElement('option');
+            option.value = originalOptions[i].value;
+            option.text = originalOptions[i].text;
+            newStock.add(option);
+        }
+
+        var newQuantity = document.createElement('input');
+        newQuantity.style.width = 'auto';
+        newQuantity.type = 'number';
+        newQuantity.className = 'quantity';
+        newQuantity.name = 'quantities';
+        newQuantity.placeholder = 'Quantity';
+        newQuantity.required = true;
+
+        var newStockDiv = document.createElement('div');
+        newStockDiv.className = 'd-flex';
+        newStockDiv.appendChild(newStock);
+        newStockDiv.appendChild(newQuantity);
+
+        document.getElementById('calculateList').appendChild(newStockDiv);
     }
 </script>
 {% endblock %}

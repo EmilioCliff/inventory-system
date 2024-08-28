@@ -37,7 +37,6 @@ func (distributor *RedisTaskDistributor) DistributeGenerateAndSendReceipt(ctx co
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("queue", info.Queue).
 		Int("max_retry", info.MaxRetry).
 		Msg("Enqueued task")
@@ -108,7 +107,6 @@ func (processor *RedisTaskProcessor) ProcessGenerateAndSendReceipt(ctx context.C
 
 	log.Info().
 		Str("type", task.Type()).
-		Bytes("body", task.Payload()).
 		Str("email", receiptDataPayload.User.Email).
 		Str("receipt_number", receiptGenerated.ReceiptNumber).
 		Msg("tasked processed successfull")
