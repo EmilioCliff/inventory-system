@@ -52,16 +52,12 @@ func (processor *RedisTaskProcessor) ProcessTakeAndSendDBsnapshots(ctx context.C
 
 	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", os.Getenv("POSTGRES_PASSWORD")))
 
-	log.Printf("OS After environ output: %s\n", cmd.Env)
-
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("Failed to run pg_dump: %v\nOutput: %s", err, output)
 	}
 
 	cmd.Env = os.Environ()
-
-	log.Printf("OS environ output: %s\n", cmd.Env)
 
 	if err := os.WriteFile(snapshotSchemaFilename, output, 0644); err != nil {
 		return fmt.Errorf("Failed to write snapshot to file: %v", err)
