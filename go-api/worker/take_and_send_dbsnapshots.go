@@ -48,7 +48,6 @@ func (processor *RedisTaskProcessor) ProcessTakeAndSendDBsnapshots(ctx context.C
 		"-p", processor.config.PG_PORT,
 		"-d", processor.config.PG_DB,
 		"-F", "t",
-		// "-f", fmt.Sprintf("./%s", snapshotSchemaFilename),
 	)
 
 	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", processor.config.PG_PASSWORD))
