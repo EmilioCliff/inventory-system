@@ -284,7 +284,8 @@ def calculateProduct(id):
         url = f"{BASE_URL}/products/calculate"
         rsp = requests.post(url, json=data, headers={"Authorization": f"Bearer {session['token']}"})
         if rsp.status_code == 200:
-            flash(f"Total Amount: {rsp.json()['total_amount']}", "success")
+            formated_amount = "{:,}".format(rsp.json()['total_amount'])
+            flash(f"Total Amount: {formated_amount}", "success")
             return redirect(url_for('get_user', id=id))
         elif rsp.status_code == 401:
             flash("Please login", "error")

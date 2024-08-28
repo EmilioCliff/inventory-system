@@ -43,14 +43,14 @@ func (processor *RedisTaskProcessor) ProcessTakeAndSendDBsnapshots(ctx context.C
 
 	cmd := exec.Command(
 		"pg_dump",
-		"-U", processor.config.PG_USER,
-		"-h", processor.config.PG_HOST,
-		"-p", processor.config.PG_PORT,
-		"-d", processor.config.PG_DB,
+		"-U", processor.config.PGUSER,
+		"-h", processor.config.PGHOST,
+		"-p", processor.config.PGPORT,
+		"-d", processor.config.POSTGRES_DB,
 		"-F", "t",
 	)
 
-	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", processor.config.PG_PASSWORD))
+	cmd.Env = append(os.Environ(), fmt.Sprintf("PGPASSWORD=%s", processor.config.POSTGRES_PASSWORD))
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
