@@ -78,7 +78,7 @@
                 <form id="productForm" method="POST" action="{{ url_for('reduce_client_stock', id=user.id) }}" style="margin-top: 2rem;" autocomplete="off">
                     <div id="stockList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
                         <div class="d-flex">
-                            <select class="product me-1" name="products_id">
+                            <select class="product reduce-product me-1" name="products_id">
                                 {% if user.stock is none %}
                                 <option value="-100">No Products To Sell</option>
                                 {% else %}
@@ -122,7 +122,7 @@
             <form id="productForm" method="POST" action="{{ url_for('calculateProduct', id=user.id) }}" style="margin-top: 2rem;" autocomplete="off">
                 <div id="calculateList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
                     <div class="d-flex" style="overflow-x: auto;">
-                        <select class="product me-1" name="products_id">
+                        <select class="product calculate-product me-1" name="products_id">
                             {% if user.stock is none %}
                             <option value="-100">No Products To Calculate</option>
                             {% else %}
@@ -157,7 +157,7 @@
                     <input type="date" id="invoiceDate" class="quantity me-5" name="invoiceDate" placeholder="Quantity" style="display: block; width: 70%; margin-block: .5rem; margin-inline: auto; border: 1px solid black; padding: .25rem;" required>
                     <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
                         <div class="d-flex" style="overflow-x: auto;">
-                            <select class="product me-1" name="products_id" id="products_id">
+                            <select class="product add-product me-1" name="products_id" id="products_id">
                                 {% if admin.stock is none %}
                                     <option value="-100">No Products To Sell</option>
                                 {% else %}
@@ -413,7 +413,7 @@
         var newProduct = document.createElement('select');
         newProduct.className = 'product me-1';
         newProduct.name = 'products_id';
-        var originalOptions = document.querySelector('.product').options;
+        var originalOptions = document.querySelector('.add-product').options;
         for (var i = 0; i < originalOptions.length; i++) {
             var option = document.createElement('option');
             option.value = originalOptions[i].value;
@@ -446,7 +446,7 @@
         newStock.name = 'products_id';
         newStock.className = 'product me-1';
 
-        var originalOptions = document.querySelector('.product').options;
+        var originalOptions = document.querySelector('.reduce-product').options;
         for (var i = 0; i < originalOptions.length; i++) {
             var option = document.createElement('option');
             option.value = originalOptions[i].value;
@@ -478,7 +478,7 @@
         newStock.name = 'products_id';
         newStock.className = 'product me-1';
 
-        var originalOptions = document.querySelector('.product').options;
+        var originalOptions = document.querySelector('.calculate-product').options;
         for (var i = 0; i < originalOptions.length; i++) {
             var option = document.createElement('option');
             option.value = originalOptions[i].value;
