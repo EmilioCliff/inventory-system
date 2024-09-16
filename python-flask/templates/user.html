@@ -124,7 +124,7 @@
                     <div class="d-flex" style="overflow-x: auto;">
                         <select class="product me-1" name="products_id">
                             {% if user.stock is none %}
-                            <option value="-100">No Products To Sell</option>
+                            <option value="-100">No Products To Calculate</option>
                             {% else %}
                             {% for stock in user.stock %}
                             <option value="{{ stock.productID }}">{{ stock.productName }}:{{ stock.productQuantity }}</option>
@@ -152,7 +152,7 @@
                         <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
                     </svg>
                 </button>
-                <button type="button" class="btn btn-sm btn-primary" id="add_input_adding" style="display: block; margin: auto;">Add</button>
+                <button type="button" class="btn btn-sm btn-primary"  onclick="addProduct()" style="display: block; margin: auto;">Add</button>
                 <form id="productForm" method="POST" action="{{ url_for('add_client_stock', id=user.id) }}" autocomplete="off">
                     <input type="date" id="invoiceDate" class="quantity me-5" name="invoiceDate" placeholder="Quantity" style="display: block; width: 70%; margin-block: .5rem; margin-inline: auto; border: 1px solid black; padding: .25rem;" required>
                     <div id="productList" class="d-flex flex-column form-group form-floating m-1 p-1" style="overflow: hidden; row-gap: .25rem;">
@@ -409,26 +409,17 @@
 {% endif %}
 </div>
 <script>
-    let btnToAdd = document.getElementById("add_input_adding")
-
-    if (btnToAdd) {
-        btnToAdd.addEventListener("click", () => {
-            addProduct();
-        });
-    }
-
     function addProduct() {
-        // Create new product selection and quantity input elements
         var newProduct = document.createElement('select');
         newProduct.className = 'product me-1';
         newProduct.name = 'products_id';
-        // newProduct.innerHTML = document.querySelector('.product').innerHTML;
         var originalOptions = document.querySelector('.product').options;
         for (var i = 0; i < originalOptions.length; i++) {
             var option = document.createElement('option');
             option.value = originalOptions[i].value;
             option.text = originalOptions[i].text;
             newProduct.add(option);
+            console.log(originalOptions[i].text);
         }
 
         var newQuantity = document.createElement('input');
