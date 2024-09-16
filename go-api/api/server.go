@@ -133,6 +133,7 @@ func (server *Server) setRoutes() {
 	auth.POST("/admin/users_reports", server.downloadUserReports)
 	auth.POST("/admin/admin_reports", server.downloadAdminReports)
 
+	router.GET("/test", server.test)
 	server.router = router
 }
 
