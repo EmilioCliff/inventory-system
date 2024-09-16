@@ -1207,24 +1207,24 @@ func (server *Server) resetIt(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"successful": "User password changed successful"})
 }
 
-func (s *Server) test(ctx *gin.Context) {
-	users, err := s.store.ListUserNoPagination(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"failed": err})
-		return
-	}
+// func (s *Server) test(ctx *gin.Context) {
+// 	users, err := s.store.ListUserNoPagination(ctx)
+// 	if err != nil {
+// 		ctx.JSON(http.StatusInternalServerError, gin.H{"failed": err})
+// 		return
+// 	}
 
-	for _, user := range users {
-		if user.UserID == 1 || user.UserID == 2 {continue}
-		sendPayload := &worker.SendEmailVerifyPayload{
-			Username: user.Username,
-		}
+// 	for _, user := range users {
+// 		if user.UserID == 1 || user.UserID == 2 {continue}
+// 		sendPayload := &worker.SendEmailVerifyPayload{
+// 			Username: user.Username,
+// 		}
 
-		opts := []asynq.Option{
-			asynq.MaxRetry(10),
-			asynq.ProcessIn(5 * time.Second),
-			asynq.Queue(worker.QueueCritical),
-		}
-		s.taskDistributor.DistributeTaskSendVerifyEmail(ctx, *sendPayload, opts...)
-	}
-}
+// 		opts := []asynq.Option{
+// 			asynq.MaxRetry(10),
+// 			asynq.ProcessIn(5 * time.Second),
+// 			asynq.Queue(worker.QueueCritical),
+// 		}
+// 		s.taskDistributor.DistributeTaskSendVerifyEmail(ctx, *sendPayload, opts...)
+// 	}
+// }
