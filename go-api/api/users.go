@@ -1123,6 +1123,16 @@ func (server *Server) resetPassword(ctx *gin.Context) {
 		Email: req.Email,
 	}
 
+	_, err := server.store.GetUserByEmail(ctx, req.Email)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
 	opts := []asynq.Option{
 		asynq.MaxRetry(10),
 		asynq.Queue(worker.QueueCritical),

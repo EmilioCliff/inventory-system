@@ -194,6 +194,9 @@ def reset():
         elif rsp.status_code == 500:
             flash("No User Found With Email Provided", "error")
             return redirect(url_for('reset'))
+        elif rsp.status_code == 404:
+            flash("No User Found With Email Provided", "error")
+            return redirect(url_for('reset'))
         else:
             return render_template('failed.html', error_code=rsp.status_code, error=rsp.json()['error'])    
     return render_template("forgot_password.html", reset=True)
