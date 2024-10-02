@@ -30,5 +30,5 @@ func (s *Server) validateTransaction(ctx *gin.Context) {
 
 	log.Println("validate url hit: ", req)
 
-	ctx.JSON(http.StatusOK, gin.H{"ResultCode": 0, "ResultDesc": "Accept Service"})
+	ctx.JSON(http.StatusOK, gin.H{"ResultCode": "0", "ResultDesc": "Accepted"})
 }
