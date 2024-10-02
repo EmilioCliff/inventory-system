@@ -36,7 +36,13 @@ type Server struct {
 	reportMaker     reports.ReportMaker // added
 }
 
-func NewServer(config utils.Config, store *db.Store, emailSender utils.GmailSender, taskDistributor worker.TaskDistributor, redis *redis.Client) (*Server, error) {
+func NewServer(
+	config utils.Config,
+	store *db.Store,
+	emailSender utils.GmailSender,
+	taskDistributor worker.TaskDistributor,
+	redis *redis.Client,
+) (*Server, error) {
 	tokenMaker, err := token.NewPaseto(config.TOKEN_SYMMETRY_KEY)
 	if err != nil {
 		return nil, fmt.Errorf("Couldnt open tokenmaker %w", err)
@@ -77,6 +83,8 @@ func (server *Server) setRoutes() {
 	router.POST("/users/login", server.loginUser)
 	router.POST("/reset", server.resetPassword)
 	router.POST("/resetit", server.resetIt)
+	router.POST("/transaction/complete", server.completeTransaction)
+	router.POST("/transaction/validation", server.validateTransaction)
 	router.Any("/transaction/:id", server.mpesaCallback)
 	auth.GET("/search/all", server.searchAll)
 	cacheAuth.GET("/users/:id", server.getUser)
