@@ -65,7 +65,7 @@ func (server *Server) setRoutes() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 
-	router.Use(loggerMiddleware())
+	// router.Use(loggerMiddleware())
 
 	auth := router.Group("/").Use(authMiddleware(server.tokenMaker))
 	cacheAuth := router.Group("/").Use(authMiddleware(server.tokenMaker), redisCacheMiddleware(server.redis))
@@ -83,8 +83,8 @@ func (server *Server) setRoutes() {
 	router.POST("/users/login", server.loginUser)
 	router.POST("/reset", server.resetPassword)
 	router.POST("/resetit", server.resetIt)
-	router.POST("/transaction/complete", server.completeTransaction)
-	router.POST("/transaction/validation", server.validateTransaction)
+	router.Any("/c2b/complete", server.completeTransaction)   // added
+	router.Any("/c2b/validation", server.validateTransaction) // added
 	router.Any("/transaction/:id", server.mpesaCallback)
 	auth.GET("/search/all", server.searchAll)
 	cacheAuth.GET("/users/:id", server.getUser)
