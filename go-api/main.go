@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"time"
 
 	"github.com/EmilioCliff/inventory-system/api"
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -68,7 +67,13 @@ func main() {
 	}
 }
 
-func runRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender utils.GmailSender, config utils.Config, distributor worker.TaskDistributor) {
+func runRedisTaskProcessor(
+	redisOpt asynq.RedisClientOpt,
+	store db.Store,
+	sender utils.GmailSender,
+	config utils.Config,
+	distributor worker.TaskDistributor,
+) {
 	taskProcessor := worker.NewRedisTaskProcessor(redisOpt, store, sender, config, distributor)
 	log.Info().Msg("Start task processor")
 
@@ -78,15 +83,15 @@ func runRedisTaskProcessor(redisOpt asynq.RedisClientOpt, store db.Store, sender
 	}
 
 	// here
-	ctx := context.Background()
-	opts := []asynq.Option{
-		asynq.MaxRetry(2),
-		asynq.ProcessIn(10 * time.Second),
-		asynq.Queue(worker.QueueLow),
-	}
-	if err := distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...); err != nil {
-		log.Fatal().Msgf("Failed to distribute task: %s", err)
-	}
+	// ctx := context.Background()
+	// opts := []asynq.Option{
+	// 	asynq.MaxRetry(2),
+	// 	asynq.ProcessIn(10 * time.Second),
+	// 	asynq.Queue(worker.QueueLow),
+	// }
+	// if err := distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...); err != nil {
+	// 	log.Fatal().Msgf("Failed to distribute task: %s", err)
+	// }
 }
 
 func runMigration(mirationUrl string, db_source string) {

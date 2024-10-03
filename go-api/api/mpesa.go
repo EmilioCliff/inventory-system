@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	registerURL = "https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl"
+	registerURL = "https://api.safaricom.co.ke/mpesa/c2b/v1/registerurl"
 )
 
 type registerUrlRequest struct {
