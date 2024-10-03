@@ -145,13 +145,6 @@ func (s *Server) completeTransaction(ctx *gin.Context) {
 		return
 	}
 
-	orgAmount, err := strconv.Atoi(req["OrgAccountBalance"].(string))
-	if err != nil {
-		log.Println("failed to convert org account balance to int: ", err)
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
 	// YYYYMMDDHHmmss
 
 	transactionTime, err := time.Parse("20060102150405", req["TransTime"].(string))
@@ -164,9 +157,9 @@ func (s *Server) completeTransaction(ctx *gin.Context) {
 	transaction, err := s.store.CreateC2BTransaction(ctx, db.CreateC2BTransactionParams{
 		Fullname:          fullname,
 		Phone:             req["MSISDN"].(string),
-		Amount:            int64(amount),
+		Amount:            int32(amount),
 		TransactionID:     req["TransID"].(string),
-		OrgAccountBalance: int64(orgAmount),
+		OrgAccountBalance: req["OrgAccountBalance"].(string),
 		TransactionTime:   transactionTime,
 	})
 	if err != nil {

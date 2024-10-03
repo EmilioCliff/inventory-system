@@ -19,9 +19,9 @@ RETURNING id, fullname, phone, amount, transaction_id, org_account_balance, tran
 type CreateC2BTransactionParams struct {
 	Fullname          string    `json:"fullname"`
 	Phone             string    `json:"phone"`
-	Amount            int64     `json:"amount"`
+	Amount            int32     `json:"amount"`
 	TransactionID     string    `json:"transaction_id"`
-	OrgAccountBalance int64     `json:"org_account_balance"`
+	OrgAccountBalance string    `json:"org_account_balance"`
 	TransactionTime   time.Time `json:"transaction_time"`
 }
 
