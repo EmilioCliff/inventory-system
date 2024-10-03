@@ -59,7 +59,7 @@ func (s *Server) registerUrl(ctx *gin.Context) {
 		return
 	}
 
-	request.Header.Add("Authorization", "Bearer "+accesstoken)
+	request.Header.Set("Authorization", "Bearer "+accesstoken)
 	request.Header.Add("Content-Type", "application/json")
 
 	client := &http.Client{}
