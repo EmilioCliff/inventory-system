@@ -87,20 +87,20 @@ func (s *Server) registerUrl(ctx *gin.Context) {
 		return
 	}
 
-	rspCode, ok := registerResponseBody["ResponseCode"].(string)
+	log.Println("register url hit: ", registerResponseBody)
+
+	rspCode, ok := registerResponseBody["ResponseCode"].(int)
 	if !ok {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "not expected response code"})
 
 		return
 	}
 
-	if rspCode != "0" {
+	if rspCode != 0 {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "response code failed", "code": rspCode})
 
 		return
 	}
-
-	log.Println("register url hit: ", registerResponseBody)
 
 	ctx.JSON(http.StatusOK, gin.H{"response": registerResponseBody})
 }
