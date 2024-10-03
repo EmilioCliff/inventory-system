@@ -515,7 +515,7 @@ func (r *ReportStore) tillHistory(
 	col4 := fmt.Sprintf("%s", columnHeaders[3]) // amount
 	col5 := fmt.Sprintf("%s", columnHeaders[4]) // transaction_date
 
-	f.SetColWidth(sheetName, col1, col5, 25)
+	f.SetColWidth(sheetName, col1, col5, 20)
 
 	f.SetCellValue(sheetName, col1+"1", "Mpesa Ref")
 	f.SetCellValue(sheetName, col2+"1", "Full Name")

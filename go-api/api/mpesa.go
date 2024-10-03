@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	db "github.com/EmilioCliff/inventory-system/db/sqlc"
@@ -107,22 +106,6 @@ func (s *Server) registerUrl(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"response": registerResponseBody})
 }
 
-// type completeTransactionRequest struct {
-// 	TransactionType   string `json:"TransactionType"`
-// 	TransID           string `json:"TransID"`
-// 	TransTime         string `json:"TransTime"`
-// 	TransAmount       string `json:"TransAmount"`
-// 	BusinessShortCode string `json:"BusinessShortCode"`
-// 	BillRefNumber     string `json:"BillRefNumber"`
-// 	InvoiceNumber     string `json:"InvoiceNumber"`
-// 	OrgAccountBalance string `json:"OrgAccountBalance"`
-// 	ThirdPartyTransID string `json:"ThirdPartyTransID"`
-// 	MSISDN            string `json:"MSISDN"`
-// 	FirstName         string `json:"FirstName"`
-// 	MiddleName        string `json:"MiddleName"`
-// 	LastName          string `json:"LastName"`
-// }
-
 func (s *Server) completeTransaction(ctx *gin.Context) {
 	var rq any
 
@@ -138,13 +121,6 @@ func (s *Server) completeTransaction(ctx *gin.Context) {
 
 	fullname := fmt.Sprintf("%s %s %s", req["FirstName"], req["MiddleName"], req["LastName"])
 
-	amount, err := strconv.Atoi(req["TransAmount"].(string))
-	if err != nil {
-		log.Println("failed to convert transAmount to int: ", err)
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
 	// YYYYMMDDHHmmss
 
 	transactionTime, err := time.Parse("20060102150405", req["TransTime"].(string))
@@ -157,7 +133,7 @@ func (s *Server) completeTransaction(ctx *gin.Context) {
 	transaction, err := s.store.CreateC2BTransaction(ctx, db.CreateC2BTransactionParams{
 		Fullname:          fullname,
 		Phone:             req["MSISDN"].(string),
-		Amount:            int32(amount),
+		Amount:            req["TransAmount"].(string),
 		TransactionID:     req["TransID"].(string),
 		OrgAccountBalance: req["OrgAccountBalance"].(string),
 		TransactionTime:   transactionTime,
@@ -175,22 +151,6 @@ func (s *Server) completeTransaction(ctx *gin.Context) {
 		"ResultDesc": "Accepted",
 	})
 }
-
-// {
-// 	"BillRefNumber": "iiiii",
-// 	"BusinessShortCode": "600426",
-// 	"FirstName": "John",
-// 	"InvoiceNumber": "",
-// 	"LastName": "",
-// 	"MSISDN": "254708374149",
-// 	"MiddleName": "Doe",
-// 	"OrgAccountBalance": "5490845.42",
-// 	"ThirdPartyTransID": "",
-// 	"TransAmount": "1000.00",
-// 	"TransID": "SJ242OOZWW",
-// 	"TransTime": "20241002202238",
-// 	"TransactionType": "Pay Bill"
-//   }
 
 func (s *Server) validateTransaction(ctx *gin.Context) {
 	var req any
