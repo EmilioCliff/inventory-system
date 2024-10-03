@@ -9,7 +9,15 @@ import (
 	"github.com/xuri/excelize/v2"
 )
 
-func (r *ReportStore) invoiceSummary(payload ReportsPayload, f *excelize.File, sheetName string, ctx context.Context, columnHeaders []string, user_id int64, styles []int) error {
+func (r *ReportStore) invoiceSummary(
+	payload ReportsPayload,
+	f *excelize.File,
+	sheetName string,
+	ctx context.Context,
+	columnHeaders []string,
+	user_id int64,
+	styles []int,
+) error {
 	col1 := fmt.Sprintf("%s", columnHeaders[0])
 	col2 := fmt.Sprintf("%s", columnHeaders[1])
 	col3 := fmt.Sprintf("%s", columnHeaders[2])
@@ -73,7 +81,15 @@ func (r *ReportStore) invoiceSummary(payload ReportsPayload, f *excelize.File, s
 	return nil
 }
 
-func (r *ReportStore) receiptSummary(payload ReportsPayload, f *excelize.File, sheetName string, ctx context.Context, columnHeaders []string, user_id int64, styles []int) error {
+func (r *ReportStore) receiptSummary(
+	payload ReportsPayload,
+	f *excelize.File,
+	sheetName string,
+	ctx context.Context,
+	columnHeaders []string,
+	user_id int64,
+	styles []int,
+) error {
 	col1 := fmt.Sprintf("%s", columnHeaders[0])
 	col2 := fmt.Sprintf("%s", columnHeaders[1])
 	col3 := fmt.Sprintf("%s", columnHeaders[2])
@@ -219,7 +235,14 @@ func (r *ReportStore) userAvailableStock(f *excelize.File, sheetName string, col
 	return nil
 }
 
-func (r *ReportStore) adminInvoiceSummary(payload ReportsPayload, f *excelize.File, sheetName string, ctx context.Context, columnHeaders []string, styles []int) error {
+func (r *ReportStore) adminInvoiceSummary(
+	payload ReportsPayload,
+	f *excelize.File,
+	sheetName string,
+	ctx context.Context,
+	columnHeaders []string,
+	styles []int,
+) error {
 	col1 := fmt.Sprintf("%s", columnHeaders[0])
 	col2 := fmt.Sprintf("%s", columnHeaders[1])
 	col3 := fmt.Sprintf("%s", columnHeaders[2])
@@ -288,7 +311,14 @@ func (r *ReportStore) adminInvoiceSummary(payload ReportsPayload, f *excelize.Fi
 	return nil
 }
 
-func (r *ReportStore) adminReceiptSummary(payload ReportsPayload, f *excelize.File, sheetName string, ctx context.Context, columnHeaders []string, styles []int) error {
+func (r *ReportStore) adminReceiptSummary(
+	payload ReportsPayload,
+	f *excelize.File,
+	sheetName string,
+	ctx context.Context,
+	columnHeaders []string,
+	styles []int,
+) error {
 	col1 := fmt.Sprintf("%s", columnHeaders[0])
 	col2 := fmt.Sprintf("%s", columnHeaders[1])
 	col3 := fmt.Sprintf("%s", columnHeaders[2])
@@ -391,7 +421,14 @@ func (r *ReportStore) adminReceiptSummary(payload ReportsPayload, f *excelize.Fi
 	return nil
 }
 
-func (r *ReportStore) localPurchaseOrders(payload ReportsPayload, f *excelize.File, sheetName string, ctx context.Context, columnHeaders []string, styles []int) error {
+func (r *ReportStore) localPurchaseOrders(
+	payload ReportsPayload,
+	f *excelize.File,
+	sheetName string,
+	ctx context.Context,
+	columnHeaders []string,
+	styles []int,
+) error {
 	col1 := fmt.Sprintf("%s", columnHeaders[0])
 	col2 := fmt.Sprintf("%s", columnHeaders[1])
 	col3 := fmt.Sprintf("%s", columnHeaders[2])
@@ -456,6 +493,80 @@ func (r *ReportStore) localPurchaseOrders(payload ReportsPayload, f *excelize.Fi
 			return err
 		}
 		err = f.SetCellValue(sheetName, fmt.Sprintf("%s%v", col5, rowNumber), order.CreatedAt)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *ReportStore) tillHistory(
+	payload ReportsPayload,
+	f *excelize.File,
+	sheetName string,
+	ctx context.Context,
+	columnHeaders []string,
+	styles []int,
+) error {
+	col1 := fmt.Sprintf("%s", columnHeaders[0]) // transaction_id
+	col2 := fmt.Sprintf("%s", columnHeaders[1]) // fullname
+	col3 := fmt.Sprintf("%s", columnHeaders[2]) // phone_number
+	col4 := fmt.Sprintf("%s", columnHeaders[3]) // amount
+	col5 := fmt.Sprintf("%s", columnHeaders[4]) // transaction_date
+
+	f.SetColWidth(sheetName, col1, col5, 25)
+
+	f.SetCellValue(sheetName, col1+"1", "Mpesa Ref")
+	f.SetCellValue(sheetName, col2+"1", "Full Name")
+	f.SetCellValue(sheetName, col3+"1", "Phone Number")
+	f.SetCellValue(sheetName, col4+"1", "Amount")
+	f.SetCellValue(sheetName, col5+"1", "Transaction Date")
+
+	err := f.SetColStyle(sheetName, col5, styles[1]) // date style
+	if err != nil {
+		return err
+	}
+
+	err = f.SetColStyle(sheetName, col4, styles[2]) // money style
+	if err != nil {
+		return err
+	}
+
+	err = f.SetCellStyle(sheetName, col1+"1", col5+"1", styles[0]) // header style
+	if err != nil {
+		return err
+	}
+
+	transactions, err := r.dbStore.ListC2BTransactions(ctx, db.ListC2BTransactionsParams{
+		FromDate: payload.FromDate,
+		ToDate:   formartDate(payload.ToDate),
+	})
+	if err != nil {
+		return err
+	}
+
+	rowNumber := 1
+	for _, transaction := range transactions {
+		rowNumber += 1
+
+		err = f.SetCellValue(sheetName, fmt.Sprintf("%s%v", col1, rowNumber), transaction.TransactionID)
+		if err != nil {
+			return err
+		}
+		err = f.SetCellValue(sheetName, fmt.Sprintf("%s%v", col2, rowNumber), transaction.Fullname)
+		if err != nil {
+			return err
+		}
+		err = f.SetCellValue(sheetName, fmt.Sprintf("%s%v", col3, rowNumber), transaction.Phone)
+		if err != nil {
+			return err
+		}
+		err = f.SetCellValue(sheetName, fmt.Sprintf("%s%v", col4, rowNumber), transaction.Amount)
+		if err != nil {
+			return err
+		}
+		err = f.SetCellValue(sheetName, fmt.Sprintf("%s%v", col5, rowNumber), transaction.TransactionTime)
 		if err != nil {
 			return err
 		}

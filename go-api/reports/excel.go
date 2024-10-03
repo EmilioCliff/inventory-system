@@ -156,7 +156,15 @@ func (r *ReportStore) GenerateUserExcel(ctx context.Context, payload ReportsPayl
 				return
 			}
 
-			err = r.receiptSummary(payload, f, sheetName, ctx, []string{"F", "G", "H", "I", "J", "K", "L"}, user.UserID, []int{headerStyle, dateStyle, moneyStyle})
+			err = r.receiptSummary(
+				payload,
+				f,
+				sheetName,
+				ctx,
+				[]string{"F", "G", "H", "I", "J", "K", "L"},
+				user.UserID,
+				[]int{headerStyle, dateStyle, moneyStyle},
+			)
 			if err != nil {
 				ch <- err
 				return
@@ -309,8 +317,6 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 			return
 		}
 
-		// log.Printf("Entries response: %v", entries)
-
 		// purchase history
 		rowNumber := 1
 		for _, entry := range entries {
@@ -337,8 +343,6 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 			}
 		}
 
-		// log.Println("Done with purchase history")
-
 		// in stock history
 		err = r.userAvailableStock(f, sheet, []string{"F", "G"}, admin.Stock, []int{headerStyle, quantityStyle})
 		if err != nil {
@@ -346,10 +350,9 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 			return
 		}
 
-		// log.Println("Done with in stock history")
 	}()
 
-	sheets := []string{"Invoices", "Receipts", "lpo"}
+	sheets := []string{"Invoices", "Receipts", "lpo", "till"}
 
 	for _, sheet := range sheets {
 		switch sheet {
@@ -368,7 +371,6 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 					ch <- err
 					return
 				}
-				// log.Println("Done with invoices")
 			}()
 
 		case "Receipts":
@@ -381,12 +383,18 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				err = r.adminReceiptSummary(payload, f, sheetName, ctx, []string{"A", "B", "C", "D", "E", "F", "G", "H"}, []int{headerStyle, dateStyle, moneyStyle})
+				err = r.adminReceiptSummary(
+					payload,
+					f,
+					sheetName,
+					ctx,
+					[]string{"A", "B", "C", "D", "E", "F", "G", "H"},
+					[]int{headerStyle, dateStyle, moneyStyle},
+				)
 				if err != nil {
 					ch <- err
 					return
 				}
-				// log.Println("Done with receipts")
 			}()
 
 		case "lpo":
@@ -404,7 +412,22 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 					ch <- err
 					return
 				}
-				// log.Println("Done with lpo")
+			}()
+		case "till":
+			sheetName := "Till History"
+			_, err = f.NewSheet(sheetName)
+			if err != nil {
+				return nil, err
+			}
+
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				err = r.tillHistory(payload, f, sheetName, ctx, []string{"A", "B", "C", "D", "E"}, []int{headerStyle, dateStyle, moneyStyle})
+				if err != nil {
+					ch <- err
+					return
+				}
 			}()
 		}
 	}
@@ -412,14 +435,12 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 	go func() {
 		wg.Wait()
 		close(ch)
-		// log.Println("Done waiting")
 	}()
 
 	for err := range ch {
 		if err != nil {
 			return nil, err
 		}
-		// log.Println("Done with error")
 	}
 
 	var buf bytes.Buffer
@@ -427,14 +448,9 @@ func (r *ReportStore) GenerateManagerReports(ctx context.Context, payload Report
 		return nil, err
 	}
 
-	// if err := f.SaveAs("book2.xlsx"); err != nil {
-	// 	fmt.Println(err)
-	// }
-
 	if err := f.Close(); err != nil {
 		fmt.Println(err)
 	}
-	// return nil, nil
 
 	return buf.Bytes(), nil
 }

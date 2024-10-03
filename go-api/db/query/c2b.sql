@@ -9,6 +9,7 @@ WHERE transaction_id = $1
 LIMIT 1;
 
 -- name: ListC2BTransactions :many
-SELECT * FROM c2b_transactions
+SELECT * 
+FROM c2b_transactions
+WHERE created_at BETWEEN @from_date AND @to_date
 ORDER BY created_at DESC;
-

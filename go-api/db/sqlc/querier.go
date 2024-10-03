@@ -84,7 +84,7 @@ type Querier interface {
 	GetUserTransaction(ctx context.Context, transactionUserID int32) (Transaction, error)
 	GetUserUsername(ctx context.Context, userID int64) (string, error)
 	ListAllProduct(ctx context.Context) ([]Product, error)
-	ListC2BTransactions(ctx context.Context) ([]C2bTransaction, error)
+	ListC2BTransactions(ctx context.Context, arg ListC2BTransactionsParams) ([]C2bTransaction, error)
 	ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error)
 	ListInvoices(ctx context.Context, arg ListInvoicesParams) ([]Invoice, error)
 	ListProduct(ctx context.Context, arg ListProductParams) ([]Product, error)

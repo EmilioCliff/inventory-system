@@ -71,12 +71,19 @@ func (q *Queries) GetC2BTransaction(ctx context.Context, transactionID string) (
 }
 
 const listC2BTransactions = `-- name: ListC2BTransactions :many
-SELECT id, fullname, phone, amount, transaction_id, org_account_balance, transaction_time, created_at FROM c2b_transactions
+SELECT id, fullname, phone, amount, transaction_id, org_account_balance, transaction_time, created_at 
+FROM c2b_transactions
+WHERE created_at BETWEEN $1 AND $2
 ORDER BY created_at DESC
 `
 
-func (q *Queries) ListC2BTransactions(ctx context.Context) ([]C2bTransaction, error) {
-	rows, err := q.db.Query(ctx, listC2BTransactions)
+type ListC2BTransactionsParams struct {
+	FromDate time.Time `json:"from_date"`
+	ToDate   time.Time `json:"to_date"`
+}
+
+func (q *Queries) ListC2BTransactions(ctx context.Context, arg ListC2BTransactionsParams) ([]C2bTransaction, error) {
+	rows, err := q.db.Query(ctx, listC2BTransactions, arg.FromDate, arg.ToDate)
 	if err != nil {
 		return nil, err
 	}

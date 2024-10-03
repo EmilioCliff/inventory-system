@@ -176,16 +176,6 @@ func (s *Server) completeTransaction(ctx *gin.Context) {
 	})
 }
 
-func (s *Server) listC2BTransactions(ctx *gin.Context) {
-	transactions, err := s.store.ListC2BTransactions(ctx)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, transactions)
-}
-
 // {
 // 	"BillRefNumber": "iiiii",
 // 	"BusinessShortCode": "600426",

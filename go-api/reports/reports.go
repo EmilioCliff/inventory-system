@@ -15,6 +15,7 @@ type ReportMaker interface {
 	GetUserReceiptSummary(ctx context.Context, payload ReportSummaryData) ([]GetUserReceiptSummaryResponse, error)
 	GetAdminPurchaseHistory(ctx context.Context, payload ReportSummaryData) ([]GetAdminPurchaseHistoryResponse, error)
 	GetUserHistorySummary(ctx context.Context, payload ReportSummaryData) (GetAdminSalesHistoryResponse, error)
+
 	GenerateUserExcel(ctx context.Context, payload ReportsPayload) ([]byte, error)
 	GenerateManagerReports(ctx context.Context, payload ReportsPayload) ([]byte, error)
 }
