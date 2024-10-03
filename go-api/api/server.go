@@ -83,10 +83,10 @@ func (server *Server) setRoutes() {
 	router.POST("/users/login", server.loginUser)
 	router.POST("/reset", server.resetPassword)
 	router.POST("/resetit", server.resetIt)
-	router.GET("/c2b/list", server.listC2BTransactions)       // added
-	auth.POST("/c2b/register", server.registerUrl)            // added
-	router.Any("/c2b/complete", server.completeTransaction)   // added
-	router.Any("/c2b/validation", server.validateTransaction) // added
+	router.GET("/c2b/list", server.listC2BTransactions)        // added
+	auth.POST("/c2b/register", server.registerUrl)             // added
+	router.POST("/c2b/complete", server.completeTransaction)   // added
+	router.POST("/c2b/validation", server.validateTransaction) // added
 	router.Any("/transaction/:id", server.mpesaCallback)
 	auth.GET("/search/all", server.searchAll)
 	cacheAuth.GET("/users/:id", server.getUser)
