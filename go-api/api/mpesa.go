@@ -19,11 +19,13 @@ const (
 	registerURL = "https://api.safaricom.co.ke/mpesa/c2b/v1/registerurl"
 )
 
+// 9090757
+
 type registerUrlRequest struct {
 	ShortCode       string `json:"ShortCode"`
 	ResponseType    string `json:"ResponseType"`
 	ConfirmationURL string `json:"ConfirmationURL"`
-	ValidationURL   string `json:"validationURL"`
+	ValidationURL   string `json:"ValidationURL"`
 }
 
 func (s *Server) registerUrl(ctx *gin.Context) {
@@ -105,41 +107,45 @@ func (s *Server) registerUrl(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"response": registerResponseBody})
 }
 
-type completeTransactionRequest struct {
-	TransactionType   string `json:"TransactionType"`
-	TransID           string `json:"TransID"`
-	TransTime         string `json:"TransTime"`
-	TransAmount       string `json:"TransAmount"`
-	BusinessShortCode string `json:"BusinessShortCode"`
-	BillRefNumber     string `json:"BillRefNumber"`
-	InvoiceNumber     string `json:"InvoiceNumber"`
-	OrgAccountBalance string `json:"OrgAccountBalance"`
-	ThirdPartyTransID string `json:"ThirdPartyTransID"`
-	MSISDN            string `json:"MSISDN"`
-	FirstName         string `json:"FirstName"`
-	MiddleName        string `json:"MiddleName"`
-	LastName          string `json:"LastName"`
-}
+// type completeTransactionRequest struct {
+// 	TransactionType   string `json:"TransactionType"`
+// 	TransID           string `json:"TransID"`
+// 	TransTime         string `json:"TransTime"`
+// 	TransAmount       string `json:"TransAmount"`
+// 	BusinessShortCode string `json:"BusinessShortCode"`
+// 	BillRefNumber     string `json:"BillRefNumber"`
+// 	InvoiceNumber     string `json:"InvoiceNumber"`
+// 	OrgAccountBalance string `json:"OrgAccountBalance"`
+// 	ThirdPartyTransID string `json:"ThirdPartyTransID"`
+// 	MSISDN            string `json:"MSISDN"`
+// 	FirstName         string `json:"FirstName"`
+// 	MiddleName        string `json:"MiddleName"`
+// 	LastName          string `json:"LastName"`
+// }
 
 func (s *Server) completeTransaction(ctx *gin.Context) {
-	var req completeTransactionRequest
+	var rq any
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&rq); err != nil {
 		log.Println("failed to bind json: ", err)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	fullname := fmt.Sprintf("%s %s %s", req.FirstName, req.MiddleName, req.LastName)
+	log.Println("complete url hit: ", rq)
 
-	amount, err := strconv.Atoi(req.TransAmount)
+	req, _ := rq.(map[string]interface{})
+
+	fullname := fmt.Sprintf("%s %s %s", req["FirstName"], req["MiddleName"], req["LastName"])
+
+	amount, err := strconv.Atoi(req["TransAmount"].(string))
 	if err != nil {
 		log.Println("failed to convert transAmount to int: ", err)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	orgAmount, err := strconv.Atoi(req.OrgAccountBalance)
+	orgAmount, err := strconv.Atoi(req["OrgAccountBalance"].(string))
 	if err != nil {
 		log.Println("failed to convert org account balance to int: ", err)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -148,7 +154,7 @@ func (s *Server) completeTransaction(ctx *gin.Context) {
 
 	// YYYYMMDDHHmmss
 
-	transactionTime, err := time.Parse("20060102150405", req.TransTime)
+	transactionTime, err := time.Parse("20060102150405", req["TransTime"].(string))
 	if err != nil {
 		log.Println("failed to parse transaction time: ", err)
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -157,9 +163,9 @@ func (s *Server) completeTransaction(ctx *gin.Context) {
 
 	transaction, err := s.store.CreateC2BTransaction(ctx, db.CreateC2BTransactionParams{
 		Fullname:          fullname,
-		Phone:             req.MSISDN,
+		Phone:             req["MSISDN"].(string),
 		Amount:            int64(amount),
-		TransactionID:     req.TransID,
+		TransactionID:     req["TransID"].(string),
 		OrgAccountBalance: int64(orgAmount),
 		TransactionTime:   transactionTime,
 	})
@@ -169,7 +175,6 @@ func (s *Server) completeTransaction(ctx *gin.Context) {
 		return
 	}
 
-	log.Println("complete url hit: ", req)
 	log.Println("transaction: ", transaction)
 
 	ctx.JSON(http.StatusOK, gin.H{
