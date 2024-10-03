@@ -24,6 +24,7 @@ type Config struct {
 	EMAIL_SENDER_NAME         string        `mapstructure:"EMAIL_SENDER_NAME"`
 	EMAIL_SENDER_ADDRESS      string        `mapstructure:"EMAIL_SENDER_ADDRESS"`
 	EMAIL_SENDER_PASSWORD     string        `mapstructure:"EMAIL_SENDER_PASSWORD"`
+	MPESA_SHORT_CODE          string        `mapstructure:"MPESA_SHORT_CODE"`
 	CONSUMER_KEY              string        `mapstructure:"CONSUMER_KEY"`
 	CONSUMER_SECRET           string        `mapstructure:"CONSUMER_SECRET"`
 	PASSKEY                   string        `mapstructure:"PASSKEY"`

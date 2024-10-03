@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS c2b_transactions;

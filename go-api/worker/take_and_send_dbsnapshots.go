@@ -1,9 +1,11 @@
 package worker
 
 import (
+	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"time"
@@ -63,7 +65,13 @@ func (processor *RedisTaskProcessor) ProcessTakeAndSendDBsnapshots(ctx context.C
 		return fmt.Errorf("Failed to write snapshot to file: %v", err)
 	}
 
-	fileContent, err := os.ReadFile(snapshotSchemaFilename)
+	compressedSnapshotFilename := snapshotSchemaFilename + ".gz"
+	err = compressFile(snapshotSchemaFilename, compressedSnapshotFilename)
+	if err != nil {
+		return fmt.Errorf("Failed to compress snapshot file: %v", err)
+	}
+
+	fileContent, err := os.ReadFile(compressedSnapshotFilename)
 	if err != nil {
 		return fmt.Errorf("Failed to read file content: %w", err)
 	}
@@ -72,7 +80,16 @@ func (processor *RedisTaskProcessor) ProcessTakeAndSendDBsnapshots(ctx context.C
 		<h1>Hello Emilio Cliff</h1>
 		<p>Your 3 days database snapshot</p>`)
 
-	err = processor.sender.SendMail("Database Snapshot", emailBody, "text/plain", []string{"clifftest33@gmail.com"}, nil, nil, []string{snapshotSchemaFilename}, [][]byte{fileContent})
+	err = processor.sender.SendMail(
+		"Database Snapshot",
+		emailBody,
+		"text/plain",
+		[]string{"clifftest33@gmail.com"},
+		nil,
+		nil,
+		[]string{snapshotSchemaFilename},
+		[][]byte{fileContent},
+	)
 	if err != nil {
 		return fmt.Errorf("failed to send email: %w", err)
 	}
@@ -81,16 +98,20 @@ func (processor *RedisTaskProcessor) ProcessTakeAndSendDBsnapshots(ctx context.C
 		return fmt.Errorf("Failed to delete snapshot file: %w", err)
 	}
 
+	if err := os.Remove(compressedSnapshotFilename); err != nil {
+		return fmt.Errorf("Failed to delete compressed snapshot file: %w", err)
+	}
+
 	// Uncomment and adjust as needed
-	opts := []asynq.Option{
-		asynq.MaxRetry(2),
-		asynq.ProcessIn(24 * time.Hour),
-		asynq.Queue(QueueLow),
-	}
-	err = processor.distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...)
-	if err != nil {
-		return fmt.Errorf("Failed to schedule next snapshot: %w", err)
-	}
+	// opts := []asynq.Option{
+	// 	asynq.MaxRetry(2),
+	// 	asynq.ProcessIn(24 * time.Hour),
+	// 	asynq.Queue(QueueLow),
+	// }
+	// err = processor.distributor.DistributeTakeAndSendDBsnapshots(ctx, "word", opts...)
+	// if err != nil {
+	// 	return fmt.Errorf("Failed to schedule next snapshot: %w", err)
+	// }
 
 	log.Info().
 		Str("type", task.Type()).
@@ -98,4 +119,24 @@ func (processor *RedisTaskProcessor) ProcessTakeAndSendDBsnapshots(ctx context.C
 		Msg("task processed successfully")
 
 	return nil
+}
+
+func compressFile(source, target string) error {
+	inFile, err := os.Open(source)
+	if err != nil {
+		return err
+	}
+	defer inFile.Close()
+
+	outFile, err := os.Create(target)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	gzipWriter := gzip.NewWriter(outFile)
+	defer gzipWriter.Close()
+
+	_, err = io.Copy(gzipWriter, inFile)
+	return err
 }

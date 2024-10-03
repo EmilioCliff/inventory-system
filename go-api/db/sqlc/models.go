@@ -8,6 +8,17 @@ import (
 	"time"
 )
 
+type C2bTransaction struct {
+	ID                int64     `json:"id"`
+	Fullname          string    `json:"fullname"`
+	Phone             string    `json:"phone"`
+	Amount            int64     `json:"amount"`
+	TransactionID     string    `json:"transaction_id"`
+	OrgAccountBalance int64     `json:"org_account_balance"`
+	TransactionTime   time.Time `json:"transaction_time"`
+	CreatedAt         time.Time `json:"created_at"`
+}
+
 type Entry struct {
 	EntryID       int64     `json:"entry_id"`
 	ProductID     int32     `json:"product_id"`
