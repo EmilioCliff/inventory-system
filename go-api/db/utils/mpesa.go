@@ -39,6 +39,8 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 
 	newNumber := setPhoneNumber(phoneNumber)
 
+	log.Info().Msgf("shortCode: %s", config.MPESA_SHORT_CODE)
+
 	callback := fmt.Sprintf("https://secretive-window-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	requestBody := map[string]interface{}{
 		"BusinessShortCode": config.MPESA_SHORT_CODE,
