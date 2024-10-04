@@ -13,9 +13,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// const (
-// 	shortCode = "7169782"
-// )
+const (
+	shortCode = "7169782"
+)
 
 var transactionID string
 
@@ -39,12 +39,10 @@ func SendSTK(amount string, userID int64, phoneNumber string) (string, string, e
 
 	newNumber := setPhoneNumber(phoneNumber)
 
-	log.Info().Msgf("shortCode: %s", config.MPESA_SHORT_CODE)
-
 	callback := fmt.Sprintf("https://secretive-window-production.up.railway.app/transaction/%v%v", transactionID, fmt.Sprintf("%03d", userID))
 	requestBody := map[string]interface{}{
-		"BusinessShortCode": config.MPESA_SHORT_CODE,
-		"Password":          generatePassword(config.MPESA_SHORT_CODE, config.PASSKEY),
+		"BusinessShortCode": shortCode,
+		"Password":          generatePassword(shortCode, config.PASSKEY),
 		"Timestamp":         time.Now().Format("20060102150405"),
 		"TransactionType":   "CustomerBuyGoodsOnline",
 		"Amount":            amount,
