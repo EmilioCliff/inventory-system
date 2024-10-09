@@ -115,11 +115,9 @@ func (s *Server) completeTransaction(ctx *gin.Context) {
 		return
 	}
 
-	log.Println("complete url hit: ", rq)
-
 	req, _ := rq.(map[string]interface{})
 
-	fullname := fmt.Sprintf("%s %s %s", req["FirstName"], req["MiddleName"], req["LastName"])
+	fullname := fmt.Sprintf("%s", req["FirstName"])
 
 	// YYYYMMDDHHmmss
 
@@ -132,7 +130,7 @@ func (s *Server) completeTransaction(ctx *gin.Context) {
 
 	transaction, err := s.store.CreateC2BTransaction(ctx, db.CreateC2BTransactionParams{
 		Fullname:          fullname,
-		Phone:             req["MSISDN"].(string),
+		Phone:             "****",
 		Amount:            req["TransAmount"].(string),
 		TransactionID:     req["TransID"].(string),
 		OrgAccountBalance: req["OrgAccountBalance"].(string),

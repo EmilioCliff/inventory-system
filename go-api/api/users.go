@@ -37,20 +37,20 @@ func newUserResponse(user db.User) (userResponse, error) {
 }
 
 type CreateUserRequest struct {
-	Username    string `json:"username" binding:"required"`
-	Password    string `json:"password" binding:"required"`
-	Email       string `json:"email" binding:"required,email"`
+	Username    string `json:"username"     binding:"required"`
+	Password    string `json:"password"     binding:"required"`
+	Email       string `json:"email"        binding:"required,email"`
 	PhoneNumber string `json:"phone_number" binding:"required"`
-	Address     string `json:"address" binding:"required"`
-	Role        string `json:"role" binding:"required"`
+	Address     string `json:"address"      binding:"required"`
+	Role        string `json:"role"         binding:"required"`
 }
 
 type userResponse struct {
-	UserID          int64                    `json:"id" binding:"required"`
-	Username        string                   `json:"username" binding:"required"`
-	Email           string                   `json:"email" binding:"required,email"`
-	PhoneNumber     string                   `json:"phone_number" binding:"required"`
-	Address         string                   `json:"address" binding:"required"`
+	UserID          int64                    `json:"id"                          binding:"required"`
+	Username        string                   `json:"username"                    binding:"required"`
+	Email           string                   `json:"email"                       binding:"required,email"`
+	PhoneNumber     string                   `json:"phone_number"                binding:"required"`
+	Address         string                   `json:"address"                     binding:"required"`
 	Stock           []map[string]interface{} `json:"stock"`
 	StockValue      int64                    `json:"stock_value,omitempty"`
 	AdminStockValue float64                  `json:"admin_stock_value,omitempty"`
@@ -136,7 +136,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 
 type calculatePriceRequest struct {
 	ProductIDs []int64 `json:"product_ids" binding:"required"`
-	Quantities []int64 `json:"quantities" binding:"required"`
+	Quantities []int64 `json:"quantities"  binding:"required"`
 }
 
 type calculatePriceResponse struct {
@@ -167,7 +167,7 @@ func (server *Server) calculatePrice(ctx *gin.Context) {
 }
 
 type userLoginRequest struct {
-	Email    string `json:"email" binding:"required"`
+	Email    string `json:"email"    binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -423,7 +423,7 @@ type UserToEditUri struct {
 type UserToEditRequest struct {
 	OldPassword string `json:"old_password" binding:"required,min=6"`
 	NewPassword string `json:"new_password" binding:"required,min=6"`
-	Role        string `json:"role" binding:"required,oneof=admin client"`
+	Role        string `json:"role"         binding:"required,oneof=admin client"`
 }
 
 func (server *Server) editUser(ctx *gin.Context) {
@@ -494,11 +494,11 @@ type UserToManageUri struct {
 }
 
 type UserToManageRequest struct {
-	Email       string `json:"email" binding:"required,email"`
+	Email       string `json:"email"        binding:"required,email"`
 	PhoneNumber string `json:"phone_number" binding:"required"`
-	Address     string `json:"address" binding:"required"`
-	Username    string `json:"username" binding:"required"`
-	Role        string `json:"role" binding:"required,oneof=client admin"`
+	Address     string `json:"address"      binding:"required"`
+	Username    string `json:"username"     binding:"required"`
+	Role        string `json:"role"         binding:"required,oneof=client admin"`
 }
 
 func (server *Server) manageUser(ctx *gin.Context) {
@@ -547,7 +547,7 @@ type addAdminStockURIRequest struct {
 }
 
 type addAdminStockJSONRequest struct {
-	UserID   int64 `json:"user_id" binding:"required,min=1"`
+	UserID   int64 `json:"user_id"  binding:"required,min=1"`
 	Quantity int64 `json:"quantity" binding:"required"`
 }
 
@@ -610,7 +610,7 @@ type requstStockUri struct {
 }
 
 type requestStockQuery struct {
-	Products  []int32 `json:"products" binding:"required"`
+	Products  []int32 `json:"products"   binding:"required"`
 	Quantites []int32 `json:"quantities" binding:"required"`
 }
 
@@ -681,8 +681,8 @@ type addClientStockURIRequest struct {
 }
 
 type addClientStockJSONRequest struct {
-	ProductsID  []int64 `json:"products_id" binding:"required"`
-	Quantities  []int64 `json:"quantities" binding:"required"`
+	ProductsID  []int64 `json:"products_id"  binding:"required"`
+	Quantities  []int64 `json:"quantities"   binding:"required"`
 	InvoiceDate string  `json:"invoice_date" binding:"required"`
 }
 
@@ -747,7 +747,10 @@ func (server *Server) addClientStock(ctx *gin.Context) {
 					quantityInt := adminProduct["productQuantity"].(float64)
 					// quantityInt := quantityFloat
 					if int64(quantityInt)-req.Quantities[idx] < 0 {
-						ctx.JSON(http.StatusNotAcceptable, gin.H{"error": fmt.Sprintf("Not enough in stock to distribute: %s = %v", addProduct.ProductName, req.Quantities[idx])})
+						ctx.JSON(
+							http.StatusNotAcceptable,
+							gin.H{"error": fmt.Sprintf("Not enough in stock to distribute: %s = %v", addProduct.ProductName, req.Quantities[idx])},
+						)
 						return
 						// return fmt.Errorf("Not enough in inventory %v - %v to sell %v", adminProduct["productName"], adminProduct["productQuantity"], arg.Amount[index])
 					}
@@ -808,7 +811,7 @@ type reduceClientStockURIRequest struct {
 type reduceClientStockJSONRequest struct {
 	// Amount     int64   `json:"amount" biding:"required"`
 	ProductsID []int32 `json:"products_id" biding:"required"`
-	Quantities []int64 `json:"quantities" biding:"required"`
+	Quantities []int64 `json:"quantities"  biding:"required"`
 }
 
 func (server *Server) reduceClientStock(ctx *gin.Context) {
@@ -860,7 +863,12 @@ func (server *Server) reduceClientStock(ctx *gin.Context) {
 				// if id == int8(data["productID"].(float64)) {
 				if int64(data["productQuantity"].(float64)) < int64(req.Quantities[idx]) {
 					log.Info().Int("productId", int(id)).Int("quantity", int(req.Quantities[idx])).Msg("reduce client stock log")
-					ctx.JSON(http.StatusNotAcceptable, errorResponse(fmt.Errorf("Not enough in stock to sell: Product: %v InStock: %v", data["productName"], data["productQuantity"])))
+					ctx.JSON(
+						http.StatusNotAcceptable,
+						errorResponse(
+							fmt.Errorf("Not enough in stock to sell: Product: %v InStock: %v", data["productName"], data["productQuantity"]),
+						),
+					)
 					return
 				}
 				// }
@@ -1035,7 +1043,12 @@ func (server *Server) reduceClientProductByAdmin(ctx *gin.Context) {
 			if dataID == float64(id) {
 				if int64(data["productQuantity"].(float64)) < int64(req.Quantities[idx]) {
 					log.Info().Int("productId", int(id)).Int("quantity", int(req.Quantities[idx])).Msg("reduce client stock log")
-					ctx.JSON(http.StatusNotAcceptable, errorResponse(fmt.Errorf("Not enough in stock to sell: Product: %v InStock: %v", data["productName"], data["productQuantity"])))
+					ctx.JSON(
+						http.StatusNotAcceptable,
+						errorResponse(
+							fmt.Errorf("Not enough in stock to sell: Product: %v InStock: %v", data["productName"], data["productQuantity"]),
+						),
+					)
 					return
 				}
 			}
@@ -1172,6 +1185,7 @@ func (server *Server) resetIt(ctx *gin.Context) {
 	payload, err := server.tokenMaker.VerifyToken(req.Token)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
 	}
 
 	hashPassword, hasherr := utils.GeneratePasswordHash(pass.Password)
